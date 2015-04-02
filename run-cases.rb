@@ -79,7 +79,7 @@ loop do
   puts "Putting #{case_name} into VEDA"
   puts `GDX2VEDA #{File.join(gdx_save_folder, case_name)} #{times_2_veda} #{case_name}`
   i = i + 1
-  if i > end_number
+  if end_number && (i > end_number)
     puts "Done case #{end_number}"
     puts "Halting"
     exit
