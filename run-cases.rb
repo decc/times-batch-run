@@ -74,7 +74,7 @@ loop do
     exit
   end
   puts "Executing #{case_name}"
-  puts `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{File.join(gdx_save_folder, case_name)}`
+  puts `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{File.join(gdx_save_folder, case_name).gsub('/','\\')}`
 
   puts "Putting #{case_name} into VEDA"
   puts `GDX2VEDA #{File.join(gdx_save_folder, case_name)} #{times_2_veda} #{case_name}`
