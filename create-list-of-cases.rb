@@ -19,11 +19,11 @@
 # number_of_cases_to_generate - optional, default 100, this is how many cases to generate
 # possible_scenarios_file - optional, default 'possible_scenarios.tsv', this contains the possible scenarios
 
-name_of_list_of_cases = ARGV[0] || 'cases'
-number_of_cases_to_generate = ARGV[1].to_i || 100
+name_of_list_of_cases = ARGV[0] || 'cases.tsv'
+number_of_cases_to_generate = (ARGV[1] && ARGV[1].to_i) || 100
 set_of_scenarios_file = ARGV[2] || File.join(File.dirname(__FILE__), "possible_scenarios.tsv")
 
-puts "Generating #{number_of_cases_to_generate} cases from #{File.expand_path(set_of_scenarios_file)} and putting them in #{File.expand_path(name_of_list_of_cases)}.tsv"
+puts "Generating #{number_of_cases_to_generate} cases from #{File.expand_path(set_of_scenarios_file)} and putting them in #{File.expand_path(name_of_list_of_cases)}"
 
 unless File.exist?(set_of_scenarios_file)
   puts "Can't find scenario file #{File.expand_path(set_of_scenarios_file)}" 
@@ -50,7 +50,7 @@ end
 cases = []
 
 (1..number_of_cases_to_generate).each do |case_number|
-  case_name = "#{name_of_list_of_cases}#{case_number}"
+  case_name = "#{File.basename(name_of_list_of_cases,'.*')}#{case_number}"
   case_scenarios = [case_name]
   set_of_scenarios.each do |scenario|
     case_scenarios.push(scenario.random)
@@ -58,7 +58,7 @@ cases = []
   cases << case_scenarios
 end
 
-File.open("#{name_of_list_of_cases}.tsv",'w') do |f|
+File.open(name_of_list_of_cases,'w') do |f|
   f.puts "CaseName\t"+set_of_scenarios.map(&:first).join("\t")
   cases.each do |c|
     f.puts c.join("\t")
