@@ -1,0 +1,2 @@
+CaseName	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Always	Discount rate	Emissions	Nuclear	CCS
+cases1	base	newagr	newelc	newind	newprc	newres	newrsr	newser	newtra	refscenario	syssettings	uc_base	uc_elc	uc_ind	uc_prc	uc_res	uc_rsr	uc_ser	uc_tra	discount_stern	ghg_constraint_including_2050_linear_cb5_is_1900	NIL	UC_NoCCS
