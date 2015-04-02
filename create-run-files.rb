@@ -27,6 +27,41 @@ list_of_cases.each do |c|
 
   File.open(run_filename, 'w') do |f|
 f.puts <<END
+$TITLE  TIMES -- VERSION 4.1.0
+OPTION RESLIM=50000, PROFILE=1, SOLVEOPT=REPLACE;
+OPTION ITERLIM=999999, LIMROW=0, LIMCOL=0, SOLPRINT=OFF;
+
+option LP=cplex;
+
+*--If you want to use an optimizer other than cplex/xpress, enter it here:
+*OPTION LP=MyOptimizer;
+
+$OFFLISTING
+*$ONLISTING
+
+* activate validation to force VAR_CAP/COMPRD
+$SET VALIDATE 'NO'
+* reduction of equation system
+$SET REDUCE   'YES'
+*--------------------------------------------------------------*
+* BATINCLUDE calls should all be with lower case file names!!! *
+*--------------------------------------------------------------*
+
+* initialize the environment variables
+$ SET DSCAUTO YES 
+$   SET VDA YES 
+$   SET DEBUG                          'NO'
+$   SET DUMPSOL                        'NO'
+$   SET SOLVE_NOW                      'YES'
+$   SET MODEL_NAME                     'TIMES'
+$   IF DECLARED REG      $SET STARTRUN 'RESTART'
+$   IF NOT DECLARED REG  $SET STARTRUN 'SCRATCH'
+$SET XTQA YES
+* VAR_UC being set so that non-binding constraints appear in results
+$SET VAR_UC YES 
+ OPTION BRATIO=1;
+$ SET OBJ AUTO
+$SET DAMAGE NO
 $ SET TIMESED NO
 $ SET STAGES NO
 $SET SOLVEDA 'YES'
