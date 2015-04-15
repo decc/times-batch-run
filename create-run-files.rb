@@ -84,10 +84,10 @@ $IF NOT DECLARED REG_BNDCST $Abort "You need to use TIMES v2.3.1 or higher"
 
 #{ 
 c[1..-1].map do |dd| 
-  if dd == "NIL"
+  if dd.strip =~ /^NIL$/i
     ""
   else
-    "$BATINCLUDE #{dd}.dd" 
+    "$BATINCLUDE #{dd.strip}.dd" 
   end
 end.join("\n") 
 }
