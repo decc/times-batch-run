@@ -91,7 +91,7 @@ class CreateListOfCases
   def count_of_possible_scenario_files
     set_of_all_possible_scenarios.inject(0) do |count, set_of_scenarios| 
       count - 1 + set_of_scenarios.inject(0) do |count, possible_scenario, i|
-        if possible_scenario.strip =~ /^nil$/i
+        if nil_scenario_file?(possible_scenario)
           count
         else
           count + 1
@@ -108,11 +108,15 @@ class CreateListOfCases
   end
 
   def scenario_file_exists?(scenario_name)
-    return true if scenario_name =~ /^nil$/i
+    return true if nil_scenario_file?(scenario_name)
     scenario_filename = scenario_filename_from_name(scenario_name)
     places_to_look_for_scenario_files.any? do |directory|
       File.exist?(File.join(directory, scenario_filename))
     end
+  end
+
+  def nil_scenario_file?(scenario_name)
+    scenario_name.strip =~ /^nil$/i
   end
 
   def scenario_filename_from_name(scenario_name)
