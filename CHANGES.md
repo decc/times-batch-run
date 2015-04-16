@@ -1,3 +1,7 @@
+2015-04-16
+
+* Refactored create-run-files.rb, including placing the run file template in a separate file
+
 2015-04-15
 
 * Refactored create-list-of-cases.rb
