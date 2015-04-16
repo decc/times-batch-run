@@ -11,11 +11,13 @@
 # name_of_file_containing_cases    - optional, default cases.tsv, list of each case, where the first column is the name of the case, and remaining columns are
 #                                    scenarios to use in this case.
 #
-destination_folder_for_run_files  = ARGV[0] || '.'
-name_of_file_containing_cases = ARGV[1] || 'cases.tsv'
 
+class CreateRunFiles
+  attr_accessor :destination_folder_for_run_files
+  attr_accessor :name_of_file_containing_cases
+
+  def run
 puts "Taking cases from #{File.expand_path(name_of_file_containing_cases)} and creating run files in #{File.expand_path(destination_folder_for_run_files)}"
-
 list_of_cases = IO.readlines(name_of_file_containing_cases).join.split(/[\n\r]+/).map { |r| r.split("\t") }
 list_of_cases.shift # Remove the title row
 
@@ -104,3 +106,10 @@ END
 
   end
 end
+  end
+end
+
+create_run_files = CreateRunFiles.new
+create_run_files.destination_folder_for_run_files  = ARGV[0] || '.'
+create_run_files.name_of_file_containing_cases = ARGV[1] || 'cases.tsv'
+create_run_files.run
