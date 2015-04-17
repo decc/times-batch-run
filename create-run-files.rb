@@ -30,3 +30,4 @@ create_run_files.destination_folder_for_run_files  = ARGV[0] || '.'
 create_run_files.name_of_file_containing_cases = ARGV[1] || 'cases.tsv'
 create_run_files.name_of_run_file_template = ARGV[2] || File.join(File.dirname(__FILE__),'run-file-template.erb')
 create_run_files.run
+create_run_files.warn_about_missing_scenario_files

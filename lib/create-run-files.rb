@@ -8,9 +8,10 @@ class CreateRunFiles
   attr_accessor :name_of_file_containing_cases
   attr_accessor :name_of_run_file_template
   attr_accessor :places_to_look_for_scenario_files
+  attr_accessor :missing_scenario_files
 
   def run
-    missing_scenario_files = {}
+    @missing_scenario_files = {}
 
     list_of_cases.each do |c|
 
@@ -33,7 +34,10 @@ class CreateRunFiles
         f.puts run_file_template.result(binding)
       end
     end
+  end
 
+
+  def warn_about_missing_scenario_files
     if missing_scenario_files.size > 0
       puts
       puts "The following scenario files are missing from #{File.expand_path(destination_folder_for_run_files)}:"
