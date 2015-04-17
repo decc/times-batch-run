@@ -1,6 +1,6 @@
 2015-04-17
 
-* Added go.rb that will work through the whole process
+* Added go.rb that will work through the whole process, including running multi-threaded
 
 2015-04-16
 

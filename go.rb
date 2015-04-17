@@ -107,9 +107,6 @@ end
 # FIXME: Refactor this and run-cases.rb
 veda_fe_folder = Pathname.getwd.parent
 prefix = RUN_FILE_PREFIX 
-start_number = 1
-end_number = NUMBER_OF_CASES_TO_MONTECARLO
-
 times_source_folder = veda_fe_folder + TIMES_SOURCE_FOLDER
 gams_working_folder =  veda_fe_folder + GAMS_WORKING_FOLDER
 gdx_save_folder = gams_working_folder + GAMS_SAVE_FOLDER
@@ -141,28 +138,39 @@ unless File.exist?(times_2_veda)
   exit
 end
 
-i = start_number
 
-puts "Starting at #{start_number}"
+number_per_thread = (NUMBER_OF_CASES_TO_MONTECARLO/NUMBER_OF_THREADS).ceil # Ceil in case not precisely divisable
 
-loop do
-  case_name = "#{prefix}#{i}"
-  puts "Looking for #{case_name}.RUN"
-  unless File.exist?("#{case_name}.RUN")
-    puts "Can't find #{File.expand_path("#{case_name}.RUN")}"
-    puts "Halting"
-    exit
-  end
-  puts "Executing #{case_name}"
-  puts `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{File.join(gdx_save_folder, case_name).gsub('/','\\')}`
+threads = Array.new(NUMBER_OF_THREADS).map.with_index do |_,thread_number|
+	Thread.new do 
+		start_number = (thread_number * number_per_thread)+1
+		end_number = start_number + number_per_thread
+		
+		puts "Thread #{thread_number} doing case #{start_number} to case #{end_number}"
+		i = start_number
+		loop do
+		  case_name = "#{prefix}#{i}"
+		  puts "Looking for #{case_name}.RUN"
+		  unless File.exist?("#{case_name}.RUN")
+			puts "Can't find #{File.expand_path("#{case_name}.RUN")}"
+			puts "Halting"
+			exit
+		  end
+		  puts "Executing #{case_name}"
+		  `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{File.join(gdx_save_folder, case_name).gsub('/','\\')}`
 
-  puts "Putting #{case_name} into VEDA"
-  puts `GDX2VEDA #{File.join(gdx_save_folder, case_name)} #{times_2_veda} #{case_name}`
-  i = i + 1
-  if end_number && (i > end_number)
-    puts "Done case #{end_number}"
-    puts "Halting"
-    exit
-  end
+		  # FIXME: Check that the file was written
+		  
+		  puts "Putting #{case_name} into VEDA"
+		  `GDX2VEDA #{File.join(gdx_save_folder, case_name)} #{times_2_veda} #{case_name} > #{case_name}`
+		  i = i + 1
+		  if end_number && (i > end_number)
+			puts "Done case #{end_number}"
+			puts "Halting"
+			break
+		  end
+		end
+	end
 end
 
+threads.each(&:join)
