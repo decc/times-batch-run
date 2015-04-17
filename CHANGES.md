@@ -1,3 +1,7 @@
+2015-04-17
+
+* Added go.rb that will work through the whole process
+
 2015-04-16
 
 * Refactored create-run-files.rb, including placing the run file template in a separate file
