@@ -36,4 +36,6 @@ create_list_of_cases = CreateListOfCases.new
 create_list_of_cases.name_of_list_of_cases = ARGV[0] || 'cases.tsv'
 create_list_of_cases.number_of_cases_to_generate = (ARGV[1] && ARGV[1].to_i) || 100
 create_list_of_cases.file_containing_possible_combinations_of_scenarios = ARGV[2] || File.join(File.dirname(__FILE__), "possible_scenarios.tsv")
+create_list_of_cases.print_intent
 create_list_of_cases.run!
+create_list_of_cases.warn_about_missing_scenario_files

@@ -39,11 +39,9 @@ class CreateListOfCases
   attr_accessor :cases
 
   def run!
-    print_intent
     check_file_containing_possible_combinations_of_scenarios_exists
     load_set_of_all_possible_scenarios
     check_for_missing_scenario_files
-    warn_about_missing_scenario_files
     create_list_of_cases
     write_cases_to_file
   end
