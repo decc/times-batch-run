@@ -1,0 +1,498 @@
+<html>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta charset='utf-8'>
+<script src='javascript/d3.min.js'></script>
+<title>Variation in total cost with scenario from UK TIMES</title>
+<style>
+body {
+  font: 10px sans-serif;
+}
+
+div {
+  margin: 0;
+  padding: 0;
+}
+
+#title {
+  width: 100%;
+  font-size: 16px;
+  height: 30px;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  text-align: center;
+  font-size: 12px;
+  height: 24px;
+}
+
+.chart {
+  float: left;
+  width: 210px;
+  padding: 0px 10px;
+  height: 400px;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis .tick line, .axis path {
+  stroke: none;
+}
+
+text.range {
+  fill: steelblue;
+}
+
+text.percentage_difference_range {
+  fill: red;
+}
+
+rect {
+  fill: black;
+  fill-opacity: 0.3;
+}
+
+rect.hover {
+  fill: yellow;
+  fill-opacity: 1;
+}
+
+</style>
+<body>
+<h1 id='title'>Variation in total cost with scenario from UK TIMES</h1>
+<div id='chart'>
+</div>
+<script>
+/**
+**/
+function uncertain_flying_brick() {
+
+  var margin = {top: 20, right: 20, bottom: 20, left: 20},
+      width = 190;
+      height = 280;
+
+  var from_scenario = "From";
+  var to_scenario = "To";
+
+  var x = d3.scale.ordinal();
+
+  var y = d3.scale.linear();
+
+  var maximum_y_value = 50;
+
+  var costFormat = d3.format(",.1f");
+  var costDifferenceFormat = d3.format("+,.1f");
+  var percentageDifferenceFormat = d3.format("+.1%");
+
+  var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+  // This is used to reformat match data into the 
+  // coordinates for three rectangles
+  function flying_brick(pair) {
+    return [
+      {key: from_scenario, value: rect(0, pair.from.cost)},
+      {key: 'difference', value: rect(pair.from.cost, pair.to.cost - pair.from.cost)},
+      {key: to_scenario, value: rect(0, pair.to.cost)}
+    ]
+  };
+
+  // Takes a base and a height and either 
+  // returns {base: base, height: height) converted into pixels
+  // using the y scale or, if the height is negative
+  // adjusts the base and height so the height is
+  // positive. 
+  function rect(base, height) {
+    base = y(base);
+    height = y(height) - y(0);
+    if(height < 0) {
+      base = base + height;
+      height = -height;
+    }
+    return {base: base, height: height};
+  };
+
+  // Takes a string formatter and a two element array
+  // and returns a text string for that range
+  // e.g., costFormat, [1.12, 2.25] => "1.1-2.3"
+  // Deals with moments when both elements of the range are the same
+  // e.g., costFormat, [1.12, 1.14] => "1.1"
+  function range_label(format, range) {
+    var left = format(range[0]);
+    var right = format(range[1]);
+    if(left == right) {
+      return left
+    } else {
+      return left+"–"+right;
+    }
+  };
+
+  function chart(selection) {
+    selection.each(function(data) {
+        if(data == undefined) { return; }
+        var svg, canvas, new_svg, pairs, new_pairs, cases, new_cases, number_of_pairs;
+
+        svg = d3.select(this).selectAll("svg").data([data]);
+
+        // Create any new chart areas
+        new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
+
+        new_svg.append("g").attr("class", "pairs");
+        new_svg.append("g").attr("class", "x axis");
+        new_svg.append("g").attr("class", "y axis");
+        
+        new_svg.append("text")
+          .attr("class", "y_axis_label")
+          .attr('y', -7)
+          .attr("x", (width-margin.left-margin.right)/2)
+          .attr("text-anchor","middle")
+          .text("Total Cost £trn (2010-2050, discounted)");
+        
+        new_svg.append("text")
+          .attr("class", "range from_range")
+          .attr("text-anchor","middle");
+
+        new_svg.append("text")
+          .attr("class", "range difference_range")
+          .attr("text-anchor","middle");
+
+        new_svg.append("text")
+          .attr("class", "range to_range")
+          .attr("text-anchor","middle");
+
+        new_svg.append("text")
+          .attr("class", "range percentage_difference_range")
+          .attr("y", 5)
+          .attr("x", (width-margin.left-margin.right)/2)
+          .attr("text-anchor","middle");
+
+        // Update the outer dimensions.
+        svg.attr("width", width)
+          .attr("height", height);
+
+        // Update the inner dimensions.
+        canvas = svg.select("g.canvas")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Update the y-axis
+        y
+          .domain([0, maximum_y_value])
+          .range([height - margin.top - margin.bottom, 0])
+          .nice();
+
+        //svg.select(".y.axis")
+        //  .call(yAxis);
+
+        // Update the x-axis 
+        x
+          .domain([from_scenario, "difference", to_scenario])
+          .rangeRoundBands([0, width - margin.left - margin.right],0.1);
+
+        svg.select(".x.axis")
+          .attr("transform", "translate(0," + y.range()[0] + ")")
+          .call(xAxis);
+
+        // And the labels explaining the ranges
+        svg.select(".from_range")
+          .text(range_label(costFormat, data.from_range))
+          .attr("x", x(from_scenario)+(x.rangeBand()/2))
+          .attr("y", y(data.from_range[1])-3);
+
+        svg.select(".difference_range")
+          .text(range_label(costDifferenceFormat, data.difference_range))
+          .attr("x", x("difference")+(x.rangeBand()/2))
+          .attr("y", y(data.to_range[1])-3);
+
+        svg.select(".to_range")
+          .text(range_label(costFormat, data.to_range))
+          .attr("x", x(to_scenario)+(x.rangeBand()/2))
+          .attr("y", y(data.to_range[1])-3);
+
+        svg.select(".percentage_difference_range")
+          .text(
+              percentageDifferenceFormat(data.percentage_difference_range[0])+
+              " to "+
+              percentageDifferenceFormat(data.percentage_difference_range[1])+
+              " (n="+
+              data.length+
+              ")"
+              );
+
+        // Now we loop through each pair of cases, adding a group
+        pairs = canvas.select("g.pairs").selectAll("g.pair").data(Object);
+
+        new_pairs = pairs.enter().append("g")
+                          .attr("class", "pair");
+
+        pairs.exit().remove();
+
+        // And within each pair, we draw a rect for the from, the to and the difference
+        cases = pairs.selectAll("rect.case")
+                            .data(flying_brick);
+
+        new_cases = cases.enter().append("rect").attr("class", "case");
+
+        cases
+          .attr("height", function(d) { return d.value.height; })
+          .attr("width", x.rangeBand())
+          .attr("x", function(d) { return x(d.key); }) // Because the x position is set by the scenario group
+          .attr("y", function(d) { return d.value.base; });
+
+        cases.exit().remove();
+
+    });
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  }
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  }
+
+  chart.from_scenario = function(_) {
+    if(!arguments.length) return from_scenario;
+    from_scenario = _;
+    return chart;
+  }
+
+  chart.to_scenario = function(_) {
+    if(!arguments.length) return to_scenario;
+    to_scenario = _;
+    return chart;
+  }
+
+  chart.maximum_y_value = function(_) {
+    if(!arguments.length) return maximum_y_value;
+    maximum_y_value = _;
+    return chart;
+  }
+
+  return chart; 
+}
+
+function draw(formatted_data) {
+  // Can happen if no appropriate scenarios are found:
+  if(formatted_data == undefined) {
+	  console.log("No appropriate cases found");
+	  return;
+  };
+
+  // Sort out the data
+  var flying_brick = uncertain_flying_brick();
+  var charts;
+
+  var sorted_data =  formatted_data.by_scenario.entries().sort(function(a,b) {
+      return d3.ascending(d3.sum(a.value.percentage_difference_range),d3.sum(b.value.percentage_difference_range));
+      });
+
+  chart_data = [{ key: "All", value: formatted_data.overall }].concat(sorted_data);
+
+  // Draw the charts
+
+  d3.select("h1#title").text("Difference in cost between "+formatted_data.from_scenario+" scenarios and "+formatted_data.to_scenario+" scenarios");
+
+  flying_brick
+    .maximum_y_value(15) // FIXME: Calculate from the data
+    .from_scenario(formatted_data.from_scenario)
+    .to_scenario(formatted_data.to_scenario);
+  
+  charts = d3.select("#chart").selectAll("div.chart")
+    .data(chart_data);
+
+  new_charts = charts.enter().append("div").attr("class", "chart");
+
+  new_charts.append("h2"); // The title
+
+  new_charts.append("div").attr("class", "chartwrapper"); // The chart
+  
+  charts.select("h2").html(function(d) { return d.key == "All" ? "All Cases" : "Those using the<br/> "+d.key+" scenario"; });
+
+  charts.selectAll("div")
+    .data(function(d) { return [d.value]; })
+    .call(flying_brick);
+};
+
+// Takes an array of matched pairs
+// {from: case, to: case}
+// and adds some useful meta-data to it
+// from_range, to_range, difference_range, percentage_difference_range
+function add_meta_data_to(a) {
+  a.from_range = d3.extent(a, function(d) { return d.from.cost; });
+  a.to_range = d3.extent(a, function(d) { return d.to.cost; });
+  a.difference_range = d3.extent(a, function(d) { return d.difference_in_cost; });
+  a.percentage_difference_range = d3.extent(a, function(d) { return d.percentage_difference_in_cost; });
+}
+
+/** 
+Takes the input data in the form:
+[
+  { name: "case name",
+    cost: 10, # Cost in £trn
+    scenarios: ["no_nuc", ... other scenarios ..], # The scenarios used in this case
+    ghg: {
+      "2010": 640, // Emissions in MtCO2e
+      "2011": 642
+      .. other years ..
+    }
+  },
+  .. other cases ..
+]
+
+Splits the cases into those using the from_scenario and those using the to_scenario 
+and discards the rest.
+
+Then finds matching pairs of scenarios that only differ because one has the from_scenario and the other has the to_scenario.
+
+Then creates some sub groups of that data.
+FIXME: Document output format
+**/
+function reformatData(data, from_scenario, to_scenario) {
+  var scenarios = d3.map();
+  var cases_for_scenario; 
+
+  // Load up the scenarios map with every case in that scenario
+  data.forEach(function(d) {
+    d.scenarios.forEach(function(s) {
+      cases_for_scenario = scenarios.get(s) || []; // Existing cases for scenario, or create a new array
+      cases_for_scenario.push(d);
+      scenarios.set(s, cases_for_scenario);
+    });
+  });
+
+  // Get cases belonging to each end of the scenario
+  from_cases = scenarios.get(from_scenario);
+  to_cases = scenarios.get(to_scenario);
+  
+  if(from_cases == undefined) {
+	  console.log("No cases with scenario "+from_scenario+" found.");
+	  return;
+  };
+
+  if(to_cases == undefined) {
+	  console.log("No cases with scenario "+to_scenario+" found.");
+	  return;
+  };
+
+  // Remove any cases that are in both
+  from_cases.forEach(function(d, i) {
+    var j = to_cases.indexOf(d);
+    if(j != -1) { // Appears in the to_cases
+      from_cases.splice(i, 1);
+      to_cases.splice(i,1);
+    }
+  });
+
+  // Now create sorted sets of scenarios that exclude the selected names
+  from_cases.forEach(function(d,i) {
+    var i = d.scenarios.indexOf(from_scenario);
+    if(i == -1) { console.log("Oh no, not found chosen scenario "+from_scenario+" in "+d); }
+    d.matched_scenarios = d.scenarios.slice(0);
+    d.matched_scenarios.splice(i,1); // Splice removes the element at that position
+    d.matched_scenarios.sort(function(a,b) { return d3.ascending(a,b); }); // Sort the scenarios into a matching order
+    d.matched_scenarios_string = d.matched_scenarios.join(" "); // To make comparisons easier
+  });
+
+  to_cases.forEach(function(d,i) {
+    var i = d.scenarios.indexOf(to_scenario);
+    if(i == -1) { console.log("Oh no, not found chosen scenario "+from_scenario+" in "+d); }
+    d.matched_scenarios = d.scenarios.slice(0);
+    d.matched_scenarios.splice(i,1); // Splice removes the element at that position
+    d.matched_scenarios.sort(function(a,b) { return d3.ascending(a,b); }); // Sort the scenarios into a matching order
+    d.matched_scenarios_string = d.matched_scenarios.join(" "); // To make comparisons easier
+  });
+
+  // Now try and match up the cases into pairs that have matching scenarios
+  var matches = [];
+  from_cases.forEach(function(d) {
+    to_cases.forEach(function(e) {
+      if(d.matched_scenarios_string == e.matched_scenarios_string) {
+        matches.push({
+          from: d, 
+          to: e, 
+          difference_in_cost: e.cost - d.cost, 
+          percentage_difference_in_cost: (e.cost - d.cost)/d.cost
+        });
+      };
+    });
+  });
+
+  var matches_by_scenario = d3.map();
+  matches.forEach(function(match) {
+    match.from.matched_scenarios.forEach(function(s) {
+      var existing_matches = matches_by_scenario.get(s) || [];
+      existing_matches.push(match);
+      matches_by_scenario.set(s, existing_matches);
+      });
+  });
+
+  // Remove any scenarios that appear in all matched cases
+  // Otherwise add some handy meta-data
+  matches_by_scenario.forEach(function(s,m) {
+    if(m.length == matches.length) {
+      matches_by_scenario.remove(s);
+    } else {
+      add_meta_data_to(m);
+    }
+  });
+
+  add_meta_data_to(matches);
+
+  return {
+    from_scenario: from_scenario,
+    to_scenario: to_scenario,
+    overall: matches,
+    by_scenario: matches_by_scenario
+  };
+};
+
+var data = [];
+function all_cases_loaded() {
+    var from_scenario = "cb5-2100";
+    var to_scenario =  "cb5-1600";
+    var formatted_data = reformatData(data, from_scenario, to_scenario);
+    draw(formatted_data);
+};
+
+function case_loaded(individual_case) {
+	data.push(individual_case);
+	if(data.length == list_of_cases.length) {
+		all_cases_loaded();
+	}
+}
+
+function list_of_cases_loaded(new_list_of_cases) {
+	list_of_cases = new_list_of_cases.split(/[\r\n]+/).filter(function(case_name) {
+		if(case_name.length == 0) return false;
+		if(case_name[0] == "#") return false;
+		return true;
+	});
+	list_of_cases.forEach(function(case_name) {
+		d3.json(''+case_name+".json", case_loaded);
+	})
+}
+
+d3.select("#zoom_y").on('click', function() { chart.max_y_to_show(12); draw(); d3.event.preventDefault(); });
+d3.select("#autoscale_y").on('click', function() { chart.max_y_to_show(undefined); draw(); d3.event.preventDefault(); });
+
+// FIXME: ALlow multiple list of cases to be loaded
+d3.text('index.txt', list_of_cases_loaded);
+</script>
+</body>
+</html>

@@ -14,3 +14,4 @@ end
 writer = WriteCostAndEmissionsData.new
 writer.file_names = ARGV
 writer.data_directory = File.join($this_directory, 'example')
+writer.run

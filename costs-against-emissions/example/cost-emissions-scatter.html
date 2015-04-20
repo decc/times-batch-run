@@ -509,7 +509,7 @@ function list_of_cases_loaded(new_list_of_cases) {
 		return true;
 	});
 	list_of_cases.forEach(function(case_name) {
-		d3.json('data/'+case_name+".json", case_loaded);
+		d3.json(''+case_name+".json", case_loaded);
 	})
 }
 
@@ -517,7 +517,7 @@ d3.select("#zoom_y").on('click', function() { chart.max_y_to_show(12); draw(); d
 d3.select("#autoscale_y").on('click', function() { chart.max_y_to_show(undefined); draw(); d3.event.preventDefault(); });
 
 // FIXME: ALlow multiple list of cases to be loaded
-d3.text('data/index.txt', list_of_cases_loaded);
+d3.text('index.txt', list_of_cases_loaded);
 
 </script>
 </body>

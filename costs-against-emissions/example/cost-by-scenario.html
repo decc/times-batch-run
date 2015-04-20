@@ -261,12 +261,12 @@ function list_of_cases_loaded(new_list_of_cases) {
 		return true;
 	});
 	list_of_cases.forEach(function(case_name) {
-		d3.json('data/'+case_name+".json", case_loaded);
+		d3.json(''+case_name+".json", case_loaded);
 	})
 }
 
 // FIXME: Refactor into a shared class
-d3.text('data/index.txt', list_of_cases_loaded);
+d3.text('index.txt', list_of_cases_loaded);
 </script>
 </body>
 </html>
