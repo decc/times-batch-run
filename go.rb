@@ -3,6 +3,7 @@ require 'fileutils'
 
 GAMS_WORKING_FOLDER =  "GAMS_WrkTIMES"
 MONTE_CARLO_FILE = "possible_scenarios.tsv"
+RESULTS_FOLDER = "results"
 LIST_OF_CASES_FILE = "cases.tsv"
 NUMBER_OF_CASES_TO_MONTECARLO = 200
 RUN_FILE_TEMPLATE =  File.join(File.dirname(__FILE__),'run-file-template.erb')
@@ -138,7 +139,6 @@ unless File.exist?(times_2_veda)
   exit
 end
 
-
 number_per_thread = (NUMBER_OF_CASES_TO_MONTECARLO/NUMBER_OF_THREADS).ceil # Ceil in case not precisely divisable
 
 threads = Array.new(NUMBER_OF_THREADS).map.with_index do |_,thread_number|
@@ -174,3 +174,16 @@ threads = Array.new(NUMBER_OF_THREADS).map.with_index do |_,thread_number|
 end
 
 threads.each(&:join)
+
+# Now we are ready to write some results
+unless File.exist?(RESULTS_FOLDER)
+  puts "Creating a results folder: #{File.expand_path(RESULTS_FOLDER)}"
+  Pathname.new(RESULTS_FOLDER).mkpath
+end
+
+require_relative 'costs-against-emissions/lib/write_cost_and_emissions_data'
+
+writer = WriteCostAndEmissionsData.new
+writer.file_names = [LIST_OF_CASES_FILE].concat(Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")])
+writer.data_directory = RESULTS_FOLDER
+writer.run

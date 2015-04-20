@@ -1,3 +1,8 @@
+2015-04-20
+
+* Merge in the scatter plot output code
+* go.rb now produces output code
+
 2015-04-17
 
 * Added go.rb that will work through the whole process, including running multi-threaded
