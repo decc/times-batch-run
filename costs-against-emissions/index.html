@@ -1,0 +1,524 @@
+<html>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta charset='utf-8'>
+<script src='javascript/d3.min.js'></script>
+<title>Total cost compared with Carbon Budget emissions in UK TIMES</title>
+<style>
+body {
+  font: 10px sans-serif;
+}
+
+div {
+  margin: 0;
+  padding: 0;
+}
+
+div#chart {
+  width: 80%;
+}
+
+div#filter {
+  float: right;
+  width: 20%;
+  padding-top: 20px;
+}
+
+table#filter_table {
+  font: 10px sans-serif;
+  width: 100%;
+}
+
+table#filter_table th {
+  text-align: left;
+}
+
+tr.scenario {
+  cursor: pointer;
+}
+
+tr.not_included {
+  opacity: 0.1;
+}
+
+#title {
+  width: 100%;
+  font-size: 16px;
+  height: 30px;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+circle {
+  stroke-width: 0px;
+}
+
+.selected circle, circle.selected {
+  fill: black;
+  fill-opacity: 1.0;
+}
+
+tr.selected td {
+  color: black;
+}
+
+.blue {
+  fill-opacity: 0.5;
+  fill: steelblue;
+  color: steelblue;
+}
+
+.red {
+  stroke: red;
+  fill-opacity: 0.5;
+  fill: red;
+  color: red;
+}
+
+.yellow {
+  stroke: yellow;
+  fill-opacity: 0.5;
+  fill: yellow;
+  color: yellow;
+}
+
+.faint {
+  fill-opacity: 0.05;
+  fill: grey;
+  color: lightgrey;
+}
+
+line.show_crosshairs {
+  stroke-width: 1px;
+  stroke: black;
+}
+
+text#x_value_of_case, text#y_value_of_case, text#name_of_case {
+  stroke: none;
+  fill: none;
+}
+
+text#x_value_of_case.show_crosshairs, text#y_value_of_case.show_crosshairs, text#name_of_case.show_crosshairs {
+  fill: black;
+}
+
+
+</style>
+<body>
+<h1 id='title'></h1>
+<div id='filter'>
+  <table id='filter_table'>
+    <tr><th>Scenario</th><th>Colour</th></tr>
+  </table>
+</div>
+<div id='chart'>
+</div>
+<div id='controls'>
+  Controls: <a href='#' id='zoom_y'>zoom y axis</a>&nbsp;<a href='#' id='autoscale_y'>Return y axis to normal height</a>
+</div>
+
+<script>
+/**
+Data expected in this form:
+[
+  { name: "case name",
+    cost: 10, # Cost in £trn
+    scenarios: ["no_nuc", ... other scenarios ..], # The scenarios used in this case
+    ghg: {
+      "2010": 640, // Emissions in MtCO2e
+      "2011": 642
+      .. other years ..
+    }
+  },
+  .. other cases ..
+]
+**/
+var list_of_cases = [];
+var data = [];
+var scenarios = d3.map();
+var classes_to_apply_for_scenarios = ["blue", "red", "yellow", "faint"];
+
+function scatterchart() {
+
+  var year_to_display = '2030'
+
+  var margin = {top: 20, right: 50, bottom: 50, left: 50},
+      width = 1000;
+      height = 500;
+
+  var max_y_to_show = undefined;
+
+  var x = d3.scale.linear();
+
+  var y = d3.scale.linear();
+
+  var xAxis = d3.svg.axis()
+    .tickFormat(d3.format("0f"))
+    .scale(x)
+    .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+  var cross_hair_label_format = d3.format(".1f");
+
+  // Returns the Carbon Budget that a particular year is in
+  function carbon_budget_number(year) {
+    return Math.floor((year-2008)/5)+1;
+  }
+
+  function chart(selection) {
+    selection.each(function(data) {
+        if(data == undefined) { return; }
+        var svg, new_svg,  cases, new_cases;
+
+        svg = d3.select(this).selectAll("svg").data([data]);
+
+        // Create any new chart areas
+        new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
+
+        new_svg.append("g").attr("class", "cases");
+        new_svg.append("g").attr("class", "x axis");
+        new_svg.append("g").attr("class", "y axis");
+        new_svg.append("text")
+          .attr('y', -7)
+          .attr('x', -20)
+          .attr("class", "y_axis_label")
+          .text("Total Cost £trn (2010-2050, discounted)")
+        new_svg.append("text")
+          .attr("text-anchor", "middle")
+          .attr("class", "x_axis_label");
+
+        new_svg.append("line").attr("id","line_to_y_axis");
+        new_svg.append("line").attr("id","line_to_x_axis");
+        new_svg.append("text").attr("id","x_value_of_case");
+        new_svg.append("text").attr("id","y_value_of_case");
+        new_svg.append("text").attr("id","name_of_case");
+        
+        // Update the outer dimensions.
+        svg.attr("width", width)
+          .attr("height", height);
+
+        // Update the inner dimensions.
+        g = svg.select("g.canvas")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Update the y-axis
+        if(max_y_to_show == undefined) {
+          y
+            .domain([0, d3.max(data, function(d) { return d.cost; })])
+            .range([height - margin.top - margin.bottom, 0])
+            .nice();
+        } else {
+          y
+            .domain([0, max_y_to_show])
+            .range([height - margin.top - margin.bottom, 0])
+            .nice();
+        }
+
+        svg.select(".y.axis")
+          .call(yAxis);
+
+        // Update the x-axis 
+        x
+          .domain(d3.extent(data, function(d) { return d.ghg[year_to_display]*5 }))
+          .range([0, width - margin.left - margin.right])
+          .nice();
+
+        svg.select(".x.axis")
+          .attr("transform", "translate(0," + y.range()[0] + ")")
+          .call(xAxis);
+
+        svg.select(".x_axis_label")
+          .attr("transform", "translate(0," + (y.range()[0]+30) + ")")
+          .attr("x", d3.mean(x.range()))
+          .text("Level of Carbon Budget "+carbon_budget_number(year_to_display)+" (MtCO2e in "+year_to_display+"x5)");
+
+        // Update the title
+        // FIXME: Shouldn't really be done in this routine
+        d3.select("h1#title").text("Level of Carbon Budget "+carbon_budget_number(year_to_display)+" against cost");
+
+        // Update the cases
+        cases = g.select(".cases").selectAll("g.case")
+          .data(Object, function(d) { return d.name; });
+
+        new_cases = cases.enter()
+          .append("g")
+          .attr("class", "case");
+
+        new_cases.append("circle")
+            .attr("r", 5)
+            .attr("id", function(d) { return d.name })
+            .attr("class", function(d) { return "case "+d.scenarios.map(function(s) { return "s"+s; }).join(" ") }); // Prepend s, becausee some scenarios start with a number, which isn't valid as a css class name
+
+        cases.selectAll("circle")
+          .attr("cx", function(d) { return x(d.ghg[year_to_display]*5); }) // Multiply by 5 for Carbon Budget
+          .attr("cy", function(d) { return y(d.cost); });
+
+    });
+  };
+
+  chart.year_to_display = function(_) {
+    if (!arguments.length) return year_to_display;
+    year_to_display = _;
+    return chart;
+  }
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  }
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  }
+
+  chart.max_y_to_show = function(_) {
+    if (!arguments.length) return max_y_to_show;
+    max_y_to_show = _;
+    return chart;
+  }
+
+
+  chart.update_crosshairs = function(target) {
+    // Draw the lines to each axis
+    d3.select("#line_to_y_axis")
+      .classed("show_crosshairs", true)
+      .attr("x1", x.range()[0])
+      .attr("y1", y(target.cost))
+      .attr("x2", x(target.ghg[year_to_display]*5)-3)
+      .attr("y2", y(target.cost));
+
+    d3.select("#line_to_x_axis")
+      .classed("show_crosshairs", true)
+      .attr("x1", x(target.ghg[year_to_display]*5))
+      .attr("y1", y(target.cost)+3)
+      .attr("x2", x(target.ghg[year_to_display]*5))
+      .attr("y2", y.range()[0]);
+
+    d3.select("#x_value_of_case")
+      .classed("show_crosshairs", true)
+      .attr("x", x(target.ghg[year_to_display]*5))
+      .attr("y", y.range()[0]-2)
+      .text(cross_hair_label_format(target.ghg[year_to_display]*5));
+
+    d3.select("#y_value_of_case")
+      .classed("show_crosshairs", true)
+      .attr("x", x.range()[0]+2)
+      .attr("y", y(target.cost)-2)
+      .text(cross_hair_label_format(target.cost));
+
+    d3.select("#name_of_case")
+      .classed("show_crosshairs", true)
+      .attr("x", x(target.ghg[year_to_display]*5)+5)
+      .attr("y", y(target.cost)-5)
+      .text(target.name);
+
+    return chart;
+  }
+
+  chart.hide_crosshairs = function(targt) {
+    d3.selectAll(".show_crosshairs").classed("show_crosshairs", false);
+    return chart;
+  }
+
+  return chart; 
+}
+
+var chart = scatterchart();
+
+function draw() {
+  
+  // Get the window width and height
+  var width = d3.select("body").node().clientWidth;
+  var height = d3.select("body").node().clientHeight;
+
+  // Set the chart size
+  chart.width(width * 0.8);
+  chart.height(height - 30);
+
+  // Now add the chart to the screen
+  instcap = d3.select("body").selectAll('#chart')
+    .data([data])
+    .call(chart);
+
+  updateScenarioColours();
+};
+
+// Update the scenario colours
+function updateScenarioColours() {
+  var i, selection_with_scenario;
+  scenarios.forEach(function(scenario, index_of_class) {
+    d3.selectAll("tr#s"+scenario).classed(classes_to_apply_for_scenarios[index_of_class], true);
+    selection_with_scenario = d3.selectAll(".s"+scenario);
+
+    // This ensures that faint trumps yellow which trumps red which trumps blue
+    for(i=0; i<index_of_class; i++) {
+      selection_with_scenario.classed(classes_to_apply_for_scenarios[i], false);
+    }
+
+    // This sets the final colour
+    selection_with_scenario.classed(classes_to_apply_for_scenarios[index_of_class], true);
+  });
+};
+
+// This gets all the scenarios used in the cases
+// And then draws the filter table
+function setupScenarios() {
+  var scenario_rows, new_scenario_row;
+  var cases_by_scenario = d3.map();
+  var cases_for_scenario; 
+
+  // Load up the scenarios map with every case in that scenario
+  data.forEach(function(d) {
+    d.scenarios.forEach(function(s) {
+      cases_for_scenario = cases_by_scenario.get(s) || []; // Existing cases for scenario, or create a new array
+      cases_for_scenario.push(d);
+      cases_by_scenario.set(s, cases_for_scenario);
+    });
+  });
+
+  // Then remove all the scenarios which are the same in every case
+  // And add interesting data to the others
+  cases_by_scenario.forEach(function(scenario, list_of_cases) {
+    if(list_of_cases.length == data.length) {
+        cases_by_scenario.remove(scenario);
+      } else {
+        scenarios.set(scenario, 0);
+      }
+  });
+
+  scenario_rows = d3.select("table#filter_table").selectAll("tr.scenario")
+    .data(scenarios.entries());
+
+  new_scenario_row = scenario_rows.enter()
+    .append("tr")
+    .attr("class", "scenario")
+    .attr("id", function(d) { return "s"+d.key; }); // Prepend s because some scenarios start with numbers, which isn't valid as an html id
+
+  new_scenario_row
+    .append("td")
+    .attr("class", "name");
+
+  new_scenario_row
+    .append("td")
+    .attr("class", "colour");
+
+  scenario_rows.select("td.name")
+    .text(function(d) { return d.key; });
+
+  scenario_rows.select("td.colour")
+    .text(function(d) { return classes_to_apply_for_scenarios[d.value]; });
+
+  scenario_rows.on("click", function(d) {
+    // Remove the old colourings
+    d3.selectAll(".s"+d.key).classed(classes_to_apply_for_scenarios[d.value], false);
+    d3.select(this).classed(classes_to_apply_for_scenarios[d.value], false);
+    
+    d3.select(this).classed("selected", false); 
+    d3.selectAll("circle.case").classed("selected", false);
+
+    // Choose the next colour in the sequence
+    d.value = d.value + 1;
+    if(d.value >= classes_to_apply_for_scenarios.length) {
+      d.value = 0;
+    }
+
+    // Update the list of scenarios
+    scenarios.set(d.key, d.value);
+
+    // Update the text
+    d3.select(this).select("td.colour").text(classes_to_apply_for_scenarios[d.value]);
+    // Update the colours
+    updateScenarioColours();
+  });
+
+  // This highlights all cases that have the scenario
+  // if the user hovers over a scenario in the filter table
+  scenario_rows.on("mouseover", function(d) { 
+    d3.select(this).select("td.colour").text("black");
+    d3.select(this).classed("selected", true); 
+    d3.selectAll("circle.case").classed("selected", false);
+    d3.selectAll("circle.s"+d.key).classed("selected", true);
+  });
+
+  scenario_rows.on("mouseout", function(d) { 
+    d3.select(this).classed("selected", false); 
+    d3.select(this).select("td.colour").text(classes_to_apply_for_scenarios[d.value]);
+    d3.selectAll("circle.case").classed("selected", false);
+  });
+}
+
+// This displays information when the user hovers over a
+// particular case
+function setupCaseInformation() {
+  var scenario_rows = d3.selectAll("tr.scenario");
+
+  d3.selectAll("g.case").on("mouseover", function(selected_case) {
+    // Highlight this case
+    d3.select(this).classed("selected", true);
+
+    // Adjust the filter table to hide scenarios not in this case
+    scenario_rows.classed("not_included", function(scenario_row) {
+      if(selected_case.scenarios.indexOf(scenario_row.key) == -1) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    chart.update_crosshairs(selected_case);
+
+  });
+
+  d3.selectAll("g.case").on("mouseout", function() {
+    d3.select(".selected").classed("selected", false);
+    scenario_rows.classed("not_included", false);
+    chart.hide_crosshairs();
+  });
+
+};
+
+function all_cases_loaded() {
+    setupScenarios();
+    draw();
+    setupCaseInformation();
+};
+
+function case_loaded(individual_case) {
+	data.push(individual_case);
+	if(data.length == list_of_cases.length) {
+		all_cases_loaded();
+	}
+}
+
+function list_of_cases_loaded(new_list_of_cases) {
+	list_of_cases = new_list_of_cases.split(/[\r\n]+/).filter(function(case_name) {
+		if(case_name.length == 0) return false;
+		if(case_name[0] == "#") return false;
+		return true;
+	});
+	list_of_cases.forEach(function(case_name) {
+		d3.json('data/'+case_name+".json", case_loaded);
+	})
+}
+
+d3.select("#zoom_y").on('click', function() { chart.max_y_to_show(12); draw(); d3.event.preventDefault(); });
+d3.select("#autoscale_y").on('click', function() { chart.max_y_to_show(undefined); draw(); d3.event.preventDefault(); });
+
+// FIXME: ALlow multiple list of cases to be loaded
+d3.text('data/index.txt', list_of_cases_loaded);
+
+</script>
+</body>
+</html>

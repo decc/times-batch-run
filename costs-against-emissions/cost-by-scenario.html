@@ -1,0 +1,272 @@
+<html>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta charset='utf-8'>
+<script src='javascript/d3.min.js'></script>
+<title>Variation in total cost with scenario from UK TIMES</title>
+<style>
+body {
+  font: 10px sans-serif;
+}
+
+div {
+  margin: 0;
+  padding: 0;
+}
+
+#title {
+  width: 100%;
+  font-size: 16px;
+  height: 30px;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+rect {
+  fill: steelblue;
+  fill-opacity: 0.1;
+}
+
+rect.hover {
+  fill: yellow;
+  fill-opacity: 1;
+}
+
+</style>
+<body>
+<h1 id='title'>Variation in total cost with scenario from UK TIMES</h1>
+<div id='chart'>
+</div>
+<script>
+/**
+Data expected in this form:
+[
+  { name: "case name",
+    cost: 10, # Cost in £trn
+    scenarios: ["no_nuc", ... other scenarios ..], # The scenarios used in this case
+    ghg: {
+      "2010": 640, // Emissions in MtCO2e
+      "2011": 642
+      .. other years ..
+    }
+  },
+  .. other cases ..
+]
+**/
+var data = [];
+var sorted_scenarios = undefined;
+
+function ordinal_x_scatter_y_chart() {
+
+  var margin = {top: 20, right: 50, bottom: 250, left: 50},
+      width = 1000;
+      height = 500;
+
+  var x = d3.scale.ordinal();
+
+  var y = d3.scale.linear();
+
+  var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+  function chart(selection) {
+    selection.each(function(data) {
+        if(data == undefined) { return; }
+        var svg, canvas, new_svg, scenarios, new_scenarios, cases, new_cases;
+
+        svg = d3.select(this).selectAll("svg").data([data]);
+
+        // Create any new chart areas
+        new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
+
+        new_svg.append("g").attr("class", "cases");
+        new_svg.append("g").attr("class", "x axis");
+        new_svg.append("g").attr("class", "y axis");
+        new_svg.append("text")
+          .attr('y', -7)
+          .attr('x', -20)
+          .attr("class", "y_axis_label")
+          .text("Total Cost £trn (2010-2050, discounted)")
+        new_svg.append("text")
+          .attr("text-anchor", "middle")
+          .attr("class", "x_axis_label")
+          .text("Scenarios");
+        
+        // Update the outer dimensions.
+        svg.attr("width", width)
+          .attr("height", height);
+
+        // Update the inner dimensions.
+        canvas = svg.select("g.canvas")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Update the y-axis
+        y
+          .domain([0, d3.max(data, function(d) { return d.value.max; })])
+          .range([height - margin.top - margin.bottom, 0])
+          .nice();
+
+        svg.select(".y.axis")
+          .call(yAxis);
+
+        // Update the x-axis 
+        x
+          .domain(data.map(function(d) { return d.key; }))
+          .rangeRoundBands([0, width - margin.left - margin.right]);
+
+        svg.select(".x.axis")
+          .attr("transform", "translate(0," + y.range()[0] + ")")
+          .call(xAxis)
+          .selectAll("text")
+            .attr("y", 0)
+            .attr("x", 9)
+            .attr("dy", ".35em")
+            .attr("transform", "rotate(90)")
+            .style("text-anchor", "start");
+
+        svg.select(".x_axis_label")
+          .attr("transform", "translate(0," + (y.range()[0]+margin.bottom) + ")")
+          .attr("x", d3.mean(x.range()));
+
+        // Now we loop through each scenario, adding a group at the right x position
+        scenarios = canvas.selectAll("g.scenario")
+                          .data(Object, function(d) { return d.key; });
+
+        new_scenarios = scenarios.enter().append("g")
+                          .attr("id", function(d) { return d.key; })
+                          .attr("class", "scenario");
+
+        scenarios
+          .attr("transform", function(d) { return "translate(" + x(d.key) + ",0)"; });
+
+        scenarios.exit().remove();
+
+        // And within each scenario we draw a rect for each case
+        cases = scenarios.selectAll("rect.case")
+                            .data(function(d) { return d.value; }, function(d) { return d.name; });
+
+        new_cases = cases.enter().append("rect")
+                      .attr("class", function(d) { return "scenario "+d.name; });
+
+        new_cases.on("mouseover", function(d) { 
+          canvas.selectAll(".hover").classed("hover", false);
+          canvas.selectAll("."+d.name).classed("hover", true);
+        });
+
+        new_cases.on("mouseout", function(d) { 
+          canvas.selectAll(".hover").classed("hover", false);
+        });
+
+        cases
+          .attr("height", 10)
+          .attr("width", x.rangeBand())
+          .attr("x", 0) // Because the x position is set by the scenario group
+          .attr("y", function(d) { return y(d.cost); });
+
+        cases.exit().remove();
+
+    });
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  }
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  }
+
+  return chart; 
+}
+
+var chart = ordinal_x_scatter_y_chart();
+
+function draw() {
+  
+  // Get the window width and height
+  var width = d3.select("body").node().clientWidth;
+  var height = d3.select("body").node().clientHeight;
+
+  // Set the chart size
+  chart.width(width);
+  chart.height(height - 30);
+
+  // Now add the chart to the screen
+  instcap = d3.select("body").selectAll('#chart')
+    .data([sorted_scenarios])
+    .call(chart);
+};
+
+function reformatData() {
+  var scenarios = d3.map();
+  var cases_for_scenario; 
+
+  // Load up the scenarios map with every case in that scenario
+  data.forEach(function(d) {
+    d.scenarios.forEach(function(s) {
+      cases_for_scenario = scenarios.get(s) || []; // Existing cases for scenario, or create a new array
+      cases_for_scenario.push(d);
+      scenarios.set(s, cases_for_scenario);
+    });
+  });
+  // Then remove all the scenarios which are the same in every case
+  // And add interesting data to the others
+  scenarios.forEach(function(scenario, list_of_cases) {
+    if(list_of_cases.length == data.length) {
+      scenarios.remove(scenario);
+    } else {
+      // Sort the list of cases into ascending order of cost (useful for quartiles)
+      list_of_cases.sort(function(a,b) { return a.cost - b.cost; });
+      list_of_cases.min = list_of_cases[0].cost; 
+      list_of_cases.max = list_of_cases[list_of_cases.length-1].cost;
+      list_of_cases.mean = d3.mean(list_of_cases, function(d) { return d.cost; });
+      list_of_cases.median = d3.median(list_of_cases, function(d) { return d.cost; });
+    }
+  });
+
+  sorted_scenarios = scenarios.entries().sort(function(a,b) { return b.value.median - a.value.median; }); // Descending order
+}
+
+function all_cases_loaded() {
+    reformatData();
+    draw();
+};
+
+function case_loaded(individual_case) {
+	data.push(individual_case);
+	if(data.length == list_of_cases.length) {
+		all_cases_loaded();
+	}
+}
+
+function list_of_cases_loaded(new_list_of_cases) {
+	list_of_cases = new_list_of_cases.split(/[\r\n]+/).filter(function(case_name) {
+		if(case_name.length == 0) return false;
+		if(case_name[0] == "#") return false;
+		return true;
+	});
+	list_of_cases.forEach(function(case_name) {
+		d3.json('data/'+case_name+".json", case_loaded);
+	})
+}
+
+// FIXME: Refactor into a shared class
+d3.text('data/index.txt', list_of_cases_loaded);
+</script>
+</body>
+</html>
