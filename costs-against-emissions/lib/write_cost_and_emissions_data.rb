@@ -1,5 +1,6 @@
 require_relative 'extract_overall_cost_and_emissions'
 require 'fileutils'
+require 'pathname'
 require 'json'
 
 class WriteCostAndEmissionsData
@@ -64,7 +65,8 @@ class WriteCostAndEmissionsData
     data.each do |d|
       case_name = d[:name]
       list_of_cases.push(case_name)
-      File.open(File.join(data_directory, "#{case_name}.json"), 'w') do |f|
+      Pathname.new(File.join(data_directory, case_name)).mkpath
+      File.open(File.join(data_directory, case_name, "costs-and-emissions-overview.json"), 'w') do |f|
         f.puts d.to_json
       end
     end  

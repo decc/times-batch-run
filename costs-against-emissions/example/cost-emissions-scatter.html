@@ -509,7 +509,7 @@ function list_of_cases_loaded(new_list_of_cases) {
 		return true;
 	});
 	list_of_cases.forEach(function(case_name) {
-		d3.json(''+case_name+".json", case_loaded);
+		d3.json(''+case_name+"/costs-and-emissions-overview.json", case_loaded);
 	})
 }
 

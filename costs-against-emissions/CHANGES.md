@@ -1,6 +1,6 @@
 # 2015-04-20
 
-* Refactored so that draws data about individual cases stored in individual files
+* Refactored so that draws data about individual cases stored in individual files in individual folders
 * Refactored update-data.rb to allow any number of tsv files to be referenced
 * Renamed index.html to cost-emissions-scatter.html
 * Refactored update-data.rb into a class with the potential to set a target directoy
