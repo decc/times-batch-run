@@ -1,11 +1,8 @@
-# WARNING
-
-This set of files are no longer in use. They have been merged into the uk-times-batch-run code
-
 # 2015-04-20
 
 * Refactored so that draws data about individual cases stored in individual files
 * Refactored update-data.rb to allow any number of tsv files to be referenced
+* Renamed index.html to cost-emissions-scatter.html
 
 # 2015-04-17
 
