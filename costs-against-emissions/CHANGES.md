@@ -4,6 +4,7 @@
 * Refactored update-data.rb to allow any number of tsv files to be referenced
 * Renamed index.html to cost-emissions-scatter.html
 * Refactored update-data.rb into a class with the potential to set a target directoy
+* update-data.rb now copies the output html and javascript into the target directory
 
 # 2015-04-17
 

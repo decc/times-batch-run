@@ -25,11 +25,10 @@ The rough steps are:
 4. Check the box 'Create DD only'
 5. Click Solve and wait
 
-### Part 2, generate all the case files
+### Part 2, generate all the case files and results
 
 1. Edit possible_scenarios.tsv in Excel and save as a tsv file, the instructions in that tsv file should help
-2. Run create-list-of-cases.rb to turn that list of possible scenarios into 100 randomly generated cases
-3. Run create-run-files.rb to turn that list of cases into a series of RUN files that GAMS can execute
+2. Run `ruby go.rb`
 
 ### Part 3, actually run the cases
 
