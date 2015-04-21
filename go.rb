@@ -141,7 +141,7 @@ end
 
 number_per_thread = (NUMBER_OF_CASES_TO_MONTECARLO/NUMBER_OF_THREADS).ceil # Ceil in case not precisely divisable
 
-threads = Array.new(NUMBER_OF_THREADS).map.with_index do |_,thread_number|
+threads = Array.new([NUMBER_OF_THREADS,NUMBER_OF_CASES_TO_MONTECARLO].min).map.with_index do |_,thread_number|
   Thread.new do
     start_number = (thread_number * number_per_thread)+1
     end_number = start_number + number_per_thread
