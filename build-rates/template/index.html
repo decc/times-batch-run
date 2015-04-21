@@ -1,0 +1,362 @@
+<html>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta charset='utf-8'>
+<script src='javascript/d3.min.js'></script>
+<title>Investment profiles in UK TIMES</title>
+<style>
+body {
+  font: 10px sans-serif;
+}
+
+.process_name {
+  float: left;
+  width: 100px;
+}
+
+.title {
+  font-weight: bold;
+  display: inline-block;
+  text-align: center;
+  width: 400px;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+path.scenario {
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.no_highlight path {
+  stroke: grey;
+  stroke-opacity: 0.1;
+}
+
+.no_highlight circle {
+  fill: grey;
+  fill-opacity: 0.1;
+}
+
+.highlight path {
+  stroke: black;
+}
+
+.highlight circle {
+  fill: black;
+}
+
+text.highlight {
+  fill: black;
+}
+
+text.no_highlight {
+  fill: grey;
+  fill-opacity: 0.1;
+}
+
+div.instcap, div.lumpinv, div.costperunit {
+  float:left;
+}
+
+div.process {
+  clear: both;
+}
+
+</style>
+<body>
+<h1>Investment profiles in UK TIMES</h1>
+<div id='charts'>
+  <div class='process_name'>&nbsp;</div>
+  <div class='title'>Number of units each year</div>
+  <div class='title'>&times; Cost per unit</div>
+  <div class='title'>= Total investment required each year</div>
+</div>
+<script>
+/**
+Data expected in this form:
+[
+  {:p=>"INMCHPBIOS01", # Process name
+      :max_values => { # So the vertical axis can be scaled correctly
+        INSTCAP: 55.255771894739,
+        COSTPERUNIT: 7835.704648443666,
+        LUMPINV: 432967.908688949},
+        :INSTCAP=> [  # Attribute name
+          { 
+            name: "ScenarioA",  # Scenario name
+            data: [
+              {:allyear=>2011, :val=>0.0192265075195272}, # Year and value
+              {:allyear=>2012, :val=>0.0206284009137791},
+              {:allyear=>2015, :val=>0.0694599530642079},
+              {:allyear=>2020, :val=>0.068806195031932}
+            ]
+          },
+          ... Next Scenario ...
+        ],
+        ... Next Attribute ...
+    }, 
+    ... Next process ..
+]
+
+
+**/
+var data = undefined;
+
+function linechart() {
+
+  var margin = {top: 20, right: 75, bottom: 30, left: 50},
+      width = 430;
+      height = 200;
+
+  var x = d3.scale.linear()
+    .domain([2010, 2060])
+    .range([0, width - margin.left - margin.right]);
+
+  var autoscale = true;
+
+  var y = d3.scale.linear()
+    .domain([0,80e3])
+    .range([height - margin.top - margin.bottom, 0]);
+
+  var xAxis = d3.svg.axis()
+    .tickFormat(d3.format("0f"))
+    .scale(x)
+    .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+  var scenario_colors = d3.scale.category10();
+
+  var line = d3.svg.line()
+    .x(function(d) { return x(d.allyear); })
+    .y(function(d) { return y(d.val); });
+
+  // Don't let scenario labels get any closer than this (in pixels)
+  var minimum_space_between_labels = 18;
+
+  // This makes sure that labels don't overlap by
+  // checking that they are at least minimum_space_between_labels
+  // apart and, if not, shuffling them up and down.
+  function ensure_labels_are_far_enough_apart(labels) {
+    var i, label_position_changed, lower_label, label, y_difference;
+    // CHECK: Does resorting ruin the data binding in d3?
+    labels.sort(function(a,b) { return a.label_y - b.label_y; }); // Need to be in ascending order
+    do {
+      label_position_changed = false;
+      labels.each(function(label, i) {
+        if(i == 0) {
+          lower_label = label;
+        } else {
+          y_difference = label.label_y - lower_label.label_y;
+          // If labels are overlaping, nudge them apart by 2 pixels then loop again
+          if(y_difference >= 0 && y_difference < minimum_space_between_labels) {
+            lower_label.label_y = lower_label.label_y - 1;
+            label.label_y = label.label_y + 1;
+            label_position_changed = true;
+          }
+          lower_label = label;
+        }
+      });
+    } while(label_position_changed);
+
+  }
+
+  function chart(selection) {
+    selection.each(function(data) {
+        if(data == undefined) { return; }
+        var svg, new_svg, g, scenarios, unit, scenario_labels, markers;
+
+        svg = d3.select(this).selectAll("svg").data([data]);
+
+        // Create any new chart areas
+        new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
+        new_svg.append("g").attr("class", "scenarios");
+        new_svg.append("g").attr("class", "x axis");
+        new_svg.append("g").attr("class", "y axis");
+        new_svg.append("text")
+          .attr('text-anchor', "end")
+          .attr('y', -7)
+          .attr("class", "y_axis_label");
+        
+        // Update the outer dimensions.
+        svg.attr("width", width)
+          .attr("height", height);
+
+        // Update the inner dimensions.
+        g = svg.select("g.canvas")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Update the x-axis 
+        svg.select(".x.axis")
+          .attr("transform", "translate(0," + y.range()[0] + ")")
+          .call(xAxis);
+
+        // Update the y-axis 
+        if(autoscale) {
+          y
+            .domain([0, d3.max(data, function(d) { return d.max; })])
+            .nice();
+        }
+
+        svg.select(".y.axis")
+          .call(yAxis);
+
+        // Update the unit
+        if(data[0] != undefined && data[0].unit != undefined) {
+          unit = data[0].unit;
+        } else {
+          unit = "Unknown unit";
+        }
+        svg.select(".y_axis_label").text(unit);
+
+        // Update the scenarios
+        scenarios = g.select(".scenarios").selectAll("g.scenario")
+          .data(Object, function(d) { return d.name; });
+
+        scenarios.enter()
+          .append("g")
+            .attr("class", function(d) { return "scenario "+d.name })
+          .append("path")
+            .attr("class", function(d) { return "scenario "+d.name })
+            .attr("stroke", function(d) { return scenario_colors(d.name); });
+
+        scenarios.exit().remove()
+
+        scenarios.select("path")
+          .attr("d", function(d) { return line(d.data); });
+
+        // Update the line markers
+        markers = scenarios.selectAll("circle")
+          .data(function(d) { return d.data; });
+
+        markers.enter().append("circle")
+          .attr("r", 2)
+          .attr("fill", function(d) { return scenario_colors(d.name); }); // FIXME: This picks up the wrong colour!
+
+        markers.exit().remove();
+
+        markers
+          .attr("cx", function(d) { return x(d.allyear); })
+          .attr("cy", function(d) { return y(d.val); });
+
+        // Update the scenario labels
+        scenario_labels = g.select(".scenarios").selectAll("text.scenario")
+          .data(function(scenarios) { 
+              scenarios.forEach(function(d) {
+                if(d.data.length > 0) {
+                  d.label_y = y(d.data[d.data.length-1].val) // The y-position of the final data point in the scenario data (assumes this is the final year)
+                }
+                });
+              return scenarios;
+              }, 
+              function(d) { return d.name } // Make sure we always match by name
+            );
+
+        scenario_labels.enter().append("text")
+          .text(function(d) { return d.name })
+          .attr("dy", 2)
+          .attr("dx", 1)
+          .attr("class", function(d) { return "scenario "+d.name })
+          .attr("fill", function(d) { return scenario_colors(d.name); })
+          .on("mouseover", function(d) { // This does the fancy higlighting as the mouse moves over the labels
+              scenarios
+                .classed("highlight", false)
+                .classed("no_highlight", true);
+
+              scenario_labels
+                .classed("highlight", false)
+                .classed("no_highlight", true);
+
+              g.select(".scenarios").selectAll("."+d.name)
+                .classed("highlight", true)
+                .classed("no_highlight", false); })
+
+            
+          .on("mouseout", function(d) {
+              scenario_labels
+                .classed("highlight", false)
+                .classed("no_highlight", false);
+
+              scenarios
+                .classed("highlight", false)
+                .classed("no_highlight", false); });
+        
+        scenario_labels.call(ensure_labels_are_far_enough_apart);
+
+        scenario_labels
+          .attr("x", x.range()[1])
+          .attr("y", function(d) { return d.label_y; });
+
+        scenario_labels.exit().remove();
+    });
+  };
+
+  chart.autoscale = function(_) {
+    if (!arguments.length) return autoscale;
+    autoscale = _;
+    return chart;
+  }
+
+  return chart; 
+}
+
+/**
+We draw:
+  div.process#process_name
+    h2 process_name
+    svg
+    svg
+    svg
+        
+**/
+
+var chart = linechart();
+var lumpinvchart = linechart().autoscale(false);
+
+function draw() {
+  var processes, new_process;
+
+  processes = d3.select('#charts').selectAll(".process")
+    .data(data, function(d) { return d.p; }); // Map divs to name
+
+  // Add new process divs
+  new_process = processes.enter().append("div").attr("class", "process");
+
+  new_process.append("div")
+      .attr("class", "process_name")
+      .text(function(d) { return d.p; });
+  
+  new_process.append("div").attr("class", "instcap");
+  new_process.append("div").attr("class", "costperunit");
+  new_process.append("div").attr("class", "lumpinv");
+
+  // Remove old ones
+  processes.exit().remove();
+
+  // Now create the line charts
+  instcap = processes.selectAll('.instcap')
+    .data(function(d) { return [d['INSTCAP']]; })
+    .call(chart);
+
+  instcap = processes.selectAll('.costperunit')
+    .data(function(d) { return [d['COSTPERUNIT']]; })
+    .call(chart);
+
+  instcap = processes.selectAll('.lumpinv')
+    .data(function(d) { return [d['LUMPINV']]; })
+    .call(lumpinvchart);
+};
+
+
+d3.json('data.json', function(new_data) {
+    data = new_data;//.slice(0,10);
+    draw();
+});
+</script>
+</body>
+</html>

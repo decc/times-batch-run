@@ -1,5 +1,6 @@
 require_relative 'lib/extract_investment'
 require 'json'
+require 'fileutils'
 
 $this_directory = File.dirname(__FILE__)
 
@@ -19,4 +20,5 @@ extract_investment = ExtractInvestment.new(files)
 data = extract_investment.extract_new_capacity_with_cost_per_unit_sorted
 json = data.to_json
 
-File.open(File.join($this_directory, 'data.json'), 'w') { |f| f.puts json }
+File.open(File.join($this_directory, 'example', 'data.json'), 'w') { |f| f.puts json }
+FileUtils.cp_r(Dir.glob(File.join($this_directory,"template",'*')),File.join($this_directory, "example"))
