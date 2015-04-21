@@ -1,7 +1,5 @@
 require_relative './gdx'
 
-
-
 class ExtractInvestment
 
   UNITS_FILENAME = File.join(File.dirname(__FILE__),'..','UnitsForEachProcess.csv')

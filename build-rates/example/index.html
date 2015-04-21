@@ -103,8 +103,6 @@ Data expected in this form:
 
 
 **/
-var data = undefined;
-
 function linechart() {
 
   var margin = {top: 20, right: 75, bottom: 30, left: 50},
@@ -317,6 +315,8 @@ We draw:
 
 var chart = linechart();
 var lumpinvchart = linechart().autoscale(false);
+var data = [];
+var cases = [];
 
 function draw() {
   var processes, new_process;
@@ -352,11 +352,53 @@ function draw() {
     .call(lumpinvchart);
 };
 
+function mergeData() {
+	var processes = d3.map();
+	cases.forEach(function(c) {
+		c.forEach(function(p) {
+			if(processes.has(p.p)) {
+				var existing_process = processes.get(p.p);
+				['INSTCAP', 'COSTPERUNIT', 'LUMPINV'].forEach(function(a) {
+					if(existing_process[a] == undefined) {
+						existing_process[a] = [];
+					};
+					if(p[a] != undefined && p[a][0] != undefined) {
+						existing_process[a].push(p[a][0]);						
+					}
+					
+				});
+			} else {
+				processes.set(p.p, p);
+			};
+		});
+	});
+	data = processes.values();
+};
 
-d3.json('data.json', function(new_data) {
-    data = new_data;//.slice(0,10);
+function all_cases_loaded() {
+    mergeData();
     draw();
-});
+};
+
+function case_loaded(individual_case) {
+	cases.push(individual_case);
+	if(cases.length == list_of_cases.length) {
+		all_cases_loaded();
+	}
+}
+
+function list_of_cases_loaded(new_list_of_cases) {
+	list_of_cases = new_list_of_cases.split(/[\r\n]+/).filter(function(case_name) {
+		if(case_name.length == 0) return false;
+		if(case_name[0] == "#") return false;
+		return true;
+	});
+	list_of_cases.forEach(function(case_name) {
+		d3.json(''+case_name+"/build-rates.json", case_loaded);
+	})
+}
+
+d3.text('index.txt', list_of_cases_loaded);
 </script>
 </body>
 </html>
