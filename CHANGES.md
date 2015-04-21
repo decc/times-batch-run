@@ -1,3 +1,7 @@
+#2015-04-21
+
+* Merge in the investment rate output code
+
 # 2015-04-20
 
 * Merge in the scatter plot output code
