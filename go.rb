@@ -170,6 +170,7 @@ threads = Array.new([NUMBER_OF_THREADS,NUMBER_OF_CASES_TO_MONTECARLO].min).map.w
       break
       end
     end
+    exit
   end
 end
 

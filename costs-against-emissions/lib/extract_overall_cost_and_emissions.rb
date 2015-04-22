@@ -27,8 +27,8 @@ class ExtractOverallCostAndEmissions
 
   def extract_overall_cost_and_emissions_from(name, gdx)
     results = { name: name }
-	cost = gdx.symbol(:OBJZ)
-	return nil if cost.empty? # This will be the case if the GDX file doesn't have the data
+	  cost = gdx.symbol(:OBJZ)
+	  return nil if cost.empty? # This will be the case if the GDX file doesn't have the data
     results[:cost] = cost.first[:val] / 1.0e6 # Convert from £M to £trn
     results[:ghg] = ghg = {}
     results[:scenarios] = scenarios_in_case[name]
