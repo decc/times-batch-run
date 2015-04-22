@@ -148,6 +148,7 @@ threads = Array.new([NUMBER_OF_THREADS,NUMBER_OF_CASES_TO_MONTECARLO].min).map.w
 
     puts "Thread #{thread_number} doing case #{start_number} to case #{end_number}"
     i = start_number
+
     loop do
       case_name = "#{prefix}#{i}"
       puts "Looking for #{case_name}.RUN"
@@ -170,11 +171,14 @@ threads = Array.new([NUMBER_OF_THREADS,NUMBER_OF_CASES_TO_MONTECARLO].min).map.w
       break
       end
     end
-    exit
+    Thread::exit
   end
 end
 
-threads.each(&:join)
+require 'thwait'
+ThreadsWait.all_waits(*threads) do |t|
+	puts "Thread #{t} has finished"
+end
 
 # Now we are ready to write some results
 unless File.exist?(RESULTS_FOLDER)
