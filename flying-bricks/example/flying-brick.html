@@ -608,15 +608,28 @@ function case_loaded(individual_case) {
 	}
 }
 
-function list_of_cases_loaded(new_list_of_cases) {
-	if(new_list_of_cases[0] == "") {return;}
-	list_of_cases = new_list_of_cases;
+function list_of_cases_loaded() {
 	list_of_cases.forEach(function(case_name) {
 		d3.json(''+case_name+"/detailed-costs.json", case_loaded);
 	})
 }
 
-list_of_cases_loaded(window.location.hash.slice(1).split(','));
+list_of_cases = window.location.hash.slice(1).split(',');
+	
+if(list_of_cases[0] == "") {
+	d3.text('index.txt', function(index_file) {
+		list_of_cases = index_file.split(/[\r\n]+/).filter(function(case_name) {
+			if(case_name.length == 0) return false;
+			if(case_name[0] == "#") return false;
+			return true;
+		}).slice(0,4);
+		window.location = "#"+list_of_cases.join(",");
+		list_of_cases_loaded();
+	});	
+} else {
+	list_of_cases_loaded();
+}
+
 
 
   </script>
