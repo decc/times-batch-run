@@ -1,6 +1,7 @@
 #2015-04-23
 
 * Merged in the flying brick code
+* Can now specify the period to compare in the flying brick code
 
 #2015-04-21
 

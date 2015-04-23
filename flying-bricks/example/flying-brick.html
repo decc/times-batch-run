@@ -3,52 +3,52 @@
   <meta charset='utf-8'>
   <script src="javascript/d3.min.js"></script>
   <style>
-body {
-}
+  body {
+  }
 
   .axis path, .axis line {
-    fill: none;
-    stroke: #6baed6;
-    stroke-width: 1px;
-    shape-rendering: crispEdges;
+	  fill: none;
+	  stroke: #6baed6;
+	  stroke-width: 1px;
+	  shape-rendering: crispEdges;
   }
 
   .axis text {
-    fill: #6baed6;
+	  fill: #6baed6;
   }
     
   rect.brick {
-    stroke: #fff;
-    shape-rendering: crispEdges;
+	  stroke: #fff;
+	  shape-rendering: crispEdges;
   }
 
   text.ld, text.lu {
   }
 
   text.stacklabel {
-    font-weight: bold;
+	  font-weight: bold;
   }
 
   text.label {
-    font-size: 10px;
+	  font-size: 10px;
   }
 
   line.connector {
-    stroke: #000;
-    fill: none;
-    shape-rendering: crispEdges;
-    stroke-thickness: 1px;
+	  stroke: #000;
+	  fill: none;
+	  shape-rendering: crispEdges;
+	  stroke-thickness: 1px;
   }
 
   #backing rect {
-    fill: #eef;
-    fill-opacity: 0.5;
-    stroke: none;
+	  fill: #eef;
+	  fill-opacity: 0.5;
+	  stroke: none;
   }
   
   #tsv {
-    width: 97%;
-    height: 200px;
+	  width: 97%;
+	  height: 200px;
   }
 
   </style>
@@ -548,21 +548,25 @@ var add_data_point = function(d) { // Munge the data
 
 var left;
 var right;
-var left_period;
-var right_period;
+var left_period = "npv";
+var right_period = "npv";
 
 function reformat_data() {
 	combined_data = d3.map();
 	left_data = d3.map(left.processes_by_year);
 	right_data = d3.map(right.processes_by_year);
 	left_data.forEach(function(process_name, year_value_data) {
-		combined_data.set(process_name, [ process_name, year_value_data[left_period], 0]);
+    var value;
+    value = year_value_data[left_period] || 0;
+		combined_data.set(process_name, [ process_name, value, 0]);
 	});
 	right_data.forEach(function(process_name, year_value_data) {
+    var value;
+    value =  year_value_data[right_period] || 0;
 		if(combined_data.has(process_name)) {
-			combined_data.get(process_name)[2] = year_value_data[left_period];			
+			combined_data.get(process_name)[2] = value;			
 		} else {
-			combined_data.set(process_name, [ process_name, 0, year_value_data[right_period]]);
+			combined_data.set(process_name, [ process_name, 0, value ]);
 		}
 	});
 	combined_data.forEach(function(process_name, d) { add_data_point(d); });
@@ -574,8 +578,6 @@ var list_of_cases;
 function all_cases_loaded() {
 	left = cases[0];
 	right = cases[1];
-	left_period = "npv"; // "npv";
-	right_period = "npv";// "npv";
 	a_name = left.name+" "+left_period;
 	b_name = right.name+" "+right_period;
 	
@@ -614,19 +616,26 @@ function list_of_cases_loaded() {
 	})
 }
 
-list_of_cases = window.location.hash.slice(1).split(',');
+settings = window.location.hash.slice(1).split(',');
 	
-if(list_of_cases[0] == "") {
+if(settings[0] == "") {
 	d3.text('index.txt', function(index_file) {
 		list_of_cases = index_file.split(/[\r\n]+/).filter(function(case_name) {
 			if(case_name.length == 0) return false;
 			if(case_name[0] == "#") return false;
 			return true;
 		}).slice(0,4);
-		window.location = "#"+list_of_cases.join(",");
+		window.location = "#"+list_of_cases.join(",")+","+left_period+","+right_period;
 		list_of_cases_loaded();
 	});	
 } else {
+  list_of_cases = settings.slice(0,2);
+  if(settings.length == 3) {
+    left_period = right_period = settings[2];
+  } else if(settings.length == 4) {
+    left_period = settings[2];
+    right_period = settings[3];
+  }
 	list_of_cases_loaded();
 }
 
