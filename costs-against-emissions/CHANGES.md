@@ -1,3 +1,7 @@
+# 2015-04-23
+
+* Can now specify which scenarios form the basis of the comparison
+
 # 2015-04-20
 
 * Refactored so that draws data about individual cases stored in individual files in individual folders
