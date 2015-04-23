@@ -202,7 +202,7 @@ writer.data_directory = RESULTS_FOLDER
 writer.run
 
 puts "Creating flying brick charts"
-require_relative 'lib/write_detailed_costs'
+require_relative 'flying-brick/lib/write_detailed_costs'
 
 writer = WriteDetailedCosts.new
 writer.file_names = [LIST_OF_CASES_FILE].concat(Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")])
