@@ -1,3 +1,7 @@
+#2015-04-23
+
+* Can now specify which cases to load using a hash anchor e.g., :/build-rates.html#case1,case2,case3
+
 # 2015-04-21
 
 * Now writes out the data for each case into a separate file
