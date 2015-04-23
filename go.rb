@@ -201,6 +201,14 @@ writer.file_names = [LIST_OF_CASES_FILE].concat(Dir[File.join(gdx_save_folder, "
 writer.data_directory = RESULTS_FOLDER
 writer.run
 
+puts "Creating flying brick charts"
+require_relative 'lib/write_detailed_costs'
+
+writer = WriteDetailedCosts.new
+writer.file_names = [LIST_OF_CASES_FILE].concat(Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")])
+writer.data_directory = RESULTS_FOLDER
+writer.run
+
 puts "You can now view the results by running:"
 puts "ruby -run -e httpd results -p 8000"
 puts "And then opening your webbrowser at http://localhost:8000/cost-emissions-scatter.html"

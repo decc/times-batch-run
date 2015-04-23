@@ -3,8 +3,6 @@ require 'json'
 require 'fileutils'
 require 'pathname'
 
-$this_directory = File.dirname(__FILE__)
-
 class WriteBuildRates
   attr_accessor :data_directory
   attr_accessor :file_names
@@ -22,7 +20,7 @@ class WriteBuildRates
         f.puts data.to_json
       end
       File.open(File.join(data_directory, "index.txt"), 'w') { |f| f.puts list_of_cases.join("\n") }
-      FileUtils.cp_r(Dir.glob(File.join($this_directory, "template",'*')),data_directory)
+      FileUtils.cp_r(Dir.glob(File.join( File.dirname(__FILE__), '..' , "template",'*')),data_directory)
     end    
   end
 end
