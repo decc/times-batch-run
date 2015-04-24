@@ -9,7 +9,7 @@ class TestExtractDetailedCosts < MiniTest::Test
   def setup
     @extract_detailed_costs = ExtractDetailedCosts.new
     @extract_detailed_costs.scenario_name = "ScenarioA"
-    @extract_detailed_costs.gdx = Gdx.new(File.join($this_directory, 'test.gdx'))
+    @extract_detailed_costs.gdx = Gdx.new(File.join($this_directory, '..', '..', 'test', 'test.gdx'))
   end
 
   def test_detailed_costs
@@ -18,7 +18,6 @@ class TestExtractDetailedCosts < MiniTest::Test
     assert_equal("ScenarioA", actual[:name])
     assert_kind_of(Hash, actual[:processes_by_year])
     assert_equal(3.72592265795458, actual[:processes_by_year]["TFSLDST"][2010])
-    p actual[:processes_by_year]["TFSLDST"]
     assert_equal(72.8425866230033, actual[:processes_by_year]["TFSLDST"]["npv"])
   end
 

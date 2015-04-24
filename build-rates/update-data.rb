@@ -2,8 +2,8 @@ require_relative 'lib/write_build_rates'
 
 if ARGV.length == 0
   ARGV[0] = File.join(File.dirname(__FILE__), 'example')
-  ARGV[1] = File.join(File.dirname(__FILE__), 'test', 'test.gdx')
-  ARGV[2] = File.join(File.dirname(__FILE__), 'test', 'test2.gdx')
+  ARGV[1] = File.join(File.dirname(__FILE__), '..', 'test', 'test.gdx')
+  ARGV[2] = File.join(File.dirname(__FILE__), '..', 'test', 'test2.gdx')
 end
 
 write_build_rates = WriteBuildRates.new

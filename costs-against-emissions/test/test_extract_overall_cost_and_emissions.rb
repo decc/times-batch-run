@@ -6,7 +6,7 @@ $this_directory = File.dirname(__FILE__)
 class TestExtractOverallCostAndEmissions < MiniTest::Test
 
   def setup
-    @extract = ExtractOverallCostAndEmissions.new({ "caseA" => File.join($this_directory, 'test.gdx')})
+    @extract = ExtractOverallCostAndEmissions.new({ "caseA" => File.join($this_directory, '..', '..', 'test', 'test.gdx')})
   end
 
   def test_result

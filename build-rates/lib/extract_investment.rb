@@ -1,4 +1,4 @@
-require_relative './gdx'
+require_relative '../../lib/gdx'
 
 class ExtractInvestment
 

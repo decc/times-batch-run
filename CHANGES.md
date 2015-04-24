@@ -3,6 +3,7 @@
 * Merged in the flying brick code
 * Can now specify the period to compare in the flying brick code
 * Started to give go.rb some command line options
+* Consolidated the different versions of gdx.rb into one file
 
 #2015-04-21
 
