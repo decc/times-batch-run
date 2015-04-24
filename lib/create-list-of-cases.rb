@@ -1,3 +1,4 @@
+# FIXME: Array has a sample method by default!
 class Array
 
   # Given a random array

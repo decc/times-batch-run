@@ -1,3 +1,8 @@
+# 2015-04-24
+
+* Moved constraint file generators into dd-file-generators
+* Added a non traded constraint file generator
+
 #2015-04-23
 
 * Can now specify which cases to load using a hash anchor e.g., :/build-rates.html#case1,case2,case3

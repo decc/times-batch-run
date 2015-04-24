@@ -36,9 +36,14 @@ end
 
 # FIXME: Only do this if needed
 # Create the emissions constraint files
-require_relative 'create-emissions-constraint-dd-files'
-puts "Creating emissions constraint files"
+require_relative 'dd-file-generators/create-emissions-constraint-dd-files'
+puts "Creating territorial emissions constraint files"
 create_ghg_constraint_files = CreateGHGConstraintFiles.new('.')
+create_ghg_constraint_files.go!
+
+require_relative 'dd-file-generators/create-non-traded-constraints'
+puts "Creating traded/non-traded emissions constraint files"
+create_ghg_constraint_files = CreateNonTradedSectorConstraints.new('.')
 create_ghg_constraint_files.go!
 
 # Now we can create the list of cases

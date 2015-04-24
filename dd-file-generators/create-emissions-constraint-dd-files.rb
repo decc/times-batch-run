@@ -6,6 +6,8 @@
 # To use:
 # ruby create-cb5-emissions-constraint-dd-files.rb <target_directory>
 #
+# FIXME: What about CB1 and CB2?
+require 'erb'
 
 class CreateGHGConstraintFiles
 
@@ -15,31 +17,16 @@ class CreateGHGConstraintFiles
 		@target_directory = target_directory
 	end
 
+  def template
+     @template ||= ERB.new(IO.readlines(File.join(File.dirname(__FILE__), "ghg-target.dd" )).join)
+  end
+  
+  def dd_file_for_emissions(scenario_name, year_emissions)
+    template.result(binding)
+  end
+
 	def write(scenario_name, ghg)
-		# Create the dd file
-dd_file = <<-END
-$ONEMPTY
-$ONEPS
-$ONWARNING
-$SET SCENARIO_NAME '#{scenario_name}'
-SET TOP_IRE
-/
-/
-
-SET UC_N
-/
-/
-
-PARAMETER
-COM_BNDNET ' '/
-#{
-ghg.map do |year, limit|
-  "UK.#{year}.GHGTOT.ANNUAL.UP #{limit}"
-end.join("\n")
-}
-/
-END
-
+		dd_file = dd_file_for_emissions(scenario_name, ghg)
 		# Write the generated dd file to disk
 		File.open(File.join(target_directory, scenario_name+".dd"), 'w') do |f|
 			f.puts dd_file
@@ -55,8 +42,8 @@ END
 	
 	# FIXME: This is NONSENSE until we get the EU ETS / Non ETS Split working
 	def create_cb3_files
-		write "cb3-hit", { 2025 => (2544*1000/5)} # ktCO2e Source 2014 Emisssions Projections Table 2.1
-		write "cb3-beat", { 2025 => (2464*1000/5)} # ktCO2e Source 2014 Emisssions Projections Table 2.1
+		write "cb3-hit", { 2020 => (2544*1000/5)} # ktCO2e Source 2014 Emisssions Projections Table 2.1
+		write "cb3-beat", { 2020 => (2464*1000/5)} # ktCO2e Source 2014 Emisssions Projections Table 2.1
 	end
 	
 	# FIXME: This is NONSENSE until we get the EU ETS / Non ETS Split working
