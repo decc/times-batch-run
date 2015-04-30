@@ -1,3 +1,7 @@
+#2015-04-30
+
+* The generated RUN files now include a preset set of time slices. Removes an otherwise unintelligable error.
+
 #2015-04-23
 
 * Merged in the flying brick code

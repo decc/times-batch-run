@@ -41,8 +41,30 @@ $SET SOLVEDA 'YES'
 $   ONMULTI
 
 * the times-slices MUST come 1st to ensure ordering OK
-$BATINCLUDE uktm_base_ts.dd
- 
+SET ALL_TS
+/
+ ANNUAL
+ P
+ S
+ A
+ W
+ PD
+ PP
+ PE
+ PN
+ SD
+ SP
+ SE
+ SN
+ AD
+ AP
+ AE
+ AN
+ WD
+ WP
+ WE
+ WN
+/ 
 
 * perform fixed declarations
 $SET BOTIME 1970
