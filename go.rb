@@ -2,134 +2,114 @@ require 'pathname'
 require 'fileutils'
 require 'ostruct'
 require 'optparse'
+require 'thwait'
 
-# Defaults
-settings = OpenStruct.new
-settings.number_of_cases_to_montecarlo = 200
-GAMS_WORKING_FOLDER =  "GAMS_WrkTIMES"
-MONTE_CARLO_FILE = "possible_scenarios.tsv"
-RESULTS_FOLDER = "results"
-LIST_OF_CASES_FILE = "cases.tsv"
-RUN_FILE_TEMPLATE =  File.join(File.dirname(__FILE__),'run-file-template.erb')
-NUMBER_OF_THREADS = 3
-RUN_FILE_PREFIX = File.basename(LIST_OF_CASES_FILE, ".*")
-TIMES_SOURCE_FOLDER =  "GAMS_SRCTIMESV380"
-GAMS_SAVE_FOLDER =  "GamsSave"
-VT_GAMS =  "VT_GAMS.CMD"
-TIMES_2_VEDA = "times2veda.vdd"
+require_relative 'dd-file-generators/create-emissions-constraint-dd-files'
+require_relative 'dd-file-generators/create-non-traded-constraints'
+require_relative 'lib/create-list-of-cases'
+require_relative 'lib/create-run-files'
+require_relative 'lib/write_cost_and_emissions_data'
+require_relative 'lib/write_build_rates'
+require_relative 'lib/write_detailed_costs'
 
-veda_fe_folder = Pathname.getwd.parent
-prefix = RUN_FILE_PREFIX 
-times_source_folder = veda_fe_folder + TIMES_SOURCE_FOLDER
-gams_working_folder =  veda_fe_folder + GAMS_WORKING_FOLDER
-gdx_save_folder = gams_working_folder + GAMS_SAVE_FOLDER
-vt_gams = times_source_folder + VT_GAMS
-times_2_veda =times_source_folder + "times2veda.vdd"
+class BatchRun
 
-# Command line options
-OptionParser.new do |opts|
-
-  opts.on("-n", "--number-to-montecarlo N", Integer, "Generate N cases from the possible scenarios file. If zero, will leave the current set untouched.") do |number|
-    settings.number_of_cases_to_montecarlo = number
+  attr_accessor :settings
+  
+  def initialize
+    @settings = OpenStruct.new
+    set_defaults
   end
-
-  opts.on("-r", "--results-only", "Skip all the steps except for generating the results file") do
-    settings.results_only = true
+  
+  def set_defaults
+    settings.number_of_cases_to_montecarlo = 200
+    settings.gams_working_folder =  "GAMS_WrkTIMES"
+    settings.monte_carlo_file = "possible_scenarios.tsv"
+    settings.results_folder = "results"
+    settings.list_of_cases_file = "cases.tsv"
+    settings.run_file_template =  File.join(File.dirname(__FILE__),'run-file-template.erb')
+    settings.number_of_cases_to_optimize_simultaneously = 3
+    settings.run_file_prefix = File.basename(settings.list_of_cases_file, ".*")
+    settings.times_source_folder =  "GAMS_SRCTIMESV380"
+    settings.gams_save_folder =  "GamsSave"
+    settings.vt_gams =  "VT_GAMS.CMD"
+    settings.times_2_veda = "times2veda.vdd"
   end
+  
+  def run
+    check_we_are_in_the_right_spot
 
-  opts.on_tail("--version", "Show version") do
-    puts IO.readlines(File.join(File.dirname(__FILE__), "CHANGES.md")).join
-    exit
-  end
-end.parse!
+    if settings.results_only
+      write_results
+      tell_the_user_how_to_view_results
+      return
+    end
+    
+    create_scenario_files
 
-# First we check if we are in the correct spot
-unless Pathname.getwd.basename.to_s =~ /#{Regexp.escape(GAMS_WORKING_FOLDER)}/i
-  puts "This script needs to be run from within the GAMS working folder."
-  puts "This is usally C:\VEDA\VEDA_FE\GAMS_WrkTIMES"
-  exit
-end
-
-unless settings.results_only
-  # FIXME: Only do this if needed
-  # Create the emissions constraint files
-  require_relative 'dd-file-generators/create-emissions-constraint-dd-files'
-  puts "Creating territorial emissions constraint files"
-  create_ghg_constraint_files = CreateGHGConstraintFiles.new('.')
-  create_ghg_constraint_files.go!
-
-  require_relative 'dd-file-generators/create-non-traded-constraints'
-  puts "Creating traded/non-traded emissions constraint files"
-  create_ghg_constraint_files = CreateNonTradedSectorConstraints.new('.')
-  create_ghg_constraint_files.go!
-
-  # If the user has set the number of cases to generate to zero, then skip this stage
-  unless settings.number_of_cases_to_generate == 0
-    # Now we check if we have a source file for monte-carlo
-    unless File.exists?(MONTE_CARLO_FILE)
-      puts "Can't find a list of all the possible scenarios."
-      puts "I'm going to copy one here from the git repository"
-      puts FileUtils.copy(File.join(File.dirname(__FILE__),"possible_scenarios.tsv"), ".",  :verbose => true)
-      if File.exists?(MONTE_CARLO_FILE)
-        puts "Copied"
-      else
-        puts "Failed"
-        exit
-      end
+    unless settings.number_of_cases_to_generate == 0
+      check_for_monte_carlo_file_and_create_if_needed
+      create_list_of_cases_using_montecarlo
     end
 
-    # Now we can create the list of cases
-    # FIXME: Only do this if MONTE_CARLO_FILE changed
-    require_relative 'lib/create-list-of-cases'
+    create_run_files
+    check_files_needed_to_run_times_are_available
+
+    run_cases
+    write_results
+    tell_the_user_how_to_view_results
+  end
+  
+  def check_we_are_in_the_right_spot
+    return if Pathname.getwd.basename.to_s =~ /#{Regexp.escape(settings.gams_working_folder)}/i
+    puts "This script needs to be run from within the GAMS working folder."
+    puts "This is usally C:\VEDA\VEDA_FE\GAMS_WrkTIMES"
+    exit
+  end
+  
+  def create_scenario_files
+    puts "Creating territorial emissions constraint files"
+    create_ghg_constraint_files = CreateGHGConstraintFiles.new('.')
+    create_ghg_constraint_files.go!
+
+    puts "Creating traded/non-traded emissions constraint files"
+    create_ghg_constraint_files = CreateNonTradedSectorConstraints.new('.')
+    create_ghg_constraint_files.go!
+  end
+  
+  def check_for_monte_carlo_file_and_create_if_needed
+    return if File.exists?(settings.monte_carlo_file)
+    puts "Can't find a list of all the possible scenarios."
+    puts "I'm going to copy one here from the git repository"
+    puts FileUtils.copy(File.join(File.dirname(__FILE__),"possible_scenarios.tsv"), ".",  :verbose => true)
+    if File.exists?(settings.monte_carlo_file)
+      puts "Copied"
+    else
+      puts "Failed"
+      exit
+    end
+  end
+  
+  def create_list_of_cases_using_montecarlo
     create_list_of_cases = CreateListOfCases.new
-    create_list_of_cases.name_of_list_of_cases = LIST_OF_CASES_FILE
+    create_list_of_cases.name_of_list_of_cases = settings.list_of_cases_file
     create_list_of_cases.number_of_cases_to_generate = settings.number_of_cases_to_montecarlo
-    create_list_of_cases.file_containing_possible_combinations_of_scenarios = MONTE_CARLO_FILE
+    create_list_of_cases.file_containing_possible_combinations_of_scenarios = settings.monte_carlo_file
     create_list_of_cases.print_intent
     create_list_of_cases.run!
 
-    if create_list_of_cases.missing_scenario_files.length > 0
-      puts "There are scenario files missing:"
-      puts
-      puts create_list_of_cases.missing_scenario_files
-      puts
-  
-      puts "If the spelling is right in possible_scenarios.tsv then you probably need to get VEDA to produce them"
-
-      puts <<-END
-
-      1. Open VEDA_FE
-      2. Select Basic Functions > Case Manager
-      3. In the scenarios list, select all the possible scenarios you might want to use (you could just click All at the bottom)
-      4. Check the box 'Create DD only'
-      5. Click Solve and wait
-
-      Then re-run this script
-      END
-    end
+    return unless create_list_of_cases.missing_scenario_files.length > 0
+    warn_about_missing_scenarios(create_list_of_cases.missing_scenario_files)
   end
-
-  # Now we can create the run files
-  # FIXME: Only do this if the list of cases has changed
-  require_relative 'lib/create-run-files'
-
-  create_run_files = CreateRunFiles.new
-
-  # Set our defaults
-  create_run_files.destination_folder_for_run_files  =  '.'
-  create_run_files.name_of_file_containing_cases = LIST_OF_CASES_FILE
-  create_run_files.name_of_run_file_template = RUN_FILE_TEMPLATE
-  create_run_files.run
-
-  if create_run_files.missing_scenario_files.length > 0
-    puts "There are scenario files missing:"
-    puts
-    puts create_run_files.missing_scenario_files.keys
-    puts
-
-    puts "If the spelling is right in possible_scenarios.tsv then you probably need to get VEDA to produce them"
-
+  
+  def warn_about_missing_scenarios(missing_scenario_files)
     puts <<-END
+    
+    There are scenario files missing:
+    
+    #{missing_scenario_files}
+    
+    If the spelling is right in possible_scenarios.tsv then you probably need to get VEDA to produce them
 
     1. Open VEDA_FE
     2. Select Basic Functions > Case Manager
@@ -139,108 +119,182 @@ unless settings.results_only
 
     Then re-run this script
     END
+  end
+  
+  def create_run_files
+    create_run_files = CreateRunFiles.new
+
+    # Set our defaults
+    create_run_files.destination_folder_for_run_files  =  '.'
+    create_run_files.name_of_file_containing_cases = settings.list_of_cases_file
+    create_run_files.name_of_run_file_template = settings.run_file_template
+    create_run_files.run
+
+    return unless create_run_files.missing_scenario_files.length > 0
+    warn_about_missing_scenarios(create_run_files.missing_scenario_files.keys)
     exit
   end
-
-  # Now we run the files
-  # FIXME: Refactor this and run-cases.rb
-
-  unless File.exist?(times_source_folder)
-    puts "Can't find TIMES source folder: #{times_source_folder}"
-    exit
+  
+  def check_files_needed_to_run_times_are_available
+    
+    files_to_check = {
+      TIMES_source_folder: times_source_folder,
+      GAMS_working_folder: path_to_gams_working_folder,
+      GDX_save_folder: gdx_save_folder,
+      VT_GAMS_script: vt_gams,
+      times2veda_script: times_2_veda      
+    }
+    
+    files_to_check.each do |name, location|
+      next if File.exist?(location)
+      puts "Can't find #{name.to_s.gsub('_',' ')} at #{File.expand_path(location)}"
+      exit
+    end
   end
-
-  unless File.exist?(gams_working_folder)
-    puts "Can't find GAMS working folder: #{gams_working_folder}"
-    exit
+  
+  def number_of_threads
+    # min so that don't have more threads than cases to run
+    [settings.number_of_cases_to_optimize_simultaneously,settings.number_of_cases_to_montecarlo].min
   end
-
-  unless File.exist?(gdx_save_folder)
-    puts "Can't find GDX save folder: #{gdx_save_folder}"
-    exit
+  
+  def number_of_cases_per_thread
+    # Ceil in case not precisely divisable
+    (settings.number_of_cases_to_montecarlo/settings.number_of_cases_to_optimize_simultaneously).ceil
   end
+  
+  def run_case(case_name)
+    puts "Looking for #{case_name}.RUN"
+    unless File.exist?("#{case_name}.RUN")
+      puts "Can't find #{File.expand_path("#{case_name}.RUN")}"
+      puts "Halting"
+      exit
+    end
+    puts "Executing #{case_name}"
+    `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{File.join(gdx_save_folder, case_name).gsub('/','\\')}`
 
-  unless File.exist?(vt_gams)
-    puts "Can't find VT_GAMS script: #{vt_gams}"
-    exit
+    # FIXME: Check that the file was written
+
+    puts "Putting #{case_name} into VEDA"
+    `GDX2VEDA #{File.join(gdx_save_folder, case_name)} #{times_2_veda} #{case_name} > #{case_name}`
   end
+  
+  def run_sequence_of_cases(start_number, end_number)
+    i = start_number
 
-  unless File.exist?(times_2_veda)
-    puts "Can't find times2veda.vdd script: #{times_2_veda}"
-    exit
-  end
-
-  number_per_thread = (settings.number_of_cases_to_montecarlo/NUMBER_OF_THREADS).ceil # Ceil in case not precisely divisable
-
-  threads = Array.new([NUMBER_OF_THREADS,settings.number_of_cases_to_montecarlo].min).map.with_index do |_,thread_number|
-    Thread.new do
-      start_number = (thread_number * number_per_thread)+1
-      end_number = start_number + number_per_thread
-
-      puts "Thread #{thread_number} doing case #{start_number} to case #{end_number}"
-      i = start_number
-
-      loop do
-        case_name = "#{prefix}#{i}"
-        puts "Looking for #{case_name}.RUN"
-        unless File.exist?("#{case_name}.RUN")
-        puts "Can't find #{File.expand_path("#{case_name}.RUN")}"
-        puts "Halting"
-        exit
-        end
-        puts "Executing #{case_name}"
-        `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{File.join(gdx_save_folder, case_name).gsub('/','\\')}`
-
-        # FIXME: Check that the file was written
-
-        puts "Putting #{case_name} into VEDA"
-        `GDX2VEDA #{File.join(gdx_save_folder, case_name)} #{times_2_veda} #{case_name} > #{case_name}`
-        i = i + 1
-        if end_number && (i > end_number)
+    loop do
+      case_name = "#{prefix}#{i}"
+      run_case(case_name)
+      
+      i = i + 1
+      if end_number && (i > end_number)
         puts "Done case #{end_number}"
         puts "Halting"
         break
-        end
       end
-      Thread::exit
     end
   end
+  
+  def run_cases
+    threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
+      Thread.new do
+        start_number = (thread_number * number_of_cases_per_thread)+1
+        end_number = start_number + number_of_cases_per_thread
+        puts "Thread #{thread_number} doing case #{start_number} to case #{end_number}"
+        run_sequence_of_cases(start_number, end_number)
+        Thread::exit
+      end
+    end
 
-  require 'thwait'
-  ThreadsWait.all_waits(*threads) do |t|
-  	puts "Thread #{t} has finished"
+    ThreadsWait.all_waits(*threads) do |t|
+      puts "Thread #{t} has finished"
+    end
   end
+  
+  def write_results
+    # Now we are ready to write some results
+    unless File.exist?(settings.results_folder)
+      puts "Creating a results folder: #{File.expand_path(settings.results_folder)}"
+      Pathname.new(settings.results_folder).mkpath
+    end
+
+    puts "Creating cost-emissions charts"
+
+    writer = WriteCostAndEmissionsData.new
+    writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
+    writer.data_directory = settings.results_folder
+    writer.run
+
+    puts "Creating build rate charts"
+    writer = WriteBuildRates.new
+    writer.file_names =  Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
+    writer.data_directory = settings.results_folder
+    writer.run
+
+    puts "Creating flying brick charts"
+
+    writer = WriteDetailedCosts.new
+    writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
+    writer.data_directory = settings.results_folder
+    writer.run
+  end
+  
+
+
+  def veda_fe_folder
+    Pathname.getwd.parent
+  end
+
+  def prefix
+    settings.run_file_prefix 
+  end
+
+  def times_source_folder
+    veda_fe_folder + settings.times_source_folder 
+  end
+
+  def path_to_gams_working_folder
+    veda_fe_folder + settings.gams_working_folder 
+  end
+
+  def gdx_save_folder
+    path_to_gams_working_folder + settings.gams_save_folder 
+  end
+
+  def vt_gams
+    times_source_folder + settings.vt_gams 
+  end
+
+  def times_2_veda
+    times_source_folder + "times2veda.vdd" 
+  end
+  
+  def tell_the_user_how_to_view_results
+    puts "You can now view the results by running:"
+    puts "ruby -run -e httpd results -p 8000"
+    puts "And then opening your webbrowser at http://localhost:8000/cost-emissions-scatter.html"
+  end
+
 end
 
-# Now we are ready to write some results
-unless File.exist?(RESULTS_FOLDER)
-  puts "Creating a results folder: #{File.expand_path(RESULTS_FOLDER)}"
-  Pathname.new(RESULTS_FOLDER).mkpath
+if __FILE__ == $0
+  batch_run = BatchRun.new
+  
+  # Command line options
+  OptionParser.new do |opts|
+
+    opts.on("-n", "--number-to-montecarlo N", Integer, "Generate N cases from the possible scenarios file. If zero, will leave the current set untouched.") do |number|
+      batch_run.settings.number_of_cases_to_montecarlo = number
+    end
+
+    opts.on("-r", "--results-only", "Skip all the steps except for generating the results file") do
+      batch_run.settings.results_only = true
+    end
+
+    opts.on_tail("--version", "Show version") do
+      puts IO.readlines(File.join(File.dirname(__FILE__), "CHANGES.md")).join
+      exit
+    end
+  end.parse!
+  
+  batch_run.run
 end
-
-puts "Creating cost-emissions charts"
-require_relative 'lib/write_cost_and_emissions_data'
-
-writer = WriteCostAndEmissionsData.new
-writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
-writer.data_directory = RESULTS_FOLDER
-writer.run
-
-puts "Creating build rate charts"
-require_relative 'lib/write_build_rates'
-writer = WriteBuildRates.new
-writer.file_names =  Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
-writer.data_directory = RESULTS_FOLDER
-writer.run
-
-puts "Creating flying brick charts"
-require_relative 'lib/write_detailed_costs'
-
-writer = WriteDetailedCosts.new
-writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
-writer.data_directory = RESULTS_FOLDER
-writer.run
-
-puts "You can now view the results by running:"
-puts "ruby -run -e httpd results -p 8000"
-puts "And then opening your webbrowser at http://localhost:8000/cost-emissions-scatter.html"
