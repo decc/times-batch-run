@@ -1,12 +1,11 @@
 require 'minitest/autorun'
 require_relative '../lib/extract_overall_cost_and_emissions'
 
-$this_directory = File.dirname(__FILE__)
 
 class TestExtractOverallCostAndEmissions < MiniTest::Test
 
   def setup
-    @extract = ExtractOverallCostAndEmissions.new({ "caseA" => File.join($this_directory, '..', '..', 'test', 'test.gdx')})
+    @extract = ExtractOverallCostAndEmissions.new({ "caseA" => File.join(File.dirname(__FILE__), 'test.gdx')})
   end
 
   def test_result

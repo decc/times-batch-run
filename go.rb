@@ -219,7 +219,7 @@ unless File.exist?(RESULTS_FOLDER)
 end
 
 puts "Creating cost-emissions charts"
-require_relative 'costs-against-emissions/lib/write_cost_and_emissions_data'
+require_relative 'lib/write_cost_and_emissions_data'
 
 writer = WriteCostAndEmissionsData.new
 writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]

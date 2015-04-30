@@ -1,4 +1,4 @@
-require_relative '../../lib/gdx'
+require_relative 'gdx'
 
 class ExtractOverallCostAndEmissions
 

@@ -63,6 +63,6 @@ class WriteCostAndEmissionsData
   end
   
   def copy_across_template_to_data_directory
-    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),'..',"template",'*')),data_directory)
+    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),'..',"results-template",'*')),data_directory)
   end
 end

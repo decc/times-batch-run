@@ -5,6 +5,7 @@
 * Consolidated code for flying bricks into core
 * Renamed ExtractInvestment to ExtractBuildRates
 * Renamed flying-brick.html to detailed-costs.html
+* Consolidated the costs against emissions code into core
 
 #2015-04-23
 
