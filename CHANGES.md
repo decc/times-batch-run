@@ -6,6 +6,7 @@
 * Renamed ExtractInvestment to ExtractBuildRates
 * Renamed flying-brick.html to detailed-costs.html
 * Consolidated the costs against emissions code into core
+* Renamed cost-by-scenario.html scenarios-ranked-by-cost.html
 
 #2015-04-23
 
