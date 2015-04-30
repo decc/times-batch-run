@@ -1,13 +1,13 @@
 require 'minitest/autorun'
-require_relative '../lib/extract_investment'
+require_relative '../lib/extract_build_rates'
 require 'pp'
 
 $this_directory = File.dirname(__FILE__)
 
-class TestExtractInvestment < MiniTest::Test
+class TestExtractBuildRates < MiniTest::Test
 
   def setup
-    @extract_investment = ExtractInvestment.new({ "ScenarioA" => File.join($this_directory, 'test.gdx')})
+    @extract_investment = ExtractBuildRates.new({ "ScenarioA" => File.join($this_directory, 'test.gdx')})
   end
 
   def test_new_capacity
