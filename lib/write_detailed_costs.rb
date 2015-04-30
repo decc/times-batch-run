@@ -23,6 +23,6 @@ class WriteDetailedCosts
       end
     end
     File.open(File.join(data_directory, "index.txt"), 'w') { |f| f.puts list_of_cases.join("\n") }
-    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),'..', "template",'*')),data_directory)
+    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),'..', "results-template",'*')),data_directory)
   end
 end

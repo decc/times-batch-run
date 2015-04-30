@@ -227,14 +227,14 @@ writer.data_directory = RESULTS_FOLDER
 writer.run
 
 puts "Creating build rate charts"
-require_relative 'build-rates/lib/write_build_rates'
+require_relative 'lib/write_build_rates'
 writer = WriteBuildRates.new
 writer.file_names =  Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
 writer.data_directory = RESULTS_FOLDER
 writer.run
 
 puts "Creating flying brick charts"
-require_relative 'flying-bricks/lib/write_detailed_costs'
+require_relative 'lib/write_detailed_costs'
 
 writer = WriteDetailedCosts.new
 writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]

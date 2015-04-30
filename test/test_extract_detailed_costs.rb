@@ -9,7 +9,7 @@ class TestExtractDetailedCosts < MiniTest::Test
   def setup
     @extract_detailed_costs = ExtractDetailedCosts.new
     @extract_detailed_costs.scenario_name = "ScenarioA"
-    @extract_detailed_costs.gdx = Gdx.new(File.join($this_directory, '..', '..', 'test', 'test.gdx'))
+    @extract_detailed_costs.gdx = Gdx.new(File.join($this_directory, 'test.gdx'))
   end
 
   def test_detailed_costs
