@@ -3,7 +3,7 @@ require_relative '../lib/gdx'
 
 $this_directory = File.dirname(__FILE__)
 
-class TestGDX < MiniTest::Test
+class TestGdx < MiniTest::Test
 
   def setup
     @gdx = Gdx.new(File.join($this_directory, 'test.gdx'))
@@ -55,6 +55,22 @@ class TestGDX < MiniTest::Test
   def test_new_capacity_unit_cost
     expected =  nil # Why doesn't it dump this?
     assert_equal expected, @gdx.symbol(:NCAP_COST).first
+  end
+  
+  def test_new_capacity_unit_cost_new_gdx
+    expected =  nil # Why doesn't it dump this?
+    assert_equal expected, @gdx.symbol(:NCAP_COST).first
+  end
+  
+  def test_scenarios_from_old_gdx_format
+    expected = []
+    assert_equal expected, @gdx.scenarios
+  end
+  
+  def test_scenarios_from_new_gdx_format
+    new_gdx = Gdx.new(File.join($this_directory, 'test3.gdx'))
+    expected = ["base", "newagr", "newelc", "newind", "newprc", "newres", "newrsr", "newser", "newtra", "refscenario", "syssettings", "uc_base", "uc_elc", "uc_ind", "uc_prc", "uc_res", "uc_rsr", "uc_ser", "uc_tra", "discount_stern", "cb3-beat", "cb4-missed", "cb5-3000", "2050-target-hit", "re_target"]
+    assert_equal expected, new_gdx.scenarios
   end
 
   def test_new_capacity_unit

@@ -1,6 +1,7 @@
 #2015-04-30
 
 * The generated RUN files now include a preset set of time slices. Removes an otherwise unintelligable error.
+* Now embeds the scenarios that have been used in a case into the GAMS code so that it appears and can be read from the gdx file
 
 #2015-04-23
 

@@ -12,6 +12,10 @@ class Gdx
     csv.gsub!(/,Eps\b/,',0.0') # \b matches word boundry. We are expecting comma or newline
     CSV.new(csv, headers: :true, converters: :all, header_converters: :symbol).to_a.map(&:to_hash)
   end
+  
+  def scenarios
+    symbol(:Scenarios).map { |hash| hash[:dim1] }
+  end
 
   # This takes flat data and reshapes it into nested data
   # See the test test.gdx.rb for an example

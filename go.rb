@@ -222,7 +222,7 @@ puts "Creating cost-emissions charts"
 require_relative 'costs-against-emissions/lib/write_cost_and_emissions_data'
 
 writer = WriteCostAndEmissionsData.new
-writer.file_names = [LIST_OF_CASES_FILE].concat(Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")])
+writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
 writer.data_directory = RESULTS_FOLDER
 writer.run
 

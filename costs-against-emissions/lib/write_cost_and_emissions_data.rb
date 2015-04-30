@@ -34,18 +34,6 @@ class WriteCostAndEmissionsData
       case File.extname(file)
       when /\.gdx/i
         files[File.basename(file, '.*')] = file    
-      when /\.tsv/i
-        scenarios_in_cases = IO.readlines(file)
-          .join
-          .split(/[\n\r]+/) # Deal with unix and windows line endings
-          .map { |r| r.split("\t") } # Tab separated
-    
-        titles = scenarios_in_cases.shift # Remove the title row
-  
-        scenarios_in_cases.each do|row|
-          row.map!.with_index { |t,i| t =~ /NIL/i ? "default_#{titles[i].gsub(" ","_")}" : t  } # The NILs aren't very informative
-          extract_totals.scenarios_in_case[row.shift] = row
-        end
       else
         puts "Sorry, I don't recognise the format of #{file}"
         exit

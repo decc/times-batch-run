@@ -37,10 +37,17 @@ $ SET TIMESED NO
 $ SET STAGES NO
 $SET SOLVEDA 'YES'
 
+* Tom Counsell I think that, by setting this, more of the input parameters appear in the output GDX file
+* Which is handy so that we can track what went into a particualr scenario
+SET MEMCLEAN 'NO'
+
+
 * merge declarations & data
 $   ONMULTI
 
 * the times-slices MUST come 1st to ensure ordering OK
+* This is an addition by Tom Counsell
+* Just add the time slices directly to avoid uninteligable error messages
 SET ALL_TS
 /
  ANNUAL
@@ -64,7 +71,7 @@ SET ALL_TS
  WP
  WE
  WN
-/ 
+/;
 
 * perform fixed declarations
 $SET BOTIME 1970
@@ -76,6 +83,14 @@ $   BATINCLUDE initmty.mod
 $IF NOT DECLARED REG_BNDCST $Abort "You need to use TIMES v2.3.1 or higher"
 
 <%= list_of_dd_files %>
+
+* This is a new addition by Tom Counsell
+* It is used so that we can extract the names of the scenarios
+* Used in this run from the GDX file at the end
+SET scenarios
+/<% list_of_scenarios.each do |scenario_name| %>
+<%= scenario_name %><% end %>
+/;
 
 SET MILESTONYR /2010,2011,2012,2015,2020,2025,2030,2035,2040,2045,2050,2055,2060/;
 $SET RUN_NAME 'UKTM_BASE'

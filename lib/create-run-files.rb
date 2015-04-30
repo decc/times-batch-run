@@ -9,8 +9,11 @@ class CreateRunFiles
   attr_accessor :name_of_run_file_template
   attr_accessor :places_to_look_for_scenario_files
   attr_accessor :missing_scenario_files
+  attr_reader   :list_of_cases
+  attr_reader   :headers
 
   def run
+    load_list_of_cases
     @missing_scenario_files = {}
 
     list_of_cases.each do |c|
@@ -20,8 +23,16 @@ class CreateRunFiles
       File.open(run_filename(c.first), 'w') do |f|
 
         list_of_dd_files = []
-        c[1..-1].each do |scenario_name| 
-          next if nil_scenario_file?(scenario_name)
+        list_of_scenarios = []
+        
+        c.each.with_index do |scenario_name, column_number|
+          next if column_number == 0 # Skip the name of the case 
+          if nil_scenario_file?(scenario_name)
+            list_of_scenarios << "default_#{headers[column_number]}"
+            next
+          end
+          
+          list_of_scenarios << scenario_name.gsub(' ', '_')
 
           unless scenario_file_exists?(scenario_name)
             missing_scenario_files[scenario_name] = true
@@ -30,7 +41,7 @@ class CreateRunFiles
           list_of_dd_files << "$BATINCLUDE #{scenario_filename_from_name(scenario_name)}" 
         end
       
-        list_of_dd_files = list_of_dd_files.join("\n") 
+        list_of_dd_files = list_of_dd_files.join("\n")
         f.puts run_file_template.result(binding)
       end
     end
@@ -53,9 +64,11 @@ class CreateRunFiles
     File.expand_path(File.join(destination_folder_for_run_files, "#{case_name}.RUN"))
   end
 
-  def list_of_cases
+  def load_list_of_cases
     # We do the join/split in order to sort out the various mac / windows line endings
-    @list_of_cases ||= IO.readlines(name_of_file_containing_cases).join.split(/[\n\r]+/).map { |r| r.split("\t") }[1..-1] # [1..-1] Skip the title row
+    tsv = IO.readlines(name_of_file_containing_cases).join.split(/[\n\r]+/).map { |r| r.split("\t") }
+    @headers = tsv[0]
+    @list_of_cases ||= tsv[1..-1] # [1..-1] Skip the title row
   end
 
   def run_file_template
