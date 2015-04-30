@@ -4,6 +4,7 @@
 * Now embeds the scenarios that have been used in a case into the GAMS code so that it appears and can be read from the gdx file
 * Consolidated code for flying bricks into core
 * Renamed ExtractInvestment to ExtractBuildRates
+* Renamed flying-brick.html to detailed-costs.html
 
 #2015-04-23
 
