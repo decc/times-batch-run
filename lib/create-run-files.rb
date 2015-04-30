@@ -66,7 +66,19 @@ class CreateRunFiles
 
   def load_list_of_cases
     # We do the join/split in order to sort out the various mac / windows line endings
-    tsv = IO.readlines(name_of_file_containing_cases).join.split(/[\n\r]+/).map { |r| r.split("\t") }
+    tsv = IO.readlines(name_of_file_containing_cases).join.split(/[\n\r]+/)
+    # Delete empty lines
+    tsv.delete_if { |line| line.strip == "" }
+    # Delete lines starting with # (which we assume are comments)
+    tsv.delete_if { |line| line.start_with?("#") }
+    # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
+    tsv.delete_if { |line| line.start_with?('"#') }
+    
+    # Split the lines on tabs
+    tsv.map! do |line|
+      line.split(/\t+/)
+    end
+    
     @headers = tsv[0]
     @list_of_cases ||= tsv[1..-1] # [1..-1] Skip the title row
   end

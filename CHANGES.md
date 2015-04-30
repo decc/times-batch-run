@@ -8,6 +8,7 @@
 * Consolidated the costs against emissions code into core
 * Renamed cost-by-scenario.html scenarios-ranked-by-cost.html
 * Heavily refactored go.rb
+* The list of cases tsv can now have empty lines and comments
 
 #2015-04-23
 
