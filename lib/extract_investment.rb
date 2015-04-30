@@ -1,8 +1,8 @@
-require_relative '../../lib/gdx'
+require_relative 'gdx'
 
 class ExtractInvestment
 
-  UNITS_FILENAME = File.join(File.dirname(__FILE__),'..','UnitsForEachProcess.csv')
+  UNITS_FILENAME = File.join(File.dirname(__FILE__),'..','data', 'UnitsForEachProcess.csv')
   COST_UNIT = "£M"
   PROCESS_NAME_REGEX = /^(.*?)\d*$/ # This is used to trim the numbers off the end of process names
   YEARS = [2011, 2012, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060] # The gdx data doesn't include zero values, so we have to include them manually. <sigh>

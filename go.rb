@@ -26,7 +26,6 @@ gdx_save_folder = gams_working_folder + GAMS_SAVE_FOLDER
 vt_gams = times_source_folder + VT_GAMS
 times_2_veda =times_source_folder + "times2veda.vdd"
 
-
 # Command line options
 OptionParser.new do |opts|
 
