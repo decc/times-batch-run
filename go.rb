@@ -270,6 +270,16 @@ class BatchRun
     writer.file_names = list_of_gdx_files
     writer.data_directory = settings.results_folder
     writer.run
+    
+    write_index_txt
+  end
+  
+  # This ensures that index.txt in the results folder has ALL the results
+  # not just those produced in this run
+  def write_index_txt
+    # Case directories are the ones with json in them
+    case_directories = Dir[File.join(settings.results_folder,'*/*.json')].map { |f| File.basename(File.dirname(f)) }.uniq
+    File.open(File.join(settings.results_folder, "index.txt"), 'w') { |f| f.puts case_directories.join("\n") }
   end
 
   def veda_fe_folder
