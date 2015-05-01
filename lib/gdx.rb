@@ -6,6 +6,10 @@ class Gdx
   def initialize(gdx_filename)
     @gdx_filename = gdx_filename
   end
+  
+  def valid?
+    `gdxdump #{gdx_filename} Symb=ObjZ` =~ %r{free     Variable OBJZ /L}
+  end
 
   def symbol(symbol)
     csv = `gdxdump #{gdx_filename} Symb=#{symbol} Format=csv`

@@ -1,3 +1,7 @@
+#2015-05-01
+
+* go.rb can now cope with any sort of case name being specified in the cases.tsv - they don't need to be numbered
+
 #2015-04-30
 
 * The generated RUN files now include a preset set of time slices. Removes an otherwise unintelligable error.

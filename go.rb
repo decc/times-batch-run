@@ -29,7 +29,6 @@ class BatchRun
     settings.list_of_cases_file = "cases.tsv"
     settings.run_file_template =  File.join(File.dirname(__FILE__),'run-file-template.erb')
     settings.number_of_cases_to_optimize_simultaneously = 3
-    settings.run_file_prefix = File.basename(settings.list_of_cases_file, ".*")
     settings.times_source_folder =  "GAMS_SRCTIMESV380"
     settings.gams_save_folder =  "GamsSave"
     settings.vt_gams =  "VT_GAMS.CMD"
@@ -135,6 +134,28 @@ class BatchRun
     exit
   end
   
+  def names_of_all_the_cases
+    return @names_of_all_the_cases if @names_of_all_the_cases    
+    # We do the join/split in order to sort out the various mac / windows line endings
+    tsv = IO.readlines(settings.list_of_cases_file).join.split(/[\n\r]+/)
+    # Delete empty lines
+    tsv.delete_if { |line| line.strip == "" }
+    # Delete lines starting with # (which we assume are comments)
+    tsv.delete_if { |line| line.start_with?("#") }
+    # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
+    tsv.delete_if { |line| line.start_with?('"#') }
+  
+    # Split the lines on tabs
+    tsv.map! do |line|
+      line.split(/\t+/)
+    end
+    @names_of_all_the_cases = tsv[1..-1].map(&:first) # [1..-1] because first line should be titles
+  end
+  
+  def names_of_all_the_cases_that_solved
+    @names_of_all_the_cases_that_solved ||= []
+  end
+  
   def check_files_needed_to_run_times_are_available
     
     files_to_check = {
@@ -170,20 +191,24 @@ class BatchRun
       exit
     end
     puts "Executing #{case_name}"
-    `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{File.join(gdx_save_folder, case_name).gsub('/','\\')}`
-
-    # FIXME: Check that the file was written
-
-    puts "Putting #{case_name} into VEDA"
-    `GDX2VEDA #{File.join(gdx_save_folder, case_name)} #{times_2_veda} #{case_name} > #{case_name}`
+    output_gdx_name = File.join(gdx_save_folder, case_name)
+    
+    `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{output_gdx_name.gsub('/','\\')}`
+    
+    if File.exist?(output_gdx_name+".gdx") && Gdx.new(output_gdx_name+".gdx").valid?
+      names_of_all_the_cases_that_solved.push(case_name)
+      puts "Putting #{case_name} into VEDA"
+      `GDX2VEDA #{output_gdx_name.gsub('/','\\')} #{times_2_veda} #{case_name} > #{case_name}`
+    else
+      puts "Case #{case_name} failed to solve - couldn't find valid #{output_gdx_name}.gdx"
+    end 
   end
   
   def run_sequence_of_cases(start_number, end_number)
     i = start_number
 
     loop do
-      case_name = "#{prefix}#{i}"
-      run_case(case_name)
+      run_case(names_of_all_the_cases[i])
       
       i = i + 1
       if end_number && (i > end_number)
@@ -197,7 +222,7 @@ class BatchRun
   def run_cases
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
-        start_number = (thread_number * number_of_cases_per_thread)+1
+        start_number = (thread_number * number_of_cases_per_thread)
         end_number = start_number + number_of_cases_per_thread
         puts "Thread #{thread_number} doing case #{start_number} to case #{end_number}"
         run_sequence_of_cases(start_number, end_number)
@@ -210,6 +235,10 @@ class BatchRun
     end
   end
   
+  def list_of_gdx_files
+    names_of_all_the_cases_that_solved.map { |case_name| File.join(gdx_save_folder, "#{case_name}.gdx") }
+  end
+  
   def write_results
     # Now we are ready to write some results
     unless File.exist?(settings.results_folder)
@@ -220,32 +249,26 @@ class BatchRun
     puts "Creating cost-emissions charts"
 
     writer = WriteCostAndEmissionsData.new
-    writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
+    writer.file_names = list_of_gdx_files
     writer.data_directory = settings.results_folder
     writer.run
 
     puts "Creating build rate charts"
     writer = WriteBuildRates.new
-    writer.file_names =  Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
+    writer.file_names =  list_of_gdx_files
     writer.data_directory = settings.results_folder
     writer.run
 
     puts "Creating flying brick charts"
 
     writer = WriteDetailedCosts.new
-    writer.file_names = Dir[File.join(gdx_save_folder, "#{prefix}*.gdx")]
+    writer.file_names = list_of_gdx_files
     writer.data_directory = settings.results_folder
     writer.run
   end
-  
-
 
   def veda_fe_folder
     Pathname.getwd.parent
-  end
-
-  def prefix
-    settings.run_file_prefix 
   end
 
   def times_source_folder

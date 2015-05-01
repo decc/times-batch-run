@@ -9,6 +9,11 @@ class TestGdx < MiniTest::Test
     @gdx = Gdx.new(File.join($this_directory, 'test.gdx'))
   end
   
+  def test_valid
+    assert @gdx.valid?
+    refute Gdx.new(__FILE__).valid?
+  end
+  
   def test_objective_function_cost
     expected =  {
       :val=>10121626.581776 # Quantity, a cost, probably £M (i.e., £10trn in this case)
