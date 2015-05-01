@@ -162,6 +162,10 @@ class BatchRun
       end
       @names_of_all_the_cases.concat(tsv[1..-1].map(&:first)) # [1..-1] because first line should be titles
     end
+    # We can limit ourselves to processing only a few cases like this
+    if settings.only_run_the_first_n_cases
+      @names_of_all_the_cases = @names_of_all_the_cases.first(settings.only_run_the_first_n_cases)
+    end
     @names_of_all_the_cases
   end
   
@@ -321,7 +325,11 @@ if __FILE__ == $0
   OptionParser.new do |opts|
     
     opts.banner = "Usage: #{File.basename(__FILE__)} [options] [cases.tsv] [cases2.tsv]"
-
+    
+    opts.on("-n", "--number-of-cases-to-run N", Integer, "Only runs the first N cases") do |n|
+      batch_run.settings.only_run_the_first_n_cases = n
+    end
+    
     opts.on("--number-to-montecarlo N", Integer, "Generate N cases from the possible scenarios file. Only gets used if the list of cases is missing.") do |number|
       batch_run.settings.number_of_cases_to_montecarlo = number
     end

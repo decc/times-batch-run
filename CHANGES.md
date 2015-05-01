@@ -9,6 +9,7 @@
 * monte-carlo'd cases now have a sequence of numbers and letters at the end that means that two cases with the same scenarios will have the same name
 * Can now specify the list of cases file to go.rb (or more than one if you want)
 * go.rb now includes ALL the results in index.txt
+* go.rb can now limit processing to the first N cases with the -n switch
 
 #2015-04-30
 
