@@ -28,7 +28,7 @@ module CommonMethods
   end
 end
 
-class CreateListOfCases
+class MonteCarlo
   include CommonMethods
 
   attr_accessor :name_of_list_of_cases

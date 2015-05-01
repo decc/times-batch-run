@@ -6,7 +6,7 @@ require 'thwait'
 
 require_relative 'dd-file-generators/create-emissions-constraint-dd-files'
 require_relative 'dd-file-generators/create-non-traded-constraints'
-require_relative 'lib/create-list-of-cases'
+require_relative 'lib/monte_carlo'
 require_relative 'lib/create-run-files'
 require_relative 'lib/write_cost_and_emissions_data'
 require_relative 'lib/write_build_rates'
@@ -91,15 +91,15 @@ class BatchRun
   end
   
   def create_list_of_cases_using_montecarlo
-    create_list_of_cases = CreateListOfCases.new
-    create_list_of_cases.name_of_list_of_cases = settings.list_of_cases_file
-    create_list_of_cases.number_of_cases_to_generate = settings.number_of_cases_to_montecarlo
-    create_list_of_cases.file_containing_possible_combinations_of_scenarios = settings.monte_carlo_file
-    create_list_of_cases.print_intent
-    create_list_of_cases.run!
+    monte_carlo = MonteCarlo.new
+    monte_carlo.name_of_list_of_cases = settings.list_of_cases_file
+    monte_carlo.number_of_cases_to_generate = settings.number_of_cases_to_montecarlo
+    monte_carlo.file_containing_possible_combinations_of_scenarios = settings.monte_carlo_file
+    monte_carlo.print_intent
+    monte_carlo.run!
 
-    return unless create_list_of_cases.missing_scenario_files.length > 0
-    warn_about_missing_scenarios(create_list_of_cases.missing_scenario_files)
+    return unless monte_carlo.missing_scenario_files.length > 0
+    warn_about_missing_scenarios(monte_carlo.missing_scenario_files)
   end
   
   def warn_about_missing_scenarios(missing_scenario_files)

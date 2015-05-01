@@ -1,5 +1,4 @@
 require 'erb'
-require_relative 'create-list-of-cases'
 
 class CreateRunFiles
   include CommonMethods
