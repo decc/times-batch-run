@@ -26,7 +26,7 @@ class BatchRun
     settings.gams_working_folder =  "GAMS_WrkTIMES"
     settings.monte_carlo_file = "possible_scenarios.tsv"
     settings.results_folder = "results"
-    settings.list_of_cases_file = "cases.tsv"
+    settings.list_of_cases_files = ["cases.tsv"]
     settings.run_file_template =  File.join(File.dirname(__FILE__),'run-file-template.erb')
     settings.number_of_cases_to_optimize_simultaneously = 3
     settings.times_source_folder =  "GAMS_SRCTIMESV380"
@@ -46,7 +46,7 @@ class BatchRun
     
     create_scenario_files
 
-    check_for_list_of_cases_and_create_by_monte_carlo_if_needed
+    check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
 
     create_run_files
     check_files_needed_to_run_times_are_available
@@ -73,26 +73,28 @@ class BatchRun
     create_ghg_constraint_files.go!
   end
   
-  def check_for_list_of_cases_and_create_by_monte_carlo_if_needed
-    return if File.exists?(settings.list_of_cases_file)
-    puts "Can't find #{settings.list_of_cases_file} so I'm going to generate it using the monte-carlo routine"
-    unless File.exists?(settings.monte_carlo_file)
-      puts "Can't find a list of all the possible scenarios."
-      puts "I'm going to copy one here from the git repository"
-      puts FileUtils.copy(File.join(File.dirname(__FILE__),"possible_scenarios.tsv"), ".",  :verbose => true)
-      if File.exists?(settings.monte_carlo_file)
-        puts "Copied"
-      else
-        puts "Failed"
-        exit
+  def check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
+    settings.list_of_cases_files.each do |list_of_cases_file|
+      next if File.exists?(list_of_cases_file)
+      puts "Can't find #{list_of_cases_file} so I'm going to generate it using the monte-carlo routine"
+      unless File.exists?(settings.monte_carlo_file)
+        puts "Can't find a list of all the possible scenarios."
+        puts "I'm going to copy one here from the git repository"
+        puts FileUtils.copy(File.join(File.dirname(__FILE__),"possible_scenarios.tsv"), ".",  :verbose => true)
+        if File.exists?(settings.monte_carlo_file)
+          puts "Copied"
+        else
+          puts "Failed"
+          exit
+        end
       end
+      create_list_of_cases_using_montecarlo(list_of_cases_file)
     end
-    create_list_of_cases_using_montecarlo
   end
   
-  def create_list_of_cases_using_montecarlo
+  def create_list_of_cases_using_montecarlo(list_of_cases_file)
     monte_carlo = MonteCarlo.new
-    monte_carlo.name_of_list_of_cases = settings.list_of_cases_file
+    monte_carlo.name_of_list_of_cases = list_of_cases_file
     monte_carlo.number_of_cases_to_generate = settings.number_of_cases_to_montecarlo
     monte_carlo.file_containing_possible_combinations_of_scenarios = settings.monte_carlo_file
     monte_carlo.print_intent
@@ -122,11 +124,17 @@ class BatchRun
   end
   
   def create_run_files
+    settings.list_of_cases_files.each do |list_of_cases_file|
+      create_run_files_for_list_of_cases(list_of_cases_file)
+    end
+  end
+  
+  def create_run_files_for_list_of_cases(list_of_cases_file)
     create_run_files = CreateRunFiles.new
 
     # Set our defaults
     create_run_files.destination_folder_for_run_files  =  '.'
-    create_run_files.name_of_file_containing_cases = settings.list_of_cases_file
+    create_run_files.name_of_file_containing_cases = list_of_cases_file
     create_run_files.name_of_run_file_template = settings.run_file_template
     create_run_files.run
 
@@ -136,21 +144,25 @@ class BatchRun
   end
   
   def names_of_all_the_cases
-    return @names_of_all_the_cases if @names_of_all_the_cases    
-    # We do the join/split in order to sort out the various mac / windows line endings
-    tsv = IO.readlines(settings.list_of_cases_file).join.split(/[\n\r]+/)
-    # Delete empty lines
-    tsv.delete_if { |line| line.strip == "" }
-    # Delete lines starting with # (which we assume are comments)
-    tsv.delete_if { |line| line.start_with?("#") }
-    # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
-    tsv.delete_if { |line| line.start_with?('"#') }
+    return @names_of_all_the_cases if @names_of_all_the_cases
+    @names_of_all_the_cases = []
+    settings.list_of_cases_files.each do |list_of_cases_file|    
+      # We do the join/split in order to sort out the various mac / windows line endings
+      tsv = IO.readlines(list_of_cases_file).join.split(/[\n\r]+/)
+      # Delete empty lines
+      tsv.delete_if { |line| line.strip == "" }
+      # Delete lines starting with # (which we assume are comments)
+      tsv.delete_if { |line| line.start_with?("#") }
+      # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
+      tsv.delete_if { |line| line.start_with?('"#') }
   
-    # Split the lines on tabs
-    tsv.map! do |line|
-      line.split(/\t+/)
+      # Split the lines on tabs
+      tsv.map! do |line|
+        line.split(/\t+/)
+      end
+      @names_of_all_the_cases.concat(tsv[1..-1].map(&:first)) # [1..-1] because first line should be titles
     end
-    @names_of_all_the_cases = tsv[1..-1].map(&:first) # [1..-1] because first line should be titles
+    @names_of_all_the_cases
   end
   
   def names_of_all_the_cases_that_solved
@@ -176,12 +188,12 @@ class BatchRun
   
   def number_of_threads
     # min so that don't have more threads than cases to run
-    [settings.number_of_cases_to_optimize_simultaneously,settings.number_of_cases_to_montecarlo].min
+    [settings.number_of_cases_to_optimize_simultaneously,names_of_all_the_cases.length].min
   end
   
   def number_of_cases_per_thread
     # Ceil in case not precisely divisable
-    (settings.number_of_cases_to_montecarlo/settings.number_of_cases_to_optimize_simultaneously).ceil
+    (settings.number_of_cases_to_montecarlo/names_of_all_the_cases.length).ceil
   end
   
   def run_case(case_name)
@@ -205,28 +217,20 @@ class BatchRun
     end 
   end
   
-  def run_sequence_of_cases(start_number, end_number)
-    i = start_number
-
-    loop do
-      run_case(names_of_all_the_cases[i])
-      
-      i = i + 1
-      if end_number && (i > end_number)
-        puts "Done case #{end_number}"
-        puts "Halting"
-        break
-      end
-    end
-  end
-  
   def run_cases
+    cases_to_run = names_of_all_the_cases.dup
+    lock = Mutex.new
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
-        start_number = (thread_number * number_of_cases_per_thread)
-        end_number = start_number + number_of_cases_per_thread
-        puts "Thread #{thread_number} doing case #{start_number} to case #{end_number}"
-        run_sequence_of_cases(start_number, end_number)
+        loop do
+          case_name = nil
+          lock.synchronize {
+            break if cases_to_run.empty?
+            case_name = cases_to_run.pop
+          }
+          break unless case_name # Shouldn't be needed
+          run_case(case_name)
+        end
         Thread::exit
       end
     end
@@ -305,6 +309,8 @@ if __FILE__ == $0
   
   # Command line options
   OptionParser.new do |opts|
+    
+    opts.banner = "Usage: #{File.basename(__FILE__)} [options] [cases.tsv] [cases2.tsv]"
 
     opts.on("--number-to-montecarlo N", Integer, "Generate N cases from the possible scenarios file. Only gets used if the list of cases is missing.") do |number|
       batch_run.settings.number_of_cases_to_montecarlo = number
@@ -319,6 +325,10 @@ if __FILE__ == $0
       exit
     end
   end.parse!
+  
+  unless ARGV.empty?
+    batch_run.settings.list_of_cases_files = ARGV
+  end
   
   batch_run.run
 end

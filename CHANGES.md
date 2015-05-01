@@ -7,6 +7,7 @@
 * go.rb only does a monte-carlo if the cases.tsv file is missing
 * Altered the command line options for monte-carlo.rb run monte-carlo.rb --help for details
 * monte-carlo'd cases now have a sequence of numbers and letters at the end that means that two cases with the same scenarios will have the same name
+* Can now specify the list of cases file to go.rb (or more than one if you want)
 
 #2015-04-30
 
