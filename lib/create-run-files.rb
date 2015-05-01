@@ -1,4 +1,5 @@
 require 'erb'
+require_relative 'monte_carlo'
 
 class CreateRunFiles
   include CommonMethods

@@ -1,13 +1,4 @@
-# FIXME: Array has a sample method by default!
-class Array
-
-  # Given a random array
-  # ["title", "a", "b", "c"]
-  # returns a, b or c randomly
-  def random
-    at(rand(length-1)+1)
-  end
-end
+require_relative 'encode_case'
 
 # These are shared wiht create-run-files
 module CommonMethods
@@ -30,6 +21,7 @@ end
 
 class MonteCarlo
   include CommonMethods
+  include EncodeCase
 
   attr_accessor :name_of_list_of_cases
   attr_accessor :number_of_cases_to_generate
@@ -38,8 +30,11 @@ class MonteCarlo
   attr_accessor :places_to_look_for_scenario_files
   attr_accessor :missing_scenario_files
   attr_accessor :cases
+  attr_accessor :prefix
+  attr_accessor :number_of_scenarios_per_set
 
   def run!
+    @prefix ||= File.basename(name_of_list_of_cases,'.*')
     check_file_containing_possible_combinations_of_scenarios_exists
     load_set_of_all_possible_scenarios
     check_for_missing_scenario_files
@@ -69,6 +64,9 @@ class MonteCarlo
     #   ...
     # ]
     #
+    @number_of_scenarios_per_set = set_of_all_possible_scenarios.map do |sets|
+      sets.length - 1
+    end
   end
 
   def check_file_containing_possible_combinations_of_scenarios_exists
@@ -130,14 +128,19 @@ class MonteCarlo
   def create_list_of_cases
     @cases = []
 
-    (1..number_of_cases_to_generate).each do |case_number|
-      case_name = "#{File.basename(name_of_list_of_cases,'.*')}#{case_number}"
-      case_scenarios = [case_name]
-      set_of_all_possible_scenarios.each do |scenario|
-        case_scenarios.push(scenario.random)
-      end
-      cases << case_scenarios
+    number_of_cases_to_generate.times do
+      case_scenario_indexes = number_of_scenarios_per_set.map { |n| rand(n) }
+      case_scenarios = case_scenario_indexes.map.with_index { |column, row| set_of_all_possible_scenarios[row][column+1] }
+      case_name = case_name_for(case_scenario_indexes)
+      cases << [case_name].concat(case_scenarios)
     end
+    cases.sort_by! { |c| c.first } # Sort the cases alphabetically by the case name
+  end
+  
+
+  
+  def case_name_for(scenarios)
+    "#{prefix}#{encode(scenarios,number_of_scenarios_per_set).to_s(36)}" # Encode the scenarios and write in base 36
   end
 
   def write_cases_to_file
