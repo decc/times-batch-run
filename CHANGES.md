@@ -1,6 +1,7 @@
 #2015-05-01
 
 * go.rb can now cope with any sort of case name being specified in the cases.tsv - they don't need to be numbered
+* Removed create-run-files.rb
 
 #2015-04-30
 
