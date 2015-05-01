@@ -30,10 +30,6 @@ The rough steps are:
 1. Edit possible_scenarios.tsv in Excel and save as a tsv file, the instructions in that tsv file should help
 2. Run `ruby go.rb`
 
-### Part 3, actually run the cases
-
-1. Run run-cases.rb to actually run all those cases
-
 ### Options
 
 Take a look at the source for each file to see further options.
