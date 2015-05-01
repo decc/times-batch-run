@@ -333,6 +333,10 @@ if __FILE__ == $0
     opts.on("--number-to-montecarlo N", Integer, "Generate N cases from the possible scenarios file. Only gets used if the list of cases is missing.") do |number|
       batch_run.settings.number_of_cases_to_montecarlo = number
     end
+    
+    opts.on("-p", "--cases-in-parallel N", Integer, "Try and optimize N cases at the same time (in parallel).") do |number|
+      batch_run.settings.number_of_cases_to_optimize_simultaneously = number
+    end
 
     opts.on("-r", "--results-only", "Skip all the steps except for generating the results file") do
       batch_run.settings.results_only = true

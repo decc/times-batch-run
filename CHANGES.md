@@ -10,6 +10,7 @@
 * Can now specify the list of cases file to go.rb (or more than one if you want)
 * go.rb now includes ALL the results in index.txt
 * go.rb can now limit processing to the first N cases with the -n switch
+* go.rb can now specify the number of cases to optimize in parallel with -p switch
 
 #2015-04-30
 
