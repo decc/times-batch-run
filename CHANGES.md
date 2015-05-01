@@ -5,6 +5,7 @@
 * Removed run-cases.rb
 * Renamed create-list-of-cases.rb to monte-carlo.rb
 * go.rb only does a monte-carlo if the cases.tsv file is missing
+* Altered the command line options for monte-carlo.rb run monte-carlo.rb --help for details
 
 #2015-04-30
 
