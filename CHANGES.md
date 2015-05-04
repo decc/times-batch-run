@@ -1,3 +1,7 @@
+#2015-05-04
+
+* Fixed the gdx validity test to be less case sensitive
+
 #2015-05-01
 
 * go.rb can now cope with any sort of case name being specified in the cases.tsv - they don't need to be numbered

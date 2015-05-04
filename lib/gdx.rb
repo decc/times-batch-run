@@ -6,9 +6,9 @@ class Gdx
   def initialize(gdx_filename)
     @gdx_filename = gdx_filename
   end
-  
+
   def valid?
-    `gdxdump #{gdx_filename} Symb=ObjZ` =~ %r{free     Variable OBJZ /L}
+    `gdxdump #{gdx_filename} Symb=ObjZ` =~ /free\s+Variable OBJZ/i
   end
 
   def symbol(symbol)
@@ -16,7 +16,7 @@ class Gdx
     csv.gsub!(/,Eps\b/,',0.0') # \b matches word boundry. We are expecting comma or newline
     CSV.new(csv, headers: :true, converters: :all, header_converters: :symbol).to_a.map(&:to_hash)
   end
-  
+
   def scenarios
     symbol(:Scenarios).map { |hash| hash[:dim1] }
   end
@@ -40,7 +40,7 @@ class Gdx
     # This is the record that the data is to become
     target = output[id]
     # We are now adding the data to a new attribute in the record
-    # the name of the attribute is governed by the value of the 
+    # the name of the attribute is governed by the value of the
     # original record's attribute
     attribute_value = input[attribute].to_sym
     unless target.has_key?(attribute_value)
@@ -51,12 +51,12 @@ class Gdx
     existing_scenario = existing_scenarios.find { |s| s[:name] == scenario }
     unless existing_scenario
       existing_scenario = { name: scenario, data: [] }
-      existing_scenarios.push(existing_scenario) 
+      existing_scenarios.push(existing_scenario)
     end
     existing_data = existing_scenario[:data]
     # Now we need to deal with duplicate bits of data, which we tend to sum
     new_key =  input.select { |k,v| keys.include?(k) }
-    
+
     # Check if there is an existing piece of data that matches
     existing_datum = existing_data.find do |d|
       d.select { |k,v| keys.include?(k) } == new_key
@@ -67,7 +67,7 @@ class Gdx
       values.each do |v|
         existing_datum[v] += input[v]
       end
-    else 
+    else
       # Otherwise add a new piece of data
       new_datum = input.select { |k,v| keys.include?(k) || values.include?(k) }
       existing_data.push(new_datum)
@@ -75,4 +75,3 @@ class Gdx
   end
 
 end
-    
