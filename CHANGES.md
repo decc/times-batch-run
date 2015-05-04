@@ -2,6 +2,7 @@
 
 * Fixed the gdx validity test to be less case sensitive
 * Fixed objective function value extraction to work in new version of GAMS
+* Fixed results generation to work in go.rb even if skip the results creation
 
 #2015-05-01
 
