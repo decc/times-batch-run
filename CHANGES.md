@@ -1,6 +1,7 @@
 #2015-05-04
 
 * Fixed the gdx validity test to be less case sensitive
+* Fixed objective function value extraction to work in new version of GAMS
 
 #2015-05-01
 

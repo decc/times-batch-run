@@ -8,20 +8,18 @@ class TestGdx < MiniTest::Test
   def setup
     @gdx = Gdx.new(File.join($this_directory, 'test.gdx'))
   end
-  
+
   def test_valid
     assert @gdx.valid?
     refute Gdx.new(__FILE__).valid?
   end
-  
+
   def test_objective_function_cost
-    expected =  {
-      :val=>10121626.581776 # Quantity, a cost, probably £M (i.e., £10trn in this case)
+    expected = 10121626.581776 # Quantity, a cost, probably £M (i.e., £10trn in this case)
       # Plausability check: £10trn / 50 years = £200 billion a year, and we spend about £100 billion on fuel
       # £10trn needs adjusting up for discounting (doubling?)
       # £100bn needs the cost of equipement (especially cars adding on)
-    }
-    assert_equal expected, @gdx.symbol(:OBJZ).first
+    assert_equal expected, @gdx.objz
   end
 
   def test_total_emissions
@@ -39,7 +37,7 @@ class TestGdx < MiniTest::Test
       {:r=>"UK", :t=>2050, :c=>"GHGTOT", :ts=>"ANNUAL", :val=>686615.966107009},
       {:r=>"UK", :t=>2055, :c=>"GHGTOT", :ts=>"ANNUAL", :val=>683441.917078986},
       {:r=>"UK", :t=>2060, :c=>"GHGTOT", :ts=>"ANNUAL", :val=>679553.604628085}
-    ] 
+    ]
     assert_equal expected, @gdx.symbol(:AGG_OUT)
   end
 
@@ -61,17 +59,17 @@ class TestGdx < MiniTest::Test
     expected =  nil # Why doesn't it dump this?
     assert_equal expected, @gdx.symbol(:NCAP_COST).first
   end
-  
+
   def test_new_capacity_unit_cost_new_gdx
     expected =  nil # Why doesn't it dump this?
     assert_equal expected, @gdx.symbol(:NCAP_COST).first
   end
-  
+
   def test_scenarios_from_old_gdx_format
     expected = []
     assert_equal expected, @gdx.scenarios
   end
-  
+
   def test_scenarios_from_new_gdx_format
     new_gdx = Gdx.new(File.join($this_directory, 'test3.gdx'))
     expected = ["base", "newagr", "newelc", "newind", "newprc", "newres", "newrsr", "newser", "newtra", "refscenario", "syssettings", "uc_base", "uc_elc", "uc_ind", "uc_prc", "uc_res", "uc_rsr", "uc_ser", "uc_tra", "discount_stern", "cb3-beat", "cb4-missed", "cb5-3000", "2050-target-hit", "re_target"]
@@ -89,8 +87,8 @@ class TestGdx < MiniTest::Test
       :allyear=>2010,  # Year of investment
       :p=>"IISFINPRO00", # Process
       :allyear_1=>2010,  # Vintage, normally the same as the investment year
-      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV. 
-      :val=>9.34956777777778, # When :item is INSTCAP, this is the same as :VAR_NCAP? 
+      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV.
+      :val=>9.34956777777778, # When :item is INSTCAP, this is the same as :VAR_NCAP?
     }
     assert_equal expected, @gdx.symbol(:CAP_NEW).first
   end
@@ -113,16 +111,16 @@ class TestGdx < MiniTest::Test
       :allyear=>2010,  # Year of investment
       :p=>"IISFINPRO00", # Process
       :allyear_1=>2010,  # Vintage, normally the same as the investment year
-      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV. 
-      :val=> 100, # When :item is INSTCAP, this is the same as :VAR_NCAP? 
+      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV.
+      :val=> 100, # When :item is INSTCAP, this is the same as :VAR_NCAP?
     },
     {
       :r=>"UK", # Region, always the same
       :allyear=>2020,  # Year of investment
       :p=>"IISFINPRO00", # Process
       :allyear_1=>2020,  # Vintage, normally the same as the investment year
-      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV. 
-      :val=> 200, # When :item is INSTCAP, this is the same as :VAR_NCAP? 
+      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV.
+      :val=> 200, # When :item is INSTCAP, this is the same as :VAR_NCAP?
     }
     ]
     expected = {
@@ -151,16 +149,16 @@ class TestGdx < MiniTest::Test
       :allyear=>2010,  # Year of investment
       :p=>"IISFINPRO00", # Process
       :allyear_1=>2010,  # Vintage, normally the same as the investment year
-      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV. 
-      :val=> 100, # When :item is INSTCAP, this is the same as :VAR_NCAP? 
+      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV.
+      :val=> 100, # When :item is INSTCAP, this is the same as :VAR_NCAP?
     },
     {
       :r=>"UK", # Region, always the same
       :allyear=>2010,  # Year of investment
       :p=>"IISFINPRO00", # Process
       :allyear_1=>2020,  # Vintage, normally the same as the investment year
-      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV. 
-      :val=> 200, # When :item is INSTCAP, this is the same as :VAR_NCAP? 
+      :item=>"INSTCAP",  # ? Can be INSTCAP or LUMPINV.
+      :val=> 200, # When :item is INSTCAP, this is the same as :VAR_NCAP?
     }
     ]
     expected = {
@@ -184,16 +182,16 @@ class TestGdx < MiniTest::Test
   def test_reshape_cast_with_stemmed_identifier
     data =  [
     {
-      :allyear=>2010,  
+      :allyear=>2010,
       :p=>"IISFINPRO00", # Process ends in 00
-      :item=>"INSTCAP",  
-      :val=> 100, 
+      :item=>"INSTCAP",
+      :val=> 100,
     },
     {
-      :allyear=>2020, 
+      :allyear=>2020,
       :p=>"IISFINPRO01", # Process ends in 01
       :item=>"INSTCAP",
-      :val=> 200, 
+      :val=> 200,
     }
     ]
     expected = {
@@ -214,7 +212,7 @@ class TestGdx < MiniTest::Test
 
     assert_equal expected, result
   end
-  
+
 
 
 end

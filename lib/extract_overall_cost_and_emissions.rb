@@ -4,12 +4,12 @@ class ExtractOverallCostAndEmissions
 
   attr_accessor :cases
   attr_accessor :scenarios_in_case
-  
+
   def initialize(new_cases = nil)
     self.scenarios_in_case = Hash.new([])
     self.cases = new_cases if new_cases
   end
-  
+
   # FIXME: Not good that self.cases = self.cases will fail
   def cases=(new_cases)
     @cases = new_cases.map do |case_name, gdx_filename|
@@ -27,9 +27,8 @@ class ExtractOverallCostAndEmissions
 
   def extract_overall_cost_and_emissions_from(name, gdx)
     results = { name: name }
-	  cost = gdx.symbol(:OBJZ)
-	  return nil if cost.empty? # This will be the case if the GDX file doesn't have the data
-    results[:cost] = cost.first[:val] / 1.0e6 # Convert from £M to £trn
+	  cost = gdx.objz
+    results[:cost] = cost / 1.0e6 # Convert from £M to £trn
     results[:ghg] = ghg = {}
     results[:scenarios] = gdx.scenarios
     gdx.symbol(:AGG_OUT).each do |d|

@@ -11,6 +11,11 @@ class Gdx
     `gdxdump #{gdx_filename} Symb=ObjZ` =~ /free\s+Variable OBJZ/i
   end
 
+  def objz
+    output = `gdxdump #{gdx_filename} Symb=ObjZ`
+    output[/([0-9.]+)/,1].to_f
+  end
+
   def symbol(symbol)
     csv = `gdxdump #{gdx_filename} Symb=#{symbol} Format=csv`
     csv.gsub!(/,Eps\b/,',0.0') # \b matches word boundry. We are expecting comma or newline

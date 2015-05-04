@@ -11,10 +11,10 @@ class TestExtractOverallCostAndEmissions < MiniTest::Test
   def test_result
     expected = [
       {
-        name: "caseA", 
+        name: "caseA",
         cost: 10.121626581776,  # £trn
         scenarios: [],
-        ghg: { 
+        ghg: {
           2010 => 661.2213888708541, # MtCO2e
           2011 => 640.1470923687849,
           2012 => 643.1591731505149,
@@ -32,16 +32,8 @@ class TestExtractOverallCostAndEmissions < MiniTest::Test
       }
     ]
     results = @extract.extract_overall_cost_and_emissions
-    assert_equal expected, results 
+    assert_equal expected, results
   end
 
-  
-  def test_missing_data
-	mock_gdx = Minitest::Mock.new
-	mock_gdx.expect(:symbol, [], [:OBJZ])
-	@extract.cases.first[1] = mock_gdx
-	assert_equal [], @extract.extract_overall_cost_and_emissions
-	# FIXME: Will we ever not have ghg but have OBJZ? 
-  end
 
 end
