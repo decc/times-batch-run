@@ -25,20 +25,26 @@ class CreateRunFiles
         list_of_dd_files = []
         list_of_scenarios = []
         
-        c.each.with_index do |scenario_name, column_number|
-          next if column_number == 0 # Skip the name of the case 
+        c.each.with_index do |scenario, column_number|
+          next if column_number == 0 # Skip the name of the case
+          
+          # Can supply scenarios in the form: name space <arguments>
+          scenario_parts = scenario.split(/\s+/)
+          scenario_name = scenario_parts.first
+          scenario_arguments = scenario_parts[1..-1]
+          
           if nil_scenario_file?(scenario_name)
             list_of_scenarios << "default_#{headers[column_number]}"
             next
           end
           
-          list_of_scenarios << scenario_name.gsub(' ', '_')
+          list_of_scenarios << scenario.gsub(' ', '-')
 
           unless scenario_file_exists?(scenario_name)
             missing_scenario_files[scenario_name] = true
           end
             
-          list_of_dd_files << "$BATINCLUDE #{scenario_filename_from_name(scenario_name)}" 
+          list_of_dd_files << "$BATINCLUDE #{scenario_filename_from_name(scenario_name)} #{scenario_arguments.join(" ")}" 
         end
       
         list_of_dd_files = list_of_dd_files.join("\n")
