@@ -66,6 +66,11 @@ div.process {
   clear: both;
 }
 
+div#controls {
+  clear: both;
+  font-size: larger;
+}
+
 </style>
 <body>
 <h1>Investment profiles in UK TIMES</h1>
@@ -75,6 +80,7 @@ div.process {
   <div class='title'>&times; Cost per unit</div>
   <div class='title'>= Total investment required each year</div>
 </div>
+<div id='controls'><a href='' id='showmore'>Show more costs</a> or <a href='' id='showall'>show all costs</a> (the browser may become unresponsive for a while).</div>
 <script>
 /**
 Data expected in this form:
@@ -317,12 +323,13 @@ var chart = linechart();
 var lumpinvchart = linechart().autoscale(false);
 var data = [];
 var cases = [];
+var number_to_show = 10;
 
-function draw() {
+function draw(data_to_draw) {
   var processes, new_process;
 
   processes = d3.select('#charts').selectAll(".process")
-    .data(data, function(d) { return d.p; }); // Map divs to name
+    .data(data_to_draw, function(d) { return d.p; }); // Map divs to name
 
   // Add new process divs
   new_process = processes.enter().append("div").attr("class", "process");
@@ -377,8 +384,20 @@ function mergeData() {
 
 function all_cases_loaded() {
     mergeData();
-    draw();
+    draw(data.slice(0,number_to_show));
 };
+
+d3.select('#showmore').on('click', function() {
+  number_to_show = number_to_show + 10;
+  draw(data.slice(0,number_to_show));
+  d3.event.preventDefault();
+});
+
+d3.select('#showall').on('click', function() {
+  number_to_show = data.length;
+  draw(data.slice(0,number_to_show));
+  d3.event.preventDefault();
+});
 
 function case_loaded(individual_case) {
 	cases.push(individual_case);

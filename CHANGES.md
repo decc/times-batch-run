@@ -1,3 +1,7 @@
+#2015-05-05
+
+* The build rate chart by default only shows the top 10 costs
+
 #2015-05-04
 
 * Fixed the gdx validity test to be less case sensitive
