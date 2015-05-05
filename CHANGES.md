@@ -3,6 +3,7 @@
 * The build rate chart by default only shows the top 10 costs
 * The build rate chart adjusts its width to fit window
 * go.rb now updates the results each time it solves a case
+* Fixed the detailed costs view to create the correct hash tag on startup
 
 #2015-05-04
 

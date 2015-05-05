@@ -624,7 +624,7 @@ if(settings[0] == "") {
 			if(case_name.length == 0) return false;
 			if(case_name[0] == "#") return false;
 			return true;
-		}).slice(0,4);
+		}).slice(0,2);
 		window.location = "#"+list_of_cases.join(",")+","+left_period+","+right_period;
 		list_of_cases_loaded();
 	});	
