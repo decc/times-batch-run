@@ -217,6 +217,8 @@ class BatchRun
       names_of_all_the_cases_that_solved.push(case_name)
       puts "Putting #{case_name} into VEDA"
       `GDX2VEDA #{output_gdx_name.gsub('/','\\')} #{times_2_veda} #{case_name} > #{case_name}`
+      puts "Updating the results"
+      write_results(["#{output_gdx_name}.gdx"])
     else
       puts "Case #{case_name} failed to solve - couldn't find valid #{output_gdx_name}.gdx"
     end
@@ -254,7 +256,7 @@ class BatchRun
     names_of_all_the_cases_that_solved.map { |case_name| File.join(gdx_save_folder, "#{case_name}.gdx") }
   end
 
-  def write_results
+  def write_results(gdx_files = list_of_gdx_files)
     # Now we are ready to write some results
     unless File.exist?(settings.results_folder)
       puts "Creating a results folder: #{File.expand_path(settings.results_folder)}"
@@ -264,20 +266,20 @@ class BatchRun
     puts "Creating cost-emissions charts"
 
     writer = WriteCostAndEmissionsData.new
-    writer.file_names = list_of_gdx_files
+    writer.file_names = gdx_files
     writer.data_directory = settings.results_folder
     writer.run
 
     puts "Creating build rate charts"
     writer = WriteBuildRates.new
-    writer.file_names =  list_of_gdx_files
+    writer.file_names =  gdx_files
     writer.data_directory = settings.results_folder
     writer.run
 
     puts "Creating flying brick charts"
 
     writer = WriteDetailedCosts.new
-    writer.file_names = list_of_gdx_files
+    writer.file_names = gdx_files
     writer.data_directory = settings.results_folder
     writer.run
 
