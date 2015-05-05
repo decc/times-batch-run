@@ -1,2 +1,23 @@
 parameter
-carbonbudget(ALLYEAR) "The Carbon Budget for a paricular year";
+carbonbudget(ALLYEAR) "The Carbon Budget for a paricular year MtCO2e";
+
+parameter
+ets_price(ALLYEAR) "The EU ETS emissions price for a particular year in £/tCO2e";
+
+parameter
+ets_volume(ALLYEAR) "The EU ETS emissions allowances attributed to the UK in a year in MtCO2e";
+
+* FIXME: should we have a separate ets_volume proportion for the 2050 year?
+
+paramter
+twenty_fifty_target "The 2050 target in MtCO2e";
+
+parameter
+include_international_aviation_and_shipping_from "The year international aviation and shipping is included";
+
+parameter
+territorial_from "The year in which the traded / non traded split is abandoned and budgets are applied territorially";
+
+parameter
+steady_action_to_twenty_fifty_target "Boolean on whether we work steadily from the last carbon budget specified to 2050, or leave things to the last minute";
+

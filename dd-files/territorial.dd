@@ -1,1 +1,0 @@
-COM_BNDNET('UK',ALLYEARS,'GHGTOT','ANNUAL','UP') = carbonbudget(ALLYEAR);
