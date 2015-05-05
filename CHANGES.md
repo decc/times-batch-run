@@ -1,6 +1,7 @@
 #2015-05-05
 
 * The build rate chart by default only shows the top 10 costs
+* The build rate chart adjusts its width to fit window
 
 #2015-05-04
 

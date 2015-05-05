@@ -8,16 +8,21 @@ body {
   font: 10px sans-serif;
 }
 
+div {
+  margin: 0;
+  paddign: 0;
+}
+
 .process_name {
   float: left;
-  width: 100px;
+  width: 10%;
 }
 
 .title {
   font-weight: bold;
   display: inline-block;
   text-align: center;
-  width: 400px;
+  width: 29%;
 }
 
 .axis path, .axis line {
@@ -109,11 +114,9 @@ Data expected in this form:
 
 
 **/
-function linechart() {
+function linechart(width, height) {
 
-  var margin = {top: 30, right: 75, bottom: 30, left: 50},
-      width = 400;
-      height = 200;
+  var margin = {top: 30, right: 75, bottom: 30, left: 50};
 
   var x = d3.scale.linear()
     .domain([2010, 2060])
@@ -319,8 +322,12 @@ We draw:
         
 **/
 
-var chart = linechart();
-var lumpinvchart = linechart().autoscale(false);
+var chart_width = d3.select(".title").node().clientWidth;
+var chart_height = Math.ceil(chart_width * 0.5);
+
+var chart = linechart(chart_width, chart_height);
+var lumpinvchart = linechart(chart_width, chart_height).autoscale(false);
+
 var data = [];
 var cases = [];
 var number_to_show = 10;
