@@ -1,0 +1,46 @@
+* FIXME: International aviation and shipping?
+* Seems the approach is to make international aviation and shipping zero emissions
+
+* NB: multiply by 1000 to get into ktCO2e and divide by 5 to get from budget to single year value
+
+* TERRITORIAL EMISSIONS CONSTRAINTS
+
+* We start by working on the years where we are applying the carbon budget territorially
+* $(ALLYEARS ge territorial_from) means only assign for years greater than the territorial_from parameter
+
+* First make sure that the constraint doesn't bind
+COM_BNDNET('UK',ALLYEARS,'GHGTOT','ANNUAL','UP') = +INF;
+
+* Then bind it for the years when it should bind
+COM_BNDNET('UK',ALLYEARS,'GHGTOT','ANNUAL','UP')$(ALLYEARS ge territorial_from) = carbonbudget(ALLYEAR)*1000/5;
+
+* If there is a territorial twenty_fifty target apply it here
+COM_BNDNET('UK','2050','GHGTOT','ANNUAL','UP')$('2050' ge territorial_from) = twenty_fifty_target;
+
+* FIXME: How do we handle the territorial transition and interpolation? Do we need to manually interpolate?
+
+* NON TRADED SECTOR EMISSIONS CONSTRAINTS
+
+* This defines what the constraint applies to
+$include 'non-ets_target';
+
+* Now make sure that, in general, the constraint doesn't bind
+UC_RHSRTS('UK'.'UC_NonETS',ALLYEARS,'ANNUAL','UP') = +INF;
+
+* Then bind it for the years when it should bind
+UC_RHSRTS('UK'.'UC_NonETS',ALLYEARS,'ANNUAL','UP')$(ALLYEARS lt territorial_from) = (carbonbudget(ALLYEAR)*1000/5) - (ets_volume(ALLYEAR)*1000);
+
+* FIXME: How do we handle the territorial transition and interpolation? Do we need to manually interpolate?
+UC_RHSRTS('UK'.'UC_NonETS','2050','ANNUAL','UP')$(ALLYEARS lt territorial_from) = twenty_fifty_target - ets_volume('2050');
+
+* ETS PRICE
+
+* The ETS price will aleady have been loaded
+
+* Now make sure that the price is zero for years when we are doing territorial budgets
+* FIMXE: DO THESE CLOBER OTHER THINGS?
+* Offeps to make sure that when we put zero, we are eliminating the constraint
+$OFFEPS 
+COM_CSTNET('UK',ALLYEARS,'PRCCO2N','ANNUAL','GBP')$(ALLYEARS ge territorial_from) = 0;
+FLO_COST('UK',ALLYEARS,p,c,'ANNUAL','GBP')$(ALLYEARS ge territorial_from) = 0;
+
