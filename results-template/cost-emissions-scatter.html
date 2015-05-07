@@ -16,7 +16,7 @@ div {
 }
 
 div#chart {
-  width: 80%;
+  width: 78%;
 }
 
 div#filter {
@@ -146,13 +146,11 @@ var data = [];
 var scenarios = d3.map();
 var classes_to_apply_for_scenarios = ["blue", "red", "yellow", "faint"];
 
-function scatterchart() {
+function scatterchart(width, height) {
 
   var year_to_display = '2030'
 
-  var margin = {top: 20, right: 50, bottom: 50, left: 50},
-      width = 1000;
-      height = 500;
+  var margin = {top: 20, right: 50, bottom: 50, left: 50};
 
   var max_y_to_show = undefined;
 
@@ -203,7 +201,7 @@ function scatterchart() {
         new_svg.append("text").attr("id","x_value_of_case");
         new_svg.append("text").attr("id","y_value_of_case");
         new_svg.append("text").attr("id","name_of_case");
-        
+
         // Update the outer dimensions.
         svg.attr("width", width)
           .attr("height", height);
@@ -228,7 +226,7 @@ function scatterchart() {
         svg.select(".y.axis")
           .call(yAxis);
 
-        // Update the x-axis 
+        // Update the x-axis
         x
           .domain(d3.extent(data, function(d) { return d.ghg[year_to_display]*5 }))
           .range([0, width - margin.left - margin.right])
@@ -334,20 +332,15 @@ function scatterchart() {
     return chart;
   }
 
-  return chart; 
+  return chart;
 }
 
-var chart = scatterchart();
+var chart_width = d3.select("#chart").node().clientWidth;
+var chart_height = Math.ceil(chart_width * 0.5);
+
+var chart = scatterchart(chart_width, chart_height);
 
 function draw() {
-  
-  // Get the window width and height
-  var width = d3.select("body").node().clientWidth;
-  var height = d3.select("body").node().clientHeight;
-
-  // Set the chart size
-  chart.width(width * 0.8);
-  chart.height(height - 30);
 
   // Now add the chart to the screen
   instcap = d3.select("body").selectAll('#chart')
@@ -379,7 +372,7 @@ function updateScenarioColours() {
 function setupScenarios() {
   var scenario_rows, new_scenario_row;
   var cases_by_scenario = d3.map();
-  var cases_for_scenario; 
+  var cases_for_scenario;
 
   // Load up the scenarios map with every case in that scenario
   data.forEach(function(d) {
@@ -426,8 +419,8 @@ function setupScenarios() {
     // Remove the old colourings
     d3.selectAll(".s"+d.key).classed(classes_to_apply_for_scenarios[d.value], false);
     d3.select(this).classed(classes_to_apply_for_scenarios[d.value], false);
-    
-    d3.select(this).classed("selected", false); 
+
+    d3.select(this).classed("selected", false);
     d3.selectAll("circle.case").classed("selected", false);
 
     // Choose the next colour in the sequence
@@ -447,15 +440,15 @@ function setupScenarios() {
 
   // This highlights all cases that have the scenario
   // if the user hovers over a scenario in the filter table
-  scenario_rows.on("mouseover", function(d) { 
+  scenario_rows.on("mouseover", function(d) {
     d3.select(this).select("td.colour").text("black");
-    d3.select(this).classed("selected", true); 
+    d3.select(this).classed("selected", true);
     d3.selectAll("circle.case").classed("selected", false);
     d3.selectAll("circle.s"+d.key).classed("selected", true);
   });
 
-  scenario_rows.on("mouseout", function(d) { 
-    d3.select(this).classed("selected", false); 
+  scenario_rows.on("mouseout", function(d) {
+    d3.select(this).classed("selected", false);
     d3.select(this).select("td.colour").text(classes_to_apply_for_scenarios[d.value]);
     d3.selectAll("circle.case").classed("selected", false);
   });

@@ -1,3 +1,7 @@
+#2015-05-07
+
+* Fixed the chart with for the cost emissions scatter in IE9
+
 #2015-05-05
 
 * The build rate chart by default only shows the top 10 costs

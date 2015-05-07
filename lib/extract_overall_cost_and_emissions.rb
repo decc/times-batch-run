@@ -26,6 +26,7 @@ class ExtractOverallCostAndEmissions
   end
 
   def extract_overall_cost_and_emissions_from(name, gdx)
+    p name, gdx.scenarios
     results = { name: name }
 	  cost = gdx.objz
     results[:cost] = cost / 1.0e6 # Convert from £M to £trn
