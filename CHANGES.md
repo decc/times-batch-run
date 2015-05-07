@@ -1,6 +1,7 @@
 #2015-05-07
 
 * Fixed the chart with for the cost emissions scatter in IE9
+* replace all "." in scenario names with "_" in CreateRunFiles
 
 #2015-05-05
 

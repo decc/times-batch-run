@@ -24,23 +24,23 @@ class CreateRunFiles
 
         list_of_dd_files = []
         list_of_scenarios = []
-        
+
         c.each.with_index do |scenario_name, column_number|
-          next if column_number == 0 # Skip the name of the case 
+          next if column_number == 0 # Skip the name of the case
           if nil_scenario_file?(scenario_name)
             list_of_scenarios << "default_#{headers[column_number]}"
             next
           end
-          
-          list_of_scenarios << scenario_name.gsub(' ', '_')
+
+          list_of_scenarios << scenario_name.gsub(' ', '_').gsub('.', '_')
 
           unless scenario_file_exists?(scenario_name)
             missing_scenario_files[scenario_name] = true
           end
-            
-          list_of_dd_files << "$BATINCLUDE #{scenario_filename_from_name(scenario_name)}" 
+
+          list_of_dd_files << "$BATINCLUDE #{scenario_filename_from_name(scenario_name)}"
         end
-      
+
         list_of_dd_files = list_of_dd_files.join("\n")
         f.puts run_file_template.result(binding)
       end
@@ -73,12 +73,12 @@ class CreateRunFiles
     tsv.delete_if { |line| line.start_with?("#") }
     # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
     tsv.delete_if { |line| line.start_with?('"#') }
-    
+
     # Split the lines on tabs
     tsv.map! do |line|
       line.split(/\t+/)
     end
-    
+
     @headers = tsv[0]
     @list_of_cases ||= tsv[1..-1] # [1..-1] Skip the title row
   end
@@ -87,7 +87,7 @@ class CreateRunFiles
     @run_file_template ||= ERB.new(IO.readlines(name_of_run_file_template).join)
   end
 
-  def places_to_look_for_scenario_files 
+  def places_to_look_for_scenario_files
     [destination_folder_for_run_files]
   end
 
