@@ -43,7 +43,6 @@ class CreateRunFiles
           unless scenario_file_exists?(scenario_name)
             missing_scenario_files[scenario_name] = true
           end
-
           list_of_dd_files << "$BATINCLUDE #{scenario_filename_from_name(scenario_name)} #{scenario_arguments.join(" ")}" 
         end
 

@@ -66,6 +66,6 @@ Renewables Target	re_target	NIL
 																						
 # And now a variety of electricity build rate constraints.																						
 ElectricityBuildRate	uc_elc	UC_ELC_DECCDDM_0.2																				
-																						
+
 "# This has to go at the end, after the budget levels have been entered"																						
 Always	carbon_budget_execute																					
