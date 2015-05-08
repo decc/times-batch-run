@@ -1,6 +1,7 @@
 #2015-05-08
 
 * Changed the label on the build rate chart to be clearer
+* Added DDM build rate constraints to example possible_scenarios.tsv
 
 #2015-05-07
 
