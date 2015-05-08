@@ -1,3 +1,7 @@
+#2015-05-08
+
+* Changed the label on the build rate chart to be clearer
+
 #2015-05-07
 
 * Fixed the chart with for the cost emissions scatter in IE9
