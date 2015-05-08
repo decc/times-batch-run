@@ -320,7 +320,7 @@ class BatchRun
 
   def tell_the_user_how_to_view_results
     puts "You can now view the results by running:"
-    puts "ruby -run -e httpd results -p 8000"
+    puts "ruby -run -e httpd #{settings.results_folder} -p 8000"
     puts "And then opening your webbrowser at http://localhost:8000/cost-emissions-scatter.html"
   end
 
@@ -348,6 +348,10 @@ if __FILE__ == $0
 
     opts.on("-r", "--results-only", "Skip all the steps except for generating the results file") do
       batch_run.settings.results_only = true
+    end
+
+    opts.on("--results-folder [folder]", "The folder in which to write the results") do |folder|
+      batch_run.settings.results_folder = folder
     end
 
     opts.on_tail("--version", "Show version") do

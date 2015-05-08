@@ -2,6 +2,7 @@
 
 * Changed the label on the build rate chart to be clearer
 * Added DDM build rate constraints to example possible_scenarios.tsv
+* Added a command line switch --results-folder to go.rb to specify where results should go
 
 #2015-05-07
 
