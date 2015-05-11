@@ -1,5 +1,5 @@
 parameter
-ets_allocation(ALLYEAR)
+ets_volume(ALLYEAR)
 /
 2010	237.575988
 2015	226.1890679

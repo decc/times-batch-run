@@ -1,46 +1,93 @@
+;
 * FIXME: International aviation and shipping?
-* Seems the approach is to make international aviation and shipping zero emissions
+* FIXME: Interpolation
+* FIXME: Zero twenty fifty target - interpreted as zero? or as not binding?
+* FIXME: What if transition from ets to territorial emissions in a non CB year? Do we need to manually interpolate? 
+* FIXME: How do we work out the value of EU ETS allowances. Can we do it here?
+* FIXME: What happens if ETS price hasn't aready been loaded?
+* FIXME: Do we clobber other things when we set the ETS price to zero in certain periods?
 
-* NB: multiply by 1000 to get into ktCO2e and divide by 5 to get from budget to single year value
+* NOTE: multiply by 1000 to get into ktCO2e and divide by 5 to get from budget to single year value
+* NOTE: $(ALLYEAR ge territorial_from) means only assign for years greater than the territorial_from parameter
+* NOTE: $OFFEPS means setting to zero eliminates a parameter. $ONEPS would actually mean it would set to zero. 
+* NOTE: It is important to set a ; at the start of an included file, and after including other files, otherwise you get unrelated and hard to fathom error messages
 
 * TERRITORIAL EMISSIONS CONSTRAINTS
 
 * We start by working on the years where we are applying the carbon budget territorially
-* $(ALLYEARS ge territorial_from) means only assign for years greater than the territorial_from parameter
+
 
 * First make sure that the constraint doesn't bind
-COM_BNDNET('UK',ALLYEARS,'GHGTOT','ANNUAL','UP') = +INF;
-
-* Then bind it for the years when it should bind
-COM_BNDNET('UK',ALLYEARS,'GHGTOT','ANNUAL','UP')$(ALLYEARS ge territorial_from) = carbonbudget(ALLYEAR)*1000/5;
-
+$OFFEPS
+COM_BNDNET('UK',ALLYEAR,'GHGTOT','ANNUAL','UP') = 0;
+ 
+* Then bind it for the years when we want territorial emissions and when there is a carbon budget
+COM_BNDNET('UK',ALLYEAR,'GHGTOT','ANNUAL','UP')
+    $(YEARVAL(ALLYEAR) ge territorial_from
+    $(carbonbudget(ALLYEAR) ne 0)) 
+    = 
+    (carbonbudget(ALLYEAR)/5)
+    * 1000;
+  
 * If there is a territorial twenty_fifty target apply it here
-COM_BNDNET('UK','2050','GHGTOT','ANNUAL','UP')$('2050' ge territorial_from) = twenty_fifty_target;
-
-* FIXME: How do we handle the territorial transition and interpolation? Do we need to manually interpolate?
+COM_BNDNET('UK','2050','GHGTOT','ANNUAL','UP')
+    $(2050 ge territorial_from) 
+    = 
+    twenty_fifty_target 
+    * 1000;
 
 * NON TRADED SECTOR EMISSIONS CONSTRAINTS
+ 
+* We are assuming that a UC_NonETS has already been definied in a scenario file, that specifies what is covered by the non traded sector
 
-* This defines what the constraint applies to
-$include 'non-ets_target';
+* Now make sure that, in general, the Non ETS constraint doesn't bind, by eliminating all previous values
+$OFFEPS
 
-* Now make sure that, in general, the constraint doesn't bind
-UC_RHSRTS('UK'.'UC_NonETS',ALLYEARS,'ANNUAL','UP') = +INF;
+UC_RHSRTS('UK','UC_NonETS', ALLYEAR, 'ANNUAL', 'UP')
+    $(UC_RHSRTS('UK','UC_NonETS', ALLYEAR, 'ANNUAL', 'UP') ne 0) 
+    = 0;
 
 * Then bind it for the years when it should bind
-UC_RHSRTS('UK'.'UC_NonETS',ALLYEARS,'ANNUAL','UP')$(ALLYEARS lt territorial_from) = (carbonbudget(ALLYEAR)*1000/5) - (ets_volume(ALLYEAR)*1000);
+UC_RHSRTS('UK','UC_NonETS',ALLYEAR,'ANNUAL','UP')
+    $(YEARVAL(ALLYEAR) lt territorial_from 
+    $(carbonbudget(ALLYEAR) ne 0)) 
+    = 
+    (
+        (carbonbudget(ALLYEAR)/5) 
+        - 
+        ets_volume(ALLYEAR)
+    ) * 1000;
+    
+* Then bind it for the 2050 target, if we should
+UC_RHSRTS('UK','UC_NonETS','2050','ANNUAL','UP')
+    $(2050 lt territorial_from) 
+    = 
+    (
+        twenty_fifty_target 
+        - 
+        ets_volume('2050')
+    ) * 1000;
 
-* FIXME: How do we handle the territorial transition and interpolation? Do we need to manually interpolate?
-UC_RHSRTS('UK'.'UC_NonETS','2050','ANNUAL','UP')$(ALLYEARS lt territorial_from) = twenty_fifty_target - ets_volume('2050');
-
+ 
 * ETS PRICE
 
 * The ETS price will aleady have been loaded
-
+* FIXME: What happens if it hasn't been?
 * Now make sure that the price is zero for years when we are doing territorial budgets
 * FIMXE: DO THESE CLOBER OTHER THINGS?
-* Offeps to make sure that when we put zero, we are eliminating the constraint
-$OFFEPS 
-COM_CSTNET('UK',ALLYEARS,'PRCCO2N','ANNUAL','GBP')$(ALLYEARS ge territorial_from) = 0;
-FLO_COST('UK',ALLYEARS,p,c,'ANNUAL','GBP')$(ALLYEARS ge territorial_from) = 0;
+$OFFEPS
+COM_CSTNET('UK',ALLYEAR,'PRCCO2N','ANNUAL','GBP')
+    $(YEARVAL(ALLYEAR) ge territorial_from) 
+    = 0;
 
+$OFFEPS
+FLO_COST('UK',ALLYEAR,p,c,'ANNUAL','GBP')
+    $(YEARVAL(ALLYEAR) ge territorial_from) 
+    = 0;
+    
+display COM_BNDNET;
+display UC_RHSRTS;
+display COM_CSTNET;
+display FLO_COST;
+
+abort "Carbon Budget setup";
