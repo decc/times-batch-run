@@ -38,7 +38,7 @@ class CreateRunFiles
             next
           end
 
-          list_of_scenarios << scenario_name.gsub(' ', '_').gsub('.', '_')
+          list_of_scenarios << scenario.gsub(' ', '_').gsub('.', '_')
 
           unless scenario_file_exists?(scenario_name)
             missing_scenario_files[scenario_name] = true
