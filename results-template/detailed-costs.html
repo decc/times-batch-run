@@ -62,6 +62,24 @@
 
   <script>
 
+  function code_to_name_lookup() {
+    var codes = d3.map();
+
+    d3.tsv("codes.tsv").get(function(error, rows) {
+      rows.forEach(function(row) {
+        codes.set(row['Code'], row['Short']);
+      });
+    });
+    
+    function lookup(code) {
+      return codes.get(code) || code;
+    };
+    
+    return lookup;
+  }
+  
+  var code_lookup = code_to_name_lookup();
+
 var topic = "Cost";
 
 var a_name = "Scenario A";
@@ -357,7 +375,7 @@ var draw = function() {
     .attr("dy", '0.3em');
 
   labels
-    .text(function(d) { return d.label; })
+    .text(function(d) { return code_lookup(d.label); })
     .attr("fill", function(d) { return color(d.css); })
     .attr("class", function(d) { return "label "+d.type+" "+d.css; })
     .attr("x", function(d) { return x(d.x);  })

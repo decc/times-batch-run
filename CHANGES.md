@@ -1,3 +1,7 @@
+#2015-05-14
+
+* The detailed cost chart now uses human readable names, rather than codes
+
 #2015-05-08
 
 * Changed the label on the build rate chart to be clearer
