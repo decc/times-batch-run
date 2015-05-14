@@ -114,6 +114,25 @@ Data expected in this form:
 
 
 **/
+
+function code_to_name_lookup() {
+  var codes = d3.map();
+
+  d3.tsv("codes.tsv").get(function(error, rows) {
+    rows.forEach(function(row) {
+      codes.set(row['Code'], row['Short']);
+    });
+  });
+  
+  function lookup(code) {
+    return codes.get(code) || code;
+  };
+  
+  return lookup;
+}
+
+var code_lookup = code_to_name_lookup();
+
 function linechart(width, height) {
 
   var margin = {top: 30, right: 75, bottom: 30, left: 50};
@@ -343,7 +362,7 @@ function draw(data_to_draw) {
 
   new_process.append("div")
       .attr("class", "process_name")
-      .text(function(d) { return d.p; });
+      .text(function(d) { return code_lookup(d.p); });
   
   new_process.append("div").attr("class", "instcap");
   new_process.append("div").attr("class", "costperunit");
