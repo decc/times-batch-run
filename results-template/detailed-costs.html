@@ -50,7 +50,17 @@
 	  width: 97%;
 	  height: 200px;
   }
-
+  
+  text#b_over_a_label, text#diff_over_a_total_label {
+    font-size: 10px;
+    fill: #6baed6;
+  }
+  
+  line#a_total_line, line#b_total_line, line#diff_total_line {
+    stroke: rgb(231,231,231);
+	  shape-rendering: crispEdges;
+	  stroke-thickness: 1px;
+  }
   </style>
   <title></title>
   <body>
@@ -98,13 +108,15 @@ var data = {
 var a_positive_total = 0, 
     b_positive_total = 0, 
     a_negative_total = 0, 
-    b_negative_total = 0;
-    diff_positive_total = 0;
-    diff_negative_total = 0;
+    b_negative_total = 0,
+    diff_positive_total = 0,
+    diff_negative_total = 0,
+    b_total_over_a_total = 0,
+    diff_over_a_total = 0;
 
 var number_of_columns = 0;
 
-var margin = {top: 20, right: 20, bottom: 30, left: 50},
+var margin = {top: 20, right: 120, bottom: 30, left: 50},
     width = window.innerWidth - margin.left - margin.right,
     height = window.innerHeight - margin.top - margin.bottom;
 
@@ -122,6 +134,7 @@ var minimum_value_for_display_stack = 0; // Set once scale is set
 var minimum_pixels_for_display_brick = 2;
 var minimum_value_for_display_brick = 0; // Set once scale is set
 var minimum_pixels_for_label_y_spacing = 10;
+var percent_format = d3.format(".0%");
 
 var yAxis = d3.svg.axis()
     .scale(y)
@@ -185,11 +198,16 @@ svg.append("text")
   .attr("x", width/2)
   .text("Difference in "+topic+" between the scenarios");
 
+var differencegroup = svg.append("g").attr("class","diffrencegroup");
 var boxgroup = svg.append("g").attr("class", "boxgroup");
 var linegroup = svg.append("g").attr("class", "linegroup");
 var labelgroup = svg.append("g").attr("class", "labelgroup");
 
-
+differencegroup.append("line").attr("id","a_total_line");
+differencegroup.append("line").attr("id","b_total_line");
+differencegroup.append("line").attr("id","diff_total_line");
+differencegroup.append("text").attr("id","b_over_a_label").attr("dy","3").attr("text-anchor","end");
+differencegroup.append("text").attr("id","diff_over_a_total_label").attr("dy","3").attr("text-anchor","end");
 
 var data_loaded = function() { 
   var y_domain = [0,0];
@@ -303,7 +321,6 @@ var position_data = function() {
       }
       d.label_y = desired_y;
       });
-
 }
 
 var stack = function(type, data, parameter, y_start, x_start, x_inc) {
@@ -340,7 +357,6 @@ var draw = function() {
   color.domain(used_ids.values());
 
   // All the bricks
-
   bricks = boxgroup.selectAll(".brick").data(all_data, function(d) { return d.unique_id; });
 
   bricks.enter().append("rect");
@@ -356,7 +372,6 @@ var draw = function() {
     .attr("height", function(d) { return y(d.y0)-y(d.y1); });
 
   // Update the axes
-
   d3.select(".y.axis").call(yAxis);
 
   d3.select(".x.axis line")
@@ -366,7 +381,6 @@ var draw = function() {
     .attr('y2', y(0));
 
   // Labels
-
   labels = labelgroup.selectAll(".label").data(all_data, function(d) { return d.unique_id; });
   
   labels.exit().remove();
@@ -395,7 +409,6 @@ var draw = function() {
     .attr("dx", x.rangeBand()/2);
 
   // Lines from labels to bricks
-
   label_lines = linegroup.selectAll(".labelline").data(data.diff_negative.concat(data.diff_positive), function(d) { return d.unique_id; });
 
   label_lines.enter().append("line")
@@ -412,7 +425,6 @@ var draw = function() {
     .attr("y2", function(d) { return y(d.label_y); });
 
   // Extra connecting lines
-
   var lines = linegroup.selectAll("line.connector.dp").data(data.diff_positive, function(d) { return d.unique_id; });
 
   lines.enter().append("line").attr("class", "connector dp");
@@ -522,6 +534,41 @@ var draw = function() {
     .attr("width", x(number_of_columns-3)-x(3)+5)
     .attr("y", 0)
     .attr("height", y(a_negative_total + a_positive_total + diff_negative_total)+50);
+  
+  var right_end_point_for_total_line = x.rangeExtent()[1] + (margin.right+100); // TODO: Why extra 100?
+  
+  // Now the lines to help highlight the percentage increase
+  d3.select("#a_total_line")
+    .attr('x1', function(d) { return x(1); })
+    .attr('x2', function(d) { return right_end_point_for_total_line; })
+    .attr('y1', function(d) { return y(a_positive_total + a_negative_total); })
+    .attr('y2', function(d) { return y(a_positive_total + a_negative_total); });
+
+  d3.select("#b_total_line")
+    .attr('x1', function(d) { return x(number_of_columns-1); })
+    .attr('x2', function(d) { return right_end_point_for_total_line; })
+    .attr('y1', function(d) { return y(b_positive_total + b_negative_total); })
+    .attr('y2', function(d) { return y(b_positive_total + b_negative_total); });
+
+  d3.select("#diff_total_line")
+    .attr('x1', function(d) { return x(1); })
+    .attr('x2', function(d) { return right_end_point_for_total_line; })
+    .attr('y1', function(d) { return y(a_positive_total + a_negative_total+diff_negative_total); })
+    .attr('y2', function(d) { return y(a_positive_total + a_negative_total+diff_negative_total); });
+    
+  d3.select("#diff_over_a_total_label")
+    .attr('x', function(d) { return right_end_point_for_total_line })
+    .attr('y', function(d) { return y( ((a_positive_total + a_negative_total + diff_negative_total) + (a_positive_total + a_negative_total))/2) })
+    .text(percent_format(diff_over_a_total)+" of costs change");
+
+  d3.select("#b_over_a_label")
+    .attr('x', function(d) { return right_end_point_for_total_line })
+    .attr('y', function(d) { return y( (a_positive_total + a_negative_total + b_positive_total + b_negative_total)/2) })
+    .text(percent_format(b_total_over_a_total-1)+" cost "+direction(b_total_over_a_total-1));
+}
+
+function direction(number) {
+  return number > 0 ? "increase" : "decrease";
 }
 
 var add_data_point = function(d) { // Munge the data
@@ -588,6 +635,8 @@ function reformat_data() {
 		}
 	});
 	combined_data.forEach(function(process_name, d) { add_data_point(d); });
+  b_total_over_a_total = (b_positive_total + b_negative_total) / (a_positive_total + a_negative_total);
+  diff_over_a_total = ( -diff_negative_total ) / (a_positive_total + a_negative_total);
 }
 
 var cases = [];
@@ -618,7 +667,7 @@ function all_cases_loaded() {
     number_of_columns = 0;
 
     reformat_data();
-    data_loaded();
+    data_loaded();    
 };
 
 function case_loaded(individual_case) {
@@ -656,9 +705,6 @@ if(settings[0] == "") {
   }
 	list_of_cases_loaded();
 }
-
-
-
   </script>
 </body>
 </html>

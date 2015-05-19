@@ -1,3 +1,7 @@
+#2015-05-19
+
+* The detailed cost chart now shows percentage changes
+
 #2015-05-14
 
 * The detailed cost chart now uses human readable names, rather than codes
