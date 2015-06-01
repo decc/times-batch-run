@@ -1,3 +1,7 @@
+#2015-06-01
+
+* The incremental costs by scenario now has a better opacity and changed ordering
+
 #2015-05-19
 
 * The detailed cost chart now shows percentage changes

@@ -55,7 +55,6 @@ text.percentage_difference_range {
 
 rect {
   fill: black;
-  fill-opacity: 0.3;
 }
 
 rect.hover {
@@ -191,12 +190,9 @@ function uncertain_flying_brick() {
           .range([height - margin.top - margin.bottom, 0])
           .nice();
 
-        //svg.select(".y.axis")
-        //  .call(yAxis);
-
         // Update the x-axis 
         x
-          .domain([from_scenario, "difference", to_scenario])
+          .domain([from_scenario, to_scenario, "difference"])
           .rangeRoundBands([0, width - margin.left - margin.right],0.1);
 
         svg.select(".x.axis")
@@ -243,11 +239,14 @@ function uncertain_flying_brick() {
 
         new_cases = cases.enter().append("rect").attr("class", "case");
 
+        var case_rectangle_opacity = 1.0 / data.length;
+
         cases
           .attr("height", function(d) { return d.value.height; })
           .attr("width", x.rangeBand())
           .attr("x", function(d) { return x(d.key); }) // Because the x position is set by the scenario group
-          .attr("y", function(d) { return d.value.base; });
+          .attr("y", function(d) { return d.value.base; })
+          .attr("style", "fill-opacity: "+case_rectangle_opacity);
 
         cases.exit().remove();
 
@@ -499,7 +498,6 @@ function list_of_cases_loaded(new_list_of_cases) {
 d3.select("#zoom_y").on('click', function() { chart.max_y_to_show(12); draw(); d3.event.preventDefault(); });
 d3.select("#autoscale_y").on('click', function() { chart.max_y_to_show(undefined); draw(); d3.event.preventDefault(); });
 
-// FIXME: ALlow multiple list of cases to be loaded
 d3.text('index.txt', list_of_cases_loaded);
 </script>
 </body>
