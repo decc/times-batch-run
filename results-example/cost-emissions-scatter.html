@@ -116,7 +116,7 @@ text#x_value_of_case.show_crosshairs, text#y_value_of_case.show_crosshairs, text
 <h1 id='title'></h1>
 <div id='filter'>
   <table id='filter_table'>
-    <tr><th>Scenario</th><th>Colour</th></tr>
+    <tr><th>&lsquo;What if&rsquo;</th><th>Colour</th></tr>
   </table>
 </div>
 <div id='chart'>
@@ -410,7 +410,7 @@ function setupScenarios() {
     .attr("class", "colour");
 
   scenario_rows.select("td.name")
-    .text(function(d) { return d.key; });
+    .text(function(d) { return scenario_names.lookup(d.key); });
 
   scenario_rows.select("td.colour")
     .text(function(d) { return classes_to_apply_for_scenarios[d.value]; });
@@ -483,6 +483,26 @@ function setupCaseInformation() {
   });
 
 };
+
+function scenario_code_to_name_lookup() {
+  var codes = d3.map();
+
+  d3.tsv("scenario_names.tsv").get(function(error, rows) {
+      if (error) return console.warn(error);
+
+      rows.forEach(function(row) {
+        codes.set(row['Code'], row['Name']);
+        });
+      });
+
+  function lookup(code) {
+    return codes.get(code) || code;
+  };
+
+  return lookup;
+}
+
+var scenario_names = scenario_code_to_name_lookup();
 
 function all_cases_loaded() {
     setupScenarios();

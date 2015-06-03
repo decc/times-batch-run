@@ -1,6 +1,7 @@
 #2015-06-02
 
 * The detailed cost page now updates when you manually change the hash
+* The cost-emissions scatter now uses human readable scenario names, and calls them what-ifs
 
 #2015-06-01
 
