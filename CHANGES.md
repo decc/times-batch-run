@@ -1,3 +1,7 @@
+#2015-06-02
+
+* The detailed cost page now updates when you manually change the hash
+
 #2015-06-01
 
 * The incremental costs by scenario now has a better opacity and changed ordering

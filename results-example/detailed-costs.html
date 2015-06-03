@@ -684,7 +684,9 @@ function list_of_cases_loaded() {
 }
 
 settings = window.location.hash.slice(1).split(',');
-	
+
+window.onhashchange = function() { window.location.reload(false); };
+
 if(settings[0] == "") {
 	d3.text('index.txt', function(index_file) {
 		list_of_cases = index_file.split(/[\r\n]+/).filter(function(case_name) {
