@@ -410,7 +410,7 @@ function setupScenarios() {
     .attr("class", "colour");
 
   scenario_rows.select("td.name")
-    .text(function(d) { return scenario_names.lookup(d.key); });
+    .text(function(d) { return scenario_names(d.key); });
 
   scenario_rows.select("td.colour")
     .text(function(d) { return classes_to_apply_for_scenarios[d.value]; });
