@@ -1,3 +1,7 @@
+#2015-06-03
+
+* Fixed a bug in uc_elc in default possible_scenarios.tsv
+
 #2015-06-02
 
 * The detailed cost page now updates when you manually change the hash
