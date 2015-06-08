@@ -65,13 +65,16 @@ class BatchRun
   end
 
   def create_scenario_files
-    puts "Creating territorial emissions constraint files"
-    create_ghg_constraint_files = CreateGHGConstraintFiles.new('.')
-    create_ghg_constraint_files.go!
-
-    puts "Creating traded/non-traded emissions constraint files"
-    create_ghg_constraint_files = CreateNonTradedSectorConstraints.new('.')
-    create_ghg_constraint_files.go!
+    puts "Copying scenario files accross"
+    FileUtils.cp(Dir[File.join(File.dirname(__FILE__), "dd-files", "*.dd")], ".", verbose: true)
+    
+    #puts "Creating territorial emissions constraint files"
+    #create_ghg_constraint_files = CreateGHGConstraintFiles.new('.')
+    #create_ghg_constraint_files.go!
+    #
+    #puts "Creating traded/non-traded emissions constraint files"
+    #create_ghg_constraint_files = CreateNonTradedSectorConstraints.new('.')
+    #create_ghg_constraint_files.go!
   end
 
   def check_for_lists_of_cases_and_create_by_monte_carlo_if_needed

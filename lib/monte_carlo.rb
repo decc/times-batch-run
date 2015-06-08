@@ -81,8 +81,14 @@ class MonteCarlo
     set_of_all_possible_scenarios.each do |scenario|
       scenario.each.with_index do |one_possible_scenario_file,i|
         next if i == 0 # The first element in each row is the name of the set
-        next if scenario_file_exists?(one_possible_scenario_file)
-        missing_scenario_files << one_possible_scenario_file 
+        
+         # Can supply scenarios in the form: name space <arguments>
+        scenario_parts = one_possible_scenario_file.split(/\s+/)
+        scenario_name = scenario_parts.first
+        scenario_arguments = scenario_parts[1..-1]
+        
+        next if scenario_file_exists?(scenario_name)
+        missing_scenario_files << scenario_name 
       end
     end
   end
