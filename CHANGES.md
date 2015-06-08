@@ -1,3 +1,7 @@
+#2015-06-08
+
+* Start the wiring for the new carbon budget accounting approach in batch running
+
 #2015-06-03
 
 * Fixed a bug in uc_elc in default possible_scenarios.tsv
