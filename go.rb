@@ -214,7 +214,7 @@ class BatchRun
     puts "Executing #{case_name}"
     output_gdx_name = File.join(gdx_save_folder, case_name)
 
-    `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{output_gdx_name.gsub('/','\\')}`
+    `#{vt_gams} #{case_name} #{settings.times_source_folder} #{output_gdx_name.gsub('/','\\')}`
 
     if gdx_ok?(case_name)
       names_of_all_the_cases_that_solved.push(case_name)
