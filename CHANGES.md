@@ -1,4 +1,3 @@
-<<<<<<< ours
 #2015-06-08
 
 * Start the wiring for the new carbon budget accounting approach in batch running
@@ -24,11 +23,10 @@
 
 * The detailed cost chart now uses human readable names, rather than codes
 * The build rates chart now uses human readable names, rather than codes
-=======
+
 #2015-05-11
 
 * Fixed the go.rb command to respect the TIMES source folder setting
->>>>>>> theirs
 
 #2015-05-08
 
