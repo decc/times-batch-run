@@ -1,5 +1,0 @@
-;
-* A boolean. 
-* If 1, then will interpolate carbon constraints linearly from the last carbon budget to 2050. 
-* If 0, no contraints on carbon emissions between the last carbon budget and 2050
-steady_action_to_twenty_fifty_target = 0;
