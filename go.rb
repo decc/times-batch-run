@@ -38,12 +38,7 @@ class BatchRun
   def run
     check_we_are_in_the_right_spot
 
-    if settings.results_only
-      @names_of_all_the_cases_that_solved = names_of_all_the_cases.select {|case_name| gdx_ok?(case_name)}
-      write_results
-      tell_the_user_how_to_view_results
-      return
-    end
+    return results_only if settings.results_only
 
     create_scenario_files
 
@@ -53,6 +48,12 @@ class BatchRun
     check_files_needed_to_run_times_are_available
 
     run_cases
+    write_results
+    tell_the_user_how_to_view_results
+  end
+
+  def results_only
+    @names_of_all_the_cases_that_solved = names_of_all_the_cases.select {|case_name| gdx_ok?(case_name)}
     write_results
     tell_the_user_how_to_view_results
   end
@@ -350,7 +351,7 @@ if __FILE__ == $0
       batch_run.settings.results_only = true
     end
 
-    opts.on("--results-folder [folder]", "The folder in which to write the results") do |folder|
+    opts.on("--results-folder [folder]", "The folder in which to write the results (default results)") do |folder|
       batch_run.settings.results_folder = folder
     end
 
