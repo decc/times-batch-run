@@ -22,6 +22,10 @@ Always	uc_res
 Always	uc_rsr																					
 Always	uc_ser																					
 Always	uc_tra																					
+Always	carbonaccounting																					
+																						
+# This is a temporary fix to give international aviation an abatement option. Otherwise the model often fails to solve																						
+Always	scen_rsr_impbiojet-ft_act																					
 																						
 # Now we have things that are only included sometimes																						
 "# Each row is a mutually exclusive set (i.e., can only have one of the things in the row in any given scenario)"																						
@@ -30,7 +34,9 @@ Discount rate	discount_private	discount_stern
 																						
 # I have setup some dd files that accept arguments. One is the budget dd file which accepts a year and then a 5 year MtCO2e budget level																						
 "# First is budget, second is actual"																						
-CB1	budget 2010 3018	budget 2010 2982																				
+# CB1	budget 2010 3018	budget 2010 2982																				
+"# If you constrain to CB1, then triggers dummy imports. GHG calibration out?"																						
+CB1	budget 2010 3500																					
 "# First is budget, second is forecast"																						
 CB2	budget 2015 2782	budget 2015 2706																				
 "# First is budget, second is forecast"																						
@@ -46,12 +52,11 @@ twenty_fifty_target	total_cap 2050 160	total_cap 2050 160	total_cap 2050 160	tot
 																						
 # We need to decide about the EU ETS price and size																						
 ets_price	TradedPriceLow	TradedPriceCentral	TradedPriceHigh																			
-ets_cap 2010	ets_cap 2010																					
-ets_cap 2015	ets_cap 2015																					
-ets_cap 2020	ets_cap 2020	ets_cap 2020	ets_cap 2020																			
-ets_cap 2025	ets_cap 2025	ets_cap 2025	ets_cap 2025																			
-ets_cap 2030	ets_cap 2030	ets_cap 2030	ets_cap 2030																			
-ets_cap 2050	ets_cap 2050	ets_cap 2050	ets_cap 2050																			
+ets_cap 2015	ets_cap 2015 212																					
+ets_cap 2020	ets_cap 2020 145																					
+ets_cap 2025	ets_cap 2025 109																					
+ets_cap 2030	ets_cap 2030 90																					
+ets_cap 2050	ets_cap 2050 45																					
 																						
 # We need to include international aviation and shipping at some point (2100 means effectively never)																						
 international_aviation_and_shipping	remaining_ias_from 2020	remaining_ias_from 2025	remaining_ias_from 2030	remaining_ias_from 2050	remaining_ias_from 2100																	
