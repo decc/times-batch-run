@@ -1,3 +1,7 @@
+#2015-06-11
+
+* Remove obsolete dd-file-generators
+
 #2015-06-08
 
 * Start the wiring for the new carbon budget accounting approach in batch running

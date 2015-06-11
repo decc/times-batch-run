@@ -4,8 +4,6 @@ require 'ostruct'
 require 'optparse'
 require 'thwait'
 
-require_relative 'dd-file-generators/create-emissions-constraint-dd-files'
-require_relative 'dd-file-generators/create-non-traded-constraints'
 require_relative 'lib/monte_carlo'
 require_relative 'lib/create_run_files'
 require_relative 'lib/write_cost_and_emissions_data'
@@ -40,7 +38,7 @@ class BatchRun
 
     return results_only if settings.results_only
 
-    create_scenario_files
+    copy_dd_files_to_gams_working_directory
 
     check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
 
@@ -65,17 +63,9 @@ class BatchRun
     exit
   end
 
-  def create_scenario_files
+  def copy_dd_files_to_gams_working_directory
     puts "Copying scenario files accross"
     FileUtils.cp(Dir[File.join(File.dirname(__FILE__), "dd-files", "*.dd")], ".", verbose: true)
-    
-    #puts "Creating territorial emissions constraint files"
-    #create_ghg_constraint_files = CreateGHGConstraintFiles.new('.')
-    #create_ghg_constraint_files.go!
-    #
-    #puts "Creating traded/non-traded emissions constraint files"
-    #create_ghg_constraint_files = CreateNonTradedSectorConstraints.new('.')
-    #create_ghg_constraint_files.go!
   end
 
   def check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
