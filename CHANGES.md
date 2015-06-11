@@ -1,6 +1,7 @@
 #2015-06-11
 
 * Remove obsolete dd-file-generators
+* Cost-emissions scatter now shows the Carbon Budget rather than actual emissions
 
 #2015-06-08
 

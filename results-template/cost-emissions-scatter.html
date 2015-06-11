@@ -146,9 +146,14 @@ var data = [];
 var scenarios = d3.map();
 var classes_to_apply_for_scenarios = ["blue", "red", "yellow", "faint"];
 
+var year_to_display = '2030'
+
+function emissions_to_plot(d) {
+	return d.budget[year_to_display];
+}
+
 function scatterchart(width, height) {
 
-  var year_to_display = '2030'
 
   var margin = {top: 20, right: 50, bottom: 50, left: 50};
 
@@ -228,7 +233,7 @@ function scatterchart(width, height) {
 
         // Update the x-axis
         x
-          .domain(d3.extent(data, function(d) { return d.ghg[year_to_display]*5 }))
+          .domain(d3.extent(data, function(d) { return emissions_to_plot(d)}))
           .range([0, width - margin.left - margin.right])
           .nice();
 
@@ -259,7 +264,7 @@ function scatterchart(width, height) {
             .attr("class", function(d) { return "case "+d.scenarios.map(function(s) { return "s"+s; }).join(" ") }); // Prepend s, becausee some scenarios start with a number, which isn't valid as a css class name
 
         cases.selectAll("circle")
-          .attr("cx", function(d) { return x(d.ghg[year_to_display]*5); }) // Multiply by 5 for Carbon Budget
+          .attr("cx", function(d) { return x(emissions_to_plot(d)); })
           .attr("cy", function(d) { return y(d.cost); });
 
     });
@@ -296,21 +301,21 @@ function scatterchart(width, height) {
       .classed("show_crosshairs", true)
       .attr("x1", x.range()[0])
       .attr("y1", y(target.cost))
-      .attr("x2", x(target.ghg[year_to_display]*5)-3)
+      .attr("x2", x(emissions_to_plot(target))-3)
       .attr("y2", y(target.cost));
 
     d3.select("#line_to_x_axis")
       .classed("show_crosshairs", true)
-      .attr("x1", x(target.ghg[year_to_display]*5))
+      .attr("x1", x(emissions_to_plot(target)))
       .attr("y1", y(target.cost)+3)
-      .attr("x2", x(target.ghg[year_to_display]*5))
+      .attr("x2", x(emissions_to_plot(target)))
       .attr("y2", y.range()[0]);
 
     d3.select("#x_value_of_case")
       .classed("show_crosshairs", true)
-      .attr("x", x(target.ghg[year_to_display]*5))
+      .attr("x", x(emissions_to_plot(target)))
       .attr("y", y.range()[0]-2)
-      .text(cross_hair_label_format(target.ghg[year_to_display]*5));
+      .text(cross_hair_label_format(emissions_to_plot(target)));
 
     d3.select("#y_value_of_case")
       .classed("show_crosshairs", true)
@@ -320,7 +325,7 @@ function scatterchart(width, height) {
 
     d3.select("#name_of_case")
       .classed("show_crosshairs", true)
-      .attr("x", x(target.ghg[year_to_display]*5)+5)
+      .attr("x", x(emissions_to_plot(target))+5)
       .attr("y", y(target.cost)-5)
       .text(target.name);
 
