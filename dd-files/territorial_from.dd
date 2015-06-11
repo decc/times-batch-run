@@ -13,9 +13,9 @@ $ONMULTI # This allows us to overwrite previously set items
 
 scalar territorial_emissions_from_year /%1/;
 
-COM_BNDNET(ALLYEAR,'GHG-ETS-NO-IAS-NET','ANNUAL','UP')
+COM_BNDNET('UK',ALLYEAR,'GHG-ETS-NO-IAS-NET','ANNUAL','UP')
   $(YEARVAL(ALLYEAR) >= territorial_emissions_from_year) = 0; # Delete constraints on the ETS on and after the year
 
-COM_BNDNET(ALLYEAR,'Traded-Emission-ETS','ANNUAL','FX')
+COM_BNDNET('UK',ALLYEAR,'Traded-Emission-ETS','ANNUAL','FX')
   $(YEARVAL(ALLYEAR) >= territorial_emissions_from_year) = EPS; # Don't allow any trading from that year
 

@@ -1,1 +1,3 @@
-carbonbudget('%1') = %2;
+;
+$batinclude total_cap.dd %1 (%2/5.0)
+;

@@ -13,17 +13,12 @@ $ONMULTI # This allows us to overwrite previously set items
 
 scalar remaining_ias_from_year /%1/;
 
-COM_BNDNET(ALLYEAR,'GHG-YES-IAS-YES-LULUCF-TER','ANNUAL','UP')
+COM_BNDNET('UK',ALLYEAR,'GHG-YES-IAS-YES-LULUCF-NET','ANNUAL','UP')
   $(YEARVAL(ALLYEAR) >= remaining_ias_from_year 
-    $(COM_BNDNET(ALLYEAR,'GHG-NO-IAS-YES-LULUCF-TER','ANNUAL','UP')))  # This checks if the constraint exists
-  = COM_BNDNET(ALLYEAR,'GHG-NO-IAS-YES-LULUCF-TER','ANNUAL','UP');
+    $(COM_BNDNET('UK',ALLYEAR,'GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','UP')))  # This checks if the constraint exists
+  = COM_BNDNET('UK',ALLYEAR,'GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','UP');
 
-COM_BNDNET(ALLYEAR,'GHG-YES-IAS-YES-LULUCF-NET','ANNUAL','UP')
+COM_BNDNET('UK',ALLYEAR,'GHG-ETS-YES-IAS-NET','ANNUAL','UP')
   $(YEARVAL(ALLYEAR) >= remaining_ias_from_year 
-    $(COM_BNDNET(ALLYEAR,'GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','UP')))  # This checks if the constraint exists
-  = COM_BNDNET(ALLYEAR,'GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','UP');
-
-COM_BNDNET(ALLYEAR,'GHG-ETS-YES-IAS-NET','ANNUAL','UP')
-  $(YEARVAL(ALLYEAR) >= remaining_ias_from_year 
-    $(COM_BNDNET(ALLYEAR,'GHG-ETS-NO-IAS-NET','ANNUAL','UP')))  # This checks if the constraint exists
-  = COM_BNDNET(ALLYEAR,'GHG-ETS-NO-IAS-NET','ANNUAL','UP');
+    $(COM_BNDNET('UK',ALLYEAR,'GHG-ETS-NO-IAS-NET','ANNUAL','UP')))  # This checks if the constraint exists
+  = COM_BNDNET('UK',ALLYEAR,'GHG-ETS-NO-IAS-NET','ANNUAL','UP');
