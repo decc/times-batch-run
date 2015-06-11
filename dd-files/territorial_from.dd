@@ -1,0 +1,21 @@
+$ontext
+This dd file is used to remove ets caps from a particular year. It also prevents any import or exports of Traded-Emission-ETS from that year.
+
+It expects to be called in the form:
+
+$batincldue territorial_from YEAR
+
+$offtext
+
+$eolcom #
+$OFFEPS # If we something to zero we mean to delete it
+$ONMULTI # This allows us to overwrite previously set items
+
+scalar territorial_emissions_from_year /%1/;
+
+COM_BNDNET('UK',ALLYEAR,'GHG-ETS-NO-IAS-NET','ANNUAL','UP')
+  $(YEARVAL(ALLYEAR) >= territorial_emissions_from_year) = 0; # Delete constraints on the ETS on and after the year
+
+COM_BNDNET('UK',ALLYEAR,'Traded-Emission-ETS','ANNUAL','FX')
+  $(YEARVAL(ALLYEAR) >= territorial_emissions_from_year) = EPS; # Don't allow any trading from that year
+

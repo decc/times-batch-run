@@ -15,8 +15,7 @@ $ONEPS # This means if you specify 0 it doesn't remove the value, it just sets i
 $ONWARNING
 $ONMULTI # This allows us to overwrite previously set items
 
-PARAMETER
-COM_BNDNET ' '/
-0.GHG-ETS-NO-IAS-NET.ANNUAL.UP 1 # This forces interpolation between data points but no extrapolation
-%1.GHG-ETS-NO-IAS-NET.ANNUAL.UP (%2 * 1000) # We multiply by 1000 because UK TIMES measures i ktCO2e
-/
+;
+COM_BNDNET('UK','0','GHG-ETS-NO-IAS-NET','ANNUAL','UP') = 1; # This forces interpolation between data points but no extrapolation
+COM_BNDNET('UK','%1','GHG-ETS-NO-IAS-NET','ANNUAL','UP') = (%2 * 1000); # We multiply by 1000 because UK TIMES measures i ktCO2e
+;

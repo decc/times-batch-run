@@ -24,6 +24,10 @@
 * The detailed cost chart now uses human readable names, rather than codes
 * The build rates chart now uses human readable names, rather than codes
 
+#2015-05-11
+
+* Fixed the go.rb command to respect the TIMES source folder setting
+
 #2015-05-08
 
 * Changed the label on the build rate chart to be clearer
@@ -41,6 +45,8 @@
 * The build rate chart adjusts its width to fit window
 * go.rb now updates the results each time it solves a case
 * Fixed the detailed costs view to create the correct hash tag on startup
+* Renamed create-run-files.rb to create_run_files.rb for consistency
+* Can now pass arguments to dd files
 
 #2015-05-04
 

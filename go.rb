@@ -7,7 +7,7 @@ require 'thwait'
 require_relative 'dd-file-generators/create-emissions-constraint-dd-files'
 require_relative 'dd-file-generators/create-non-traded-constraints'
 require_relative 'lib/monte_carlo'
-require_relative 'lib/create-run-files'
+require_relative 'lib/create_run_files'
 require_relative 'lib/write_cost_and_emissions_data'
 require_relative 'lib/write_build_rates'
 require_relative 'lib/write_detailed_costs'
@@ -66,13 +66,16 @@ class BatchRun
   end
 
   def create_scenario_files
-    puts "Creating territorial emissions constraint files"
-    create_ghg_constraint_files = CreateGHGConstraintFiles.new('.')
-    create_ghg_constraint_files.go!
-
-    puts "Creating traded/non-traded emissions constraint files"
-    create_ghg_constraint_files = CreateNonTradedSectorConstraints.new('.')
-    create_ghg_constraint_files.go!
+    puts "Copying scenario files accross"
+    FileUtils.cp(Dir[File.join(File.dirname(__FILE__), "dd-files", "*.dd")], ".", verbose: true)
+    
+    #puts "Creating territorial emissions constraint files"
+    #create_ghg_constraint_files = CreateGHGConstraintFiles.new('.')
+    #create_ghg_constraint_files.go!
+    #
+    #puts "Creating traded/non-traded emissions constraint files"
+    #create_ghg_constraint_files = CreateNonTradedSectorConstraints.new('.')
+    #create_ghg_constraint_files.go!
   end
 
   def check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
@@ -212,7 +215,7 @@ class BatchRun
     puts "Executing #{case_name}"
     output_gdx_name = File.join(gdx_save_folder, case_name)
 
-    `#{vt_gams} #{case_name} GAMS_SRCTIMESV380 #{output_gdx_name.gsub('/','\\')}`
+    `#{vt_gams} #{case_name} #{settings.times_source_folder} #{output_gdx_name.gsub('/','\\')}`
 
     if gdx_ok?(case_name)
       names_of_all_the_cases_that_solved.push(case_name)
