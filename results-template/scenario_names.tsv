@@ -1,1 +1,96 @@
-Code	Name2050-target-abandoned	The 2050 target is abandoned after CB52050-target-hit	The 2050 target is hitcb3-beat	"CB3 is beat, rather than hit"cb3-hit	"CB3 is hit, rather than beat"cb4-hit	"CB4 is hit, rather than missed"cb4-missed	CB4 is missed as forecastcb5-1000	CB5 is set at 1000 MtCO2ecb5-1100	CB5 is set at 1100 MtCO2ecb5-1200	CB5 is set at 1200 MtCO2ecb5-1300	CB5 is set at 1300 MtCO2ecb5-1400	CB5 is set at 1400 MtCO2ecb5-1500	CB5 is set at 1500 MtCO2ecb5-1600	CB5 is set at 1600 MtCO2ecb5-1700	CB5 is set at 1700 MtCO2ecb5-1800	CB5 is set at 1800 MtCO2ecb5-1900	CB5 is set at 1900 MtCO2ecb5-2000	CB5 is set at 2000 MtCO2ecb5-2100	CB5 is set at 2100 MtCO2ecb5-2200	CB5 is set at 2200 MtCO2ecb5-2300	CB5 is set at 2300 MtCO2ecb5-2400	CB5 is set at 2400 MtCO2ecb5-2500	CB5 is set at 2500 MtCO2ecb5-2600	CB5 is set at 2600 MtCO2ecb5-2700	CB5 is set at 2700 MtCO2ecb5-2800	CB5 is set at 2800 MtCO2ecb5-2900	CB5 is set at 2900 MtCO2ecb5-3000	CB5 is set at 3000 MtCO2edefault_CCS	CCS is availabledefault_Nuclear	Nuclear is availabledefault_Renewables	2020 Renewable target misseddiscount_private	Higher discount ratediscount_stern	Lower discount ratesre_target	2020 renewable target hitrefscenario_deccv1_0	DECC Central demand projectionsrefscenario_ucl	UCL Central demand projectionsUC_ELC_DECCDDM_0_2	DDM limits on electricity deploymentuc_noccs	No CCSuc_nonuc	No new Nuclear
+Code	Name
+2050-target-abandoned	The 2050 target is abandoned after CB5
+2050-target-hit	The 2050 target is hit
+cb3-beat	"CB3 is beat, rather than hit"
+cb3-hit	"CB3 is hit, rather than beat"
+cb4-hit	"CB4 is hit, rather than missed"
+cb4-missed	CB4 is missed as forecast
+cb5-1000	CB5 is set at 1000 MtCO2e
+cb5-1100	CB5 is set at 1100 MtCO2e
+cb5-1200	CB5 is set at 1200 MtCO2e
+cb5-1300	CB5 is set at 1300 MtCO2e
+cb5-1400	CB5 is set at 1400 MtCO2e
+cb5-1500	CB5 is set at 1500 MtCO2e
+cb5-1600	CB5 is set at 1600 MtCO2e
+cb5-1700	CB5 is set at 1700 MtCO2e
+cb5-1800	CB5 is set at 1800 MtCO2e
+cb5-1900	CB5 is set at 1900 MtCO2e
+cb5-2000	CB5 is set at 2000 MtCO2e
+cb5-2100	CB5 is set at 2100 MtCO2e
+cb5-2200	CB5 is set at 2200 MtCO2e
+cb5-2300	CB5 is set at 2300 MtCO2e
+cb5-2400	CB5 is set at 2400 MtCO2e
+cb5-2500	CB5 is set at 2500 MtCO2e
+cb5-2600	CB5 is set at 2600 MtCO2e
+cb5-2700	CB5 is set at 2700 MtCO2e
+cb5-2800	CB5 is set at 2800 MtCO2e
+cb5-2900	CB5 is set at 2900 MtCO2e
+cb5-3000	CB5 is set at 3000 MtCO2e
+default_CCS	CCS is available
+default_Nuclear	Nuclear is available
+default_Renewables	2020 Renewable target missed
+discount_private	Higher discount rate
+discount_stern	Lower discount rates
+re_target	2020 renewable target hit
+refscenario_deccv1_0	DECC Central demand projections
+refscenario_ucl	UCL Central demand projections
+UC_ELC_DECCDDM_0_2	DDM limits on electricity deployment
+uc_elc	UCL limits on electricity deployment
+uc_noccs	No CCS
+uc_nonuc	No new Nuclear
+budget 2010 3018	CB1 Target
+budget 2010 2982	CB1 Forecast
+budget 2010 3500	CB1 Non-binding
+budget 2015 2782	CB2 Target
+budget 2015 2706	CB2 Forecast
+budget 2020 2544	CB3 Target
+budget 2020 2464	CB3 Forecast
+budget 2025 1950	CB4 Target
+budget 2025 2083	CB4 Forecast
+budget 2030 1000	CB5 1000
+budget 2030 1100	CB5 1100
+budget 2030 1200	CB5 1200
+budget 2030 1300	CB5 1300
+budget 2030 1400	CB5 1400
+budget 2030 1500	CB5 1500
+budget 2030 1600	CB5 1600
+budget 2030 1700	CB5 1700
+budget 2030 1800	CB5 1800
+budget 2030 1900	CB5 1900
+budget 2030 2000	CB5 2000
+budget 2030 2100	CB5 2100
+budget 2030 2200	CB5 2200
+budget 2030 2300	CB5 2300
+budget 2030 2400	CB5 2400
+budget 2030 2500	CB5 2500
+budget 2030 2600	CB5 2600
+budget 2030 2700	CB5 2700
+budget 2030 2800	CB5 2800
+budget 2030 2900	CB5 2900
+budget 2030 3000	CB5 3000
+budget 2030 3100	CB5 3100
+total_cap 2050 160	2050 Target hit
+total_cap 2050 999	2050 Target abandoned
+TradedPriceLow	Low carbon price (£39/tCO2e in 2030)
+TradedPriceCentral	Central carbon price (£78/tCO2e in 2030)
+TradedPriceHigh	High carbon price (£116/tCO2e in 2030)
+ets_cap 2015 216	Traded sector cap 2015 EEP 2014
+ets_cap 2015 183	Traded sector cap 2015 revised
+ets_cap 2020 197	Traded sector cap 2020 EEP 2014
+ets_cap 2020 166	Traded sector cap 2020 revised
+ets_cap 2025 138	Traded sector cap 2025 EEP 2014
+ets_cap 2025 143	Traded sector cap 2025 revised
+ets_cap 2030 119	Traded sector cap 2030 middle
+ets_cap 2030 131	Traded sector cap 2030 high
+ets_cap 2030 107	Traded sector cap 2030 low
+ets_cap 2050 25	Traded sector cap 2050 low
+ets_cap 2050 40	Traded sector cap 2050 middle
+ets_cap 2050 55	Traded sector cap 2050 high
+remaining_ias_from 2020	Include international aviation and shipping in 2020
+remaining_ias_from 2025	Include international aviation and shipping in 2025
+remaining_ias_from 2030	Include international aviation and shipping in 2030
+remaining_ias_from 2050	Include international aviation and shipping in 2050
+remaining_ias_from 2100	Never include international aviation and shippping
+territorial_from 2000	Treat budget as territorial
+territorial_from 2030	Tread budget as territorial from 2030
+territorial_from 2100	Keep traded/non-traded split
