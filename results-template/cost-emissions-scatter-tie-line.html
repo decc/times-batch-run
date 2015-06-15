@@ -575,9 +575,9 @@ function construct_tie_lines(data) {
 
 // Returns true if the only scenarios that differ
 // between list1 and list2 match the regular expression
-// which by default is /cb5-*/
+// which by default is /budget_2030_.*/
 function similar_scenarios(list1, list2) {
-  var exclude_scenarios = /cb5-.*/i;
+  var exclude_scenarios = /budget_2030_.*/i;
 
   for(var i = 0; i < list1.length; i++) {
     if(!exclude_scenarios.test(list1[i])) {
