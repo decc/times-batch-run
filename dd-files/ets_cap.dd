@@ -16,6 +16,9 @@ $ONWARNING
 $ONMULTI # This allows us to overwrite previously set items
 
 ;
-COM_BNDNET('UK','0','GHG-ETS-NO-IAS-NET','ANNUAL','UP') = 1; # This forces interpolation between data points but no extrapolation
-COM_BNDNET('UK','%1','GHG-ETS-NO-IAS-NET','ANNUAL','UP') = (%2 * 1000); # We multiply by 1000 because UK TIMES measures i ktCO2e
+COM_BNDNET('UK','0','GHG-ETS-NO-IAS-NET','ANNUAL','FX') = 1; # This forces interpolation between data points but no extrapolation
+COM_BNDNET('UK','%1','GHG-ETS-NO-IAS-NET','ANNUAL','FX') = (%2 * 1000); # We multiply by 1000 because UK TIMES measures i ktCO2e
 ;
+
+$OFFEPS
+COM_BNDNET('UK','%1','Traded-Emission-ETS','ANNUAL','FX') = 0;

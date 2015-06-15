@@ -1,3 +1,7 @@
+#2015-06-15
+
+* Tinker with ets_cap.dd to try and ensure trading happens
+
 #2015-06-11
 
 * Remove obsolete dd-file-generators
