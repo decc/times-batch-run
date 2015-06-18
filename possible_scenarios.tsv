@@ -2,6 +2,7 @@
 # Lines starting with # are ignored																						
 # Empty lines are ignored																						
 # Anything in column B or beyond is expected to be the name of a dd file that VEDA generates																						
+# Column A can be anything you like. It is just to help you keep organised.																						
 																						
 # We start with things that are always included in any scenario																						
 Always	base																					

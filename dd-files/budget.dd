@@ -1,3 +1,8 @@
 ;
+$ontext
+First argument %1 is the year which is the middle of the 5 year period (i.e., 2030 for CB5)
+Second argument %2 is the MtCO2e budget (i.e., 1950 for CB4)
+$offtext
+
 $batinclude total_cap.dd %1 (%2/5.0)
 ;
