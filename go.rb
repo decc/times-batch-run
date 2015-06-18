@@ -15,11 +15,11 @@ class BatchRun
   attr_accessor :settings
 
   def initialize
-    @settings = OpenStruct.new
     set_defaults
   end
 
   def set_defaults
+    @settings = OpenStruct.new
     settings.number_of_cases_to_montecarlo = 200
     settings.gams_working_folder =  "GAMS_WrkTIMES"
     settings.monte_carlo_file = "possible_scenarios.tsv"
@@ -35,25 +35,24 @@ class BatchRun
 
   def run
     check_we_are_in_the_right_spot
-
-    return results_only if settings.results_only
-
     copy_dd_files_to_gams_working_directory
-
     check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
-
     create_run_files
     check_files_needed_to_run_times_are_available
-
     run_cases
     write_results
     tell_the_user_how_to_view_results
   end
 
-  def results_only
-    @names_of_all_the_cases_that_solved = names_of_all_the_cases.select {|case_name| gdx_ok?(case_name)}
+  def run_results_only
+    find_existing_gdx_files
     write_results
     tell_the_user_how_to_view_results
+  end
+  
+  def find_existing_gdx_files
+    @names_of_all_the_cases_that_solved = names_of_all_the_cases.select {|case_name| gdx_ok?(case_name)}
+    puts "Found existing solutions for #{names_of_all_the_cases_that_solved.length} of the #{names_of_all_the_cases.length} cases in #{settings.list_of_cases_files.join(" ")}"
   end
 
   def check_we_are_in_the_right_spot
@@ -71,7 +70,6 @@ class BatchRun
   def check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
     settings.list_of_cases_files.each do |list_of_cases_file|
       next if File.exists?(list_of_cases_file)
-      puts "Can't find #{list_of_cases_file} so I'm going to generate it using the monte-carlo routine"
       unless File.exists?(settings.monte_carlo_file)
         puts "Can't find a list of all the possible scenarios."
         puts "I'm going to copy one here from the git repository"
@@ -88,6 +86,7 @@ class BatchRun
   end
 
   def create_list_of_cases_using_montecarlo(list_of_cases_file)
+    puts "Can't find #{list_of_cases_file} so I'm going to generate it using the monte-carlo routine"
     monte_carlo = MonteCarlo.new
     monte_carlo.name_of_list_of_cases = list_of_cases_file
     monte_carlo.number_of_cases_to_generate = settings.number_of_cases_to_montecarlo
@@ -322,6 +321,7 @@ end
 
 if __FILE__ == $0
   batch_run = BatchRun.new
+  settings = batch_run.settings
 
   # Command line options
   OptionParser.new do |opts|
@@ -329,23 +329,23 @@ if __FILE__ == $0
     opts.banner = "Usage: #{File.basename(__FILE__)} [options] [cases.tsv] [cases2.tsv]"
 
     opts.on("-n", "--number-of-cases-to-run N", Integer, "Only runs the first N cases") do |n|
-      batch_run.settings.only_run_the_first_n_cases = n
+      settings.only_run_the_first_n_cases = n
     end
 
     opts.on("--number-to-montecarlo N", Integer, "Generate N cases from the possible scenarios file. Only gets used if the list of cases is missing.") do |number|
-      batch_run.settings.number_of_cases_to_montecarlo = number
+      settings.number_of_cases_to_montecarlo = number
     end
 
     opts.on("-p", "--cases-in-parallel N", Integer, "Try and optimize N cases at the same time (in parallel).") do |number|
-      batch_run.settings.number_of_cases_to_optimize_simultaneously = number
+      settings.number_of_cases_to_optimize_simultaneously = number
     end
 
     opts.on("-r", "--results-only", "Skip all the steps except for generating the results file") do
-      batch_run.settings.results_only = true
+      settings.results_only = true
     end
 
     opts.on("--results-folder [folder]", "The folder in which to write the results (default results)") do |folder|
-      batch_run.settings.results_folder = folder
+      settings.results_folder = folder
     end
 
     opts.on_tail("--version", "Show version") do
@@ -355,8 +355,12 @@ if __FILE__ == $0
   end.parse!
 
   unless ARGV.empty?
-    batch_run.settings.list_of_cases_files = ARGV
+    settings.list_of_cases_files = ARGV
   end
 
-  batch_run.run
+  if settings.results_only 
+    batch_run.run_results_only
+  else
+    batch_run.run
+  end
 end

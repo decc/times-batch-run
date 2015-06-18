@@ -1,3 +1,7 @@
+#2015-06-18
+
+* Refactoring for readability
+
 #2015-06-15
 
 * Tinker with ets_cap.dd to try and ensure trading happens
