@@ -70,19 +70,21 @@ class BatchRun
   def check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
     settings.list_of_cases_files.each do |list_of_cases_file|
       next if File.exists?(list_of_cases_file)
-      unless File.exists?(settings.monte_carlo_file)
-        puts "Can't find a list of all the possible scenarios."
-        puts "I'm going to copy one here from the git repository"
-        puts FileUtils.copy(File.join(File.dirname(__FILE__),"possible_scenarios.tsv"), ".",  :verbose => true)
-        if File.exists?(settings.monte_carlo_file)
-          puts "Copied"
-        else
-          puts "Failed"
-          exit
-        end
-      end
+      copy_possible_scenarios_file_if_needed
       create_list_of_cases_using_montecarlo(list_of_cases_file)
     end
+  end
+
+  def copy_possible_scenarios_file_if_needed
+    return if File.exists?(settings.monte_carlo_file)
+    puts "Can't find a list of all the possible scenarios #{settings.monte_carlo_file}"
+    puts "I'm going to copy one here from the git repository"
+    puts FileUtils.copy(File.join(File.dirname(__FILE__),"possible_scenarios.tsv"), settings.monte_carlo_file,  :verbose => true)
+    unless File.exists?(settings.monte_carlo_file)
+      puts "Failed"
+      exit
+    end
+    puts "Copied"
   end
 
   def create_list_of_cases_using_montecarlo(list_of_cases_file)
@@ -94,11 +96,11 @@ class BatchRun
     monte_carlo.print_intent
     monte_carlo.run!
 
-    return unless monte_carlo.missing_scenario_files.length > 0
     warn_about_missing_scenarios(monte_carlo.missing_scenario_files)
   end
 
   def warn_about_missing_scenarios(missing_scenario_files)
+    return unless missing_scenario_files.length > 0
     puts <<-END
 
     There are scenario files missing:
@@ -132,35 +134,38 @@ class BatchRun
     create_run_files.name_of_run_file_template = settings.run_file_template
     create_run_files.run
 
-    return unless create_run_files.missing_scenario_files.length > 0
     warn_about_missing_scenarios(create_run_files.missing_scenario_files.keys)
-    exit
+    exit if create_run_files.missing_scenario_files.length > 0
   end
 
   def names_of_all_the_cases
     return @names_of_all_the_cases if @names_of_all_the_cases
     @names_of_all_the_cases = []
     settings.list_of_cases_files.each do |list_of_cases_file|
-      # We do the join/split in order to sort out the various mac / windows line endings
-      tsv = IO.readlines(list_of_cases_file).join.split(/[\n\r]+/)
-      # Delete empty lines
-      tsv.delete_if { |line| line.strip == "" }
-      # Delete lines starting with # (which we assume are comments)
-      tsv.delete_if { |line| line.start_with?("#") }
-      # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
-      tsv.delete_if { |line| line.start_with?('"#') }
-
-      # Split the lines on tabs
-      tsv.map! do |line|
-        line.split(/\t+/)
-      end
-      @names_of_all_the_cases.concat(tsv[1..-1].map(&:first)) # [1..-1] because first line should be titles
+      load_cases_from(list_of_cases_file)
     end
     # We can limit ourselves to processing only a few cases like this
     if settings.only_run_the_first_n_cases
       @names_of_all_the_cases = @names_of_all_the_cases.first(settings.only_run_the_first_n_cases)
     end
     @names_of_all_the_cases
+  end
+
+  def load_cases_from(list_of_cases_file)
+    # We do the join/split in order to sort out the various mac / windows line endings
+    tsv = IO.readlines(list_of_cases_file).join.split(/[\n\r]+/)
+    # Delete empty lines
+    tsv.delete_if { |line| line.strip == "" }
+    # Delete lines starting with # (which we assume are comments)
+    tsv.delete_if { |line| line.start_with?("#") }
+    # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
+    tsv.delete_if { |line| line.start_with?('"#') }
+
+    # Split the lines on tabs
+    tsv.map! do |line|
+      line.split(/\t+/)
+    end
+    @names_of_all_the_cases.concat(tsv[1..-1].map(&:first)) # [1..-1] because first line should be titles
   end
 
   def names_of_all_the_cases_that_solved
