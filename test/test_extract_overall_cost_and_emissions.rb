@@ -13,7 +13,6 @@ class TestExtractOverallCostAndEmissions < MiniTest::Test
       {
         name: "caseA",
         cost: 10.121626581776,  # £trn
-        scenarios: [],
         ghg: {
           2010 => 661.2213888708541, # MtCO2e
           2011 => 640.1470923687849,
@@ -28,7 +27,9 @@ class TestExtractOverallCostAndEmissions < MiniTest::Test
           2050 => 686.615966107009,
           2055 => 683.441917078986,
           2060 => 679.553604628085
-        }
+        },
+        budget: {},
+        scenarios: []
       }
     ]
     results = @extract.extract_overall_cost_and_emissions
