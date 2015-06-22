@@ -3,6 +3,7 @@ require 'fileutils'
 require 'ostruct'
 require 'optparse'
 require 'thwait'
+require 'json'
 
 require_relative 'lib/monte_carlo'
 require_relative 'lib/create_run_files'
@@ -10,7 +11,7 @@ require_relative 'lib/list_of_cases'
 require_relative 'lib/extract_overall_cost_and_emissions'
 require_relative 'lib/extract_build_rates'
 require_relative 'lib/extract_detailed_costs'
-require_relative 'lib/write_detailed_emissions'
+require_relative 'lib/extract_detailed_emissions'
 
 class BatchRun
 
@@ -271,13 +272,10 @@ class BatchRun
 
       puts "Creating flying brick cost charts"
       extract_and_write_result name, gdx, ExtractDetailedCosts.new, "detailed-costs.json"
-    end
 
     puts "Creating flying brick emissions charts"
-    writer = WriteDetailedEmissions.new
-    writer.file_names = gdx_files
-    writer.data_directory = settings.results_folder
-    writer.run
+      extract_and_write_result name, gdx, ExtractDetailedEmissions.new, "detailed-emissions.json"
+    end
 
     puts "Creating the index"
     write_index_txt

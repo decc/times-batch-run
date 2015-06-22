@@ -9,6 +9,10 @@ class ExtractDetailedEmissions
   attr_accessor :scenario_name
   attr_accessor :results
   
+  def extract_results
+    extract_detailed_emissions
+  end
+
   def extract_detailed_emissions
     extract_all_flows
     filter_emissions_flows
