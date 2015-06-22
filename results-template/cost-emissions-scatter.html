@@ -16,21 +16,22 @@ div {
 }
 
 div#chart {
-  width: 78%;
+  width: 58%;
 }
 
 div#filter {
   float: right;
-  width: 20%;
+  width: 40%;
   padding-top: 20px;
 }
 
-table#filter_table {
+table.filter_table {
+  float: left;
   font: 10px sans-serif;
-  width: 100%;
+  width: 45%;
 }
 
-table#filter_table th {
+table.filter_table th {
   text-align: left;
 }
 
@@ -115,9 +116,6 @@ text#x_value_of_case.show_crosshairs, text#y_value_of_case.show_crosshairs, text
 <body>
 <h1 id='title'></h1>
 <div id='filter'>
-  <table id='filter_table'>
-    <tr><th>&lsquo;What if&rsquo;</th><th>Colour</th></tr>
-  </table>
 </div>
 <div id='chart'>
 </div>
@@ -341,7 +339,7 @@ function scatterchart(width, height) {
 }
 
 var chart_width = d3.select("#chart").node().clientWidth;
-var chart_height = Math.ceil(chart_width * 0.5);
+var chart_height = Math.ceil(chart_width * 0.75);
 
 var chart = scatterchart(chart_width, chart_height);
 
@@ -378,6 +376,8 @@ function setupScenarios() {
   var scenario_rows, new_scenario_row;
   var cases_by_scenario = d3.map();
   var cases_for_scenario;
+  var sorted_scenarios;
+  var split_scenarios;
 
   // Load up the scenarios map with every case in that scenario
   data.forEach(function(d) {
@@ -398,8 +398,21 @@ function setupScenarios() {
       }
   });
 
-  scenario_rows = d3.select("table#filter_table").selectAll("tr.scenario")
-    .data(scenarios.entries());
+  sorted_scenarios = scenarios.entries().sort(function(a,b) { return d3.ascending(scenario_names(a.key),scenario_names(b.key)) });
+  var break_point = Math.ceil(sorted_scenarios.length/2);
+  split_scenarios = [sorted_scenarios.slice(0,break_point), sorted_scenarios.slice(break_point)];
+
+  var filter_tables = d3.select("#filter").selectAll("table.filter_table")
+  	.data(split_scenarios);
+
+  var new_filter_table_header = filter_tables.enter().append("table").attr("class","filter_table").append("tr");
+
+  new_filter_table_header.append("th").html("&lsquo;What if&rsquo;");
+  new_filter_table_header.append("th").html("Colour");
+
+  filter_tables.exit().remove();
+
+  scenario_rows = filter_tables.selectAll("tr.scenario").data(Object);
 
   new_scenario_row = scenario_rows.enter()
     .append("tr")

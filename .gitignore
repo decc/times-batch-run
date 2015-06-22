@@ -1,3 +1,5 @@
 *.dd~
 *.rb~
 *.md~
+*.swp
+*.html~

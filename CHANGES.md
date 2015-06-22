@@ -10,6 +10,8 @@
 #2015-06-15
 
 * Tinker with ets_cap.dd to try and ensure trading happens
+* Fix the tie line to use new carbon budget scenario name
+* Updated the scatter to show the scenarios in two columns
 
 #2015-06-11
 
