@@ -32,7 +32,7 @@ The rough steps are:
 
 ### Options
 
-Take a look at the source for each file to see further options.
+Run `ruby go.rb --help` to see further options
 
 The most important options relate to correctly setting the VEDA_FE directory for your system
 
