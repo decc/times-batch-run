@@ -19,8 +19,6 @@ class WriteDetailedEmissions
   def run
     extract_data
     write_data
-    write_index
-    copy_across_template_to_data_directory
   end
   
   def extract_data
@@ -60,13 +58,5 @@ class WriteDetailedEmissions
         f.puts d.to_json
       end
     end  
-  end
-
-  def write_index
-    File.open(File.join(data_directory, "index.txt"), 'w') { |f| f.puts data.keys.join("\n") }
-  end
-  
-  def copy_across_template_to_data_directory
-    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),'..',"results-template",'*')),data_directory)
   end
 end

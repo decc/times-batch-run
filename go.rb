@@ -252,8 +252,10 @@ class BatchRun
       Pathname.new(settings.results_folder).mkpath
     end
 
-    puts "Creating cost-emissions charts"
+    puts "Copying accross html"
+    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),"results-template",'*')),settings.results_folder)
 
+    puts "Creating cost-emissions charts"
     writer = WriteCostAndEmissionsData.new
     writer.file_names = gdx_files
     writer.data_directory = settings.results_folder
@@ -266,19 +268,18 @@ class BatchRun
     writer.run
 
     puts "Creating flying brick cost charts"
-
     writer = WriteDetailedCosts.new
     writer.file_names = gdx_files
     writer.data_directory = settings.results_folder
     writer.run
 
     puts "Creating flying brick emissions charts"
-
     writer = WriteDetailedEmissions.new
     writer.file_names = gdx_files
     writer.data_directory = settings.results_folder
     writer.run
 
+    puts "Creating the index"
     write_index_txt
   end
 

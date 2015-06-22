@@ -21,7 +21,6 @@ class WriteCostAndEmissionsData
     load_files
     extract_data
     write_data
-    copy_across_template_to_data_directory
   end
   
   def load_files
@@ -47,22 +46,13 @@ class WriteCostAndEmissionsData
   end
   
   def write_data
-    list_of_cases = []
-
-
     data.each do |d|
       case_name = d[:name]
-      list_of_cases.push(case_name)
       Pathname.new(File.join(data_directory, case_name)).mkpath
       File.open(File.join(data_directory, case_name, "costs-and-emissions-overview.json"), 'w') do |f|
         f.puts d.to_json
       end
     end  
-
-    File.open(File.join(data_directory, "index.txt"), 'w') { |f| f.puts list_of_cases.join("\n") }
   end
   
-  def copy_across_template_to_data_directory
-    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),'..',"results-template",'*')),data_directory)
-  end
 end
