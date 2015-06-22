@@ -5,39 +5,42 @@ cb3-beat	"CB3 is beat, rather than hit"
 cb3-hit	"CB3 is hit, rather than beat"
 cb4-hit	"CB4 is hit, rather than missed"
 cb4-missed	CB4 is missed as forecast
-cb5-1000	CB5 is set at 1000 MtCO2e
-cb5-1100	CB5 is set at 1100 MtCO2e
-cb5-1200	CB5 is set at 1200 MtCO2e
-cb5-1300	CB5 is set at 1300 MtCO2e
-cb5-1400	CB5 is set at 1400 MtCO2e
-cb5-1500	CB5 is set at 1500 MtCO2e
-cb5-1600	CB5 is set at 1600 MtCO2e
-cb5-1700	CB5 is set at 1700 MtCO2e
-cb5-1800	CB5 is set at 1800 MtCO2e
-cb5-1900	CB5 is set at 1900 MtCO2e
-cb5-2000	CB5 is set at 2000 MtCO2e
-cb5-2100	CB5 is set at 2100 MtCO2e
-cb5-2200	CB5 is set at 2200 MtCO2e
-cb5-2300	CB5 is set at 2300 MtCO2e
-cb5-2400	CB5 is set at 2400 MtCO2e
-cb5-2500	CB5 is set at 2500 MtCO2e
-cb5-2600	CB5 is set at 2600 MtCO2e
-cb5-2700	CB5 is set at 2700 MtCO2e
-cb5-2800	CB5 is set at 2800 MtCO2e
-cb5-2900	CB5 is set at 2900 MtCO2e
-cb5-3000	CB5 is set at 3000 MtCO2e
+cb5-1000	CB5 is 1000 MtCO2e
+cb5-1100	CB5 is 1100 MtCO2e
+cb5-1200	CB5 is 1200 MtCO2e
+cb5-1300	CB5 is 1300 MtCO2e
+cb5-1400	CB5 is 1400 MtCO2e
+cb5-1500	CB5 is 1500 MtCO2e
+cb5-1600	CB5 is 1600 MtCO2e
+cb5-1700	CB5 is 1700 MtCO2e
+cb5-1800	CB5 is 1800 MtCO2e
+cb5-1900	CB5 is 1900 MtCO2e
+cb5-2000	CB5 is 2000 MtCO2e
+cb5-2100	CB5 is 2100 MtCO2e
+cb5-2200	CB5 is 2200 MtCO2e
+cb5-2300	CB5 is 2300 MtCO2e
+cb5-2400	CB5 is 2400 MtCO2e
+cb5-2500	CB5 is 2500 MtCO2e
+cb5-2600	CB5 is 2600 MtCO2e
+cb5-2700	CB5 is 2700 MtCO2e
+cb5-2800	CB5 is 2800 MtCO2e
+cb5-2900	CB5 is 2900 MtCO2e
+cb5-3000	CB5 is 3000 MtCO2e
 default_CCS	CCS is available
 default_Nuclear	Nuclear is available
 default_Renewables	2020 Renewable target missed
-discount_private	Higher discount rate
-discount_stern	Lower discount rates
+discount_private	Discount rates - higher
+discount_stern	Discount rates - lower
 re_target	2020 renewable target hit
-refscenario_deccv1_0	DECC Central demand projections
-refscenario_ucl	UCL Central demand projections
-UC_ELC_DECCDDM_0_2	DDM limits on electricity deployment
-uc_elc	UCL limits on electricity deployment
-uc_noccs	No CCS
-uc_nonuc	No new Nuclear
+decc_low	Demand projections - DECC Low
+decc_central	Demand projections - DECC Central
+decc_high	Demand projections - DECC High
+refscenario_deccv1_0	Demand projections - DECC Central
+refscenario_ucl	Demand projections - UCL
+UC_ELC_DECCDDM_0_2	Electricity deployment limits - DDM
+uc_elc	Electricity deployment limits - UCL
+uc_noccs	CCS is NOT available
+uc_nonuc	Nuclear is NOT available
 budget_2010_3018	CB1 Target
 budget_2010_2982	CB1 Forecast
 budget_2010_3500	CB1 Non-binding
@@ -71,9 +74,9 @@ budget_2030_3000	CB5 3000
 budget_2030_3100	CB5 3100
 total_cap_2050_160	2050 Target hit
 total_cap_2050_999	2050 Target abandoned
-TradedPriceLow	Low carbon price (£39/tCO2e in 2030)
-TradedPriceCentral	Central carbon price (£78/tCO2e in 2030)
-TradedPriceHigh	High carbon price (£116/tCO2e in 2030)
+TradedPriceLow	Carbon price low (£39/tCO2e in 2030)
+TradedPriceCentral	Carbon price central (£78/tCO2e in 2030)
+TradedPriceHigh	Carbon price high (£116/tCO2e in 2030)
 ets_cap_2015_216	Traded sector cap 2015 EEP 2014
 ets_cap_2015_183	Traded sector cap 2015 revised
 ets_cap_2020_197	Traded sector cap 2020 EEP 2014
@@ -86,11 +89,11 @@ ets_cap_2030_107	Traded sector cap 2030 low
 ets_cap_2050_25	Traded sector cap 2050 low
 ets_cap_2050_40	Traded sector cap 2050 middle
 ets_cap_2050_55	Traded sector cap 2050 high
-remaining_ias_from_2020	Include international aviation and shipping in 2020
-remaining_ias_from_2025	Include international aviation and shipping in 2025
-remaining_ias_from_2030	Include international aviation and shipping in 2030
-remaining_ias_from_2050	Include international aviation and shipping in 2050
-remaining_ias_from_2100	Never include international aviation and shippping
-territorial_from_2000	Treat budget as territorial
-territorial_from_2030	Tread budget as territorial from 2030
-territorial_from_2100	Keep traded/non-traded split
+remaining_ias_from_2020	Include int. aviation and shipping in 2020
+remaining_ias_from_2025	Include int. aviation and shipping in 2025
+remaining_ias_from_2030	Include int. aviation and shipping in 2030
+remaining_ias_from_2050	Include int. aviation and shipping in 2050
+remaining_ias_from_2100	Include int. aviation and shipping - Never
+territorial_from_2000	Territorial budget
+territorial_from_2030	Territorial budget from 2030
+territorial_from_2100	Territorial budget - Never

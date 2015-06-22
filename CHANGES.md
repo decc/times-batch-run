@@ -2,6 +2,7 @@
 
 * Refactoring: extracted list of cases into its own class
 * Added a detailed emissions flying brick dump and chart
+* Replaced the update-* commands with a single update-results-example.rb
 
 #2015-06-18
 
