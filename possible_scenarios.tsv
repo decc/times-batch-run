@@ -14,7 +14,6 @@ Always	newres
 Always	newrsr																					
 Always	newser																					
 Always	newtra																					
-Always	refscenario																					
 Always	syssettings																					
 Always	uc_base																					
 Always	uc_ind																					
@@ -23,7 +22,7 @@ Always	uc_res
 Always	uc_rsr																					
 Always	uc_ser																					
 Always	uc_tra																					
-Always	carbonaccounting																					
+Always	accounting																					
 																						
 # This is a temporary fix to give international aviation an abatement option. Otherwise the model often fails to solve																						
 Always	scen_rsr_impbiojet-ft_act																					

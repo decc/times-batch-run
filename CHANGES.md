@@ -3,6 +3,7 @@
 * Refactoring: extracted list of cases into its own class
 * Added a detailed emissions flying brick dump and chart
 * Replaced the update-* commands with a single update-results-example.rb
+* Updated possible_scenarios.tsv to match uktm_model_v1.2.0_carbonaccounting_v0.0.2
 
 #2015-06-18
 
