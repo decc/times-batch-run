@@ -1,16 +1,18 @@
 require 'minitest/autorun'
+require_relative '../lib/gdx'
 require_relative '../lib/extract_overall_cost_and_emissions'
 
 
 class TestExtractOverallCostAndEmissions < MiniTest::Test
 
   def setup
-    @extract = ExtractOverallCostAndEmissions.new({ "caseA" => File.join(File.dirname(__FILE__), 'test.gdx')})
+    @extract = ExtractOverallCostAndEmissions.new
+    @extract.scenario_name = "caseA"
+    @extract.gdx = Gdx.new(File.join(File.dirname(__FILE__), 'test.gdx'))
   end
 
   def test_result
-    expected = [
-      {
+    expected = {
         name: "caseA",
         cost: 10.121626581776,  # £trn
         ghg: {
@@ -31,7 +33,6 @@ class TestExtractOverallCostAndEmissions < MiniTest::Test
         budget: {},
         scenarios: []
       }
-    ]
     results = @extract.extract_overall_cost_and_emissions
     assert_equal expected, results
   end
