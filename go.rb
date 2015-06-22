@@ -7,7 +7,7 @@ require 'thwait'
 require_relative 'lib/monte_carlo'
 require_relative 'lib/create_run_files'
 require_relative 'lib/list_of_cases'
-require_relative 'lib/write_cost_and_emissions_data'
+require_relative 'lib/extract_overall_cost_and_emissions'
 require_relative 'lib/write_build_rates'
 require_relative 'lib/write_detailed_costs'
 require_relative 'lib/write_detailed_emissions'
@@ -255,11 +255,24 @@ class BatchRun
     puts "Copying accross html"
     FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),"results-template",'*')),settings.results_folder)
 
-    puts "Creating cost-emissions charts"
-    writer = WriteCostAndEmissionsData.new
-    writer.file_names = gdx_files
-    writer.data_directory = settings.results_folder
-    writer.run
+    gdx_files.each do |gdx_file_name|
+      puts "Writing results for #{gdx_file_name}"
+
+      gdx = Gdx.new(gdx_file_name)
+      name = File.basename(gdx_file_name, '.*')
+
+      Pathname.new(File.join(settings.results_folder, name)).mkpath
+
+      puts "Creating cost-emissions scatter"
+      extractor = ExtractOverallCostAndEmissions.new
+      extractor.gdx = gdx
+      extractor.scenario_name = name
+      results = extractor.extract_overall_cost_and_emissions
+      
+      File.open(File.join(settings.results_folder, name, "costs-and-emissions-overview.json"), 'w') do |f|
+        f.puts results.to_json
+      end
+    end
 
     puts "Creating build rate charts"
     writer = WriteBuildRates.new
