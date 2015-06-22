@@ -6,6 +6,7 @@ require 'thwait'
 
 require_relative 'lib/monte_carlo'
 require_relative 'lib/create_run_files'
+require_relative 'lib/list_of_cases'
 require_relative 'lib/write_cost_and_emissions_data'
 require_relative 'lib/write_build_rates'
 require_relative 'lib/write_detailed_costs'
@@ -152,20 +153,9 @@ class BatchRun
   end
 
   def load_cases_from(list_of_cases_file)
-    # We do the join/split in order to sort out the various mac / windows line endings
-    tsv = IO.readlines(list_of_cases_file).join.split(/[\n\r]+/)
-    # Delete empty lines
-    tsv.delete_if { |line| line.strip == "" }
-    # Delete lines starting with # (which we assume are comments)
-    tsv.delete_if { |line| line.start_with?("#") }
-    # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
-    tsv.delete_if { |line| line.start_with?('"#') }
-
-    # Split the lines on tabs
-    tsv.map! do |line|
-      line.split(/\t+/)
-    end
-    @names_of_all_the_cases.concat(tsv[1..-1].map(&:first)) # [1..-1] because first line should be titles
+    list_of_cases = ListOfCases.new
+    list_of_cases.load(list_of_cases_file)
+    @names_of_all_the_cases.concat(list_of_cases.case_names)
   end
 
   def names_of_all_the_cases_that_solved

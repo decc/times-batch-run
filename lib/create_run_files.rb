@@ -1,5 +1,6 @@
 require 'erb'
 require_relative 'monte_carlo'
+require_relative 'list_of_cases'
 
 class CreateRunFiles
   include CommonMethods
@@ -54,15 +55,14 @@ class CreateRunFiles
 
 
   def warn_about_missing_scenario_files
-    if missing_scenario_files.size > 0
-      puts
-      puts "The following scenario files are missing from #{File.expand_path(destination_folder_for_run_files)}:"
-      missing_scenario_files.each do |scenario_name, _|
-        puts scenario_name
-      end
-      puts ""
-      puts "Please check the spelling of the scenario in VEDA_FE and, if it is ok run VEDA_FE to generate them"
+    return if missing_scenario_files.size == 0
+    puts
+    puts "The following scenario files are missing from #{File.expand_path(destination_folder_for_run_files)}:"
+    missing_scenario_files.each do |scenario_name, _|
+      puts scenario_name
     end
+    puts ""
+    puts "Please check the spelling of the scenario in VEDA_FE and, if it is ok run VEDA_FE to generate them"
   end
 
   def run_filename(case_name)
@@ -70,22 +70,10 @@ class CreateRunFiles
   end
 
   def load_list_of_cases
-    # We do the join/split in order to sort out the various mac / windows line endings
-    tsv = IO.readlines(name_of_file_containing_cases).join.split(/[\n\r]+/)
-    # Delete empty lines
-    tsv.delete_if { |line| line.strip == "" }
-    # Delete lines starting with # (which we assume are comments)
-    tsv.delete_if { |line| line.start_with?("#") }
-    # Delete lines starting with "# (which we assume are comments, where the user entered # but Excel felt the need to add a quote in front
-    tsv.delete_if { |line| line.start_with?('"#') }
-
-    # Split the lines on tabs
-    tsv.map! do |line|
-      line.split(/\t+/)
-    end
-
-    @headers = tsv[0]
-    @list_of_cases ||= tsv[1..-1] # [1..-1] Skip the title row
+    file = ListOfCases.new
+    file.load(name_of_file_containing_cases)
+    @headers = file.header
+    @list_of_cases = file.tsv
   end
 
   def run_file_template

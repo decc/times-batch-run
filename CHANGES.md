@@ -1,3 +1,7 @@
+#2015-06-22
+
+* Refactoring: extracted list of cases into its own class
+
 #2015-06-18
 
 * Refactoring for readability
