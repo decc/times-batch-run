@@ -1,6 +1,7 @@
 #2015-06-22
 
 * Refactoring: extracted list of cases into its own class
+* Added a detailed emissions flying brick dump and chart
 
 #2015-06-18
 

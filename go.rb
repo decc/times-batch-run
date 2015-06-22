@@ -10,6 +10,7 @@ require_relative 'lib/list_of_cases'
 require_relative 'lib/write_cost_and_emissions_data'
 require_relative 'lib/write_build_rates'
 require_relative 'lib/write_detailed_costs'
+require_relative 'lib/write_detailed_emissions'
 
 class BatchRun
 
@@ -264,9 +265,16 @@ class BatchRun
     writer.data_directory = settings.results_folder
     writer.run
 
-    puts "Creating flying brick charts"
+    puts "Creating flying brick cost charts"
 
     writer = WriteDetailedCosts.new
+    writer.file_names = gdx_files
+    writer.data_directory = settings.results_folder
+    writer.run
+
+    puts "Creating flying brick emissions charts"
+
+    writer = WriteDetailedEmissions.new
     writer.file_names = gdx_files
     writer.data_directory = settings.results_folder
     writer.run
