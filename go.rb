@@ -12,6 +12,7 @@ require_relative 'lib/extract_overall_cost_and_emissions'
 require_relative 'lib/extract_build_rates'
 require_relative 'lib/extract_detailed_costs'
 require_relative 'lib/extract_detailed_emissions'
+require_relative 'lib/extract_sectoral_emissions'
 
 class BatchRun
 
@@ -273,7 +274,9 @@ class BatchRun
       puts "Creating flying brick cost charts"
       extract_and_write_result name, gdx, ExtractDetailedCosts.new, "detailed-costs.json"
 
-    puts "Creating flying brick emissions charts"
+      puts "Creating sectoral emissions charts"
+      extract_and_write_result name, gdx, ExtractSectoralEmissions.new, "sectoral-emissions.json"
+      puts "Creating detailed emissions charts"
       extract_and_write_result name, gdx, ExtractDetailedEmissions.new, "detailed-emissions.json"
     end
 
