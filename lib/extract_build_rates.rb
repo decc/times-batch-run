@@ -11,6 +11,9 @@ class ExtractBuildRates
   attr_accessor :scenario_name
   attr_accessor :gdx
   
+  def extract_results
+   extract_new_capacity_with_cost_per_unit_sorted 
+  end
 
   def extract_new_capacity_cost
     

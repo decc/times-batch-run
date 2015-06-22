@@ -3,6 +3,10 @@ class ExtractOverallCostAndEmissions
   attr_accessor :gdx
   attr_accessor :scenario_name
 
+  def extract_results
+    extract_overall_cost_and_emissions
+  end
+
   def extract_overall_cost_and_emissions
     results = {}
     results[:name] = scenario_name

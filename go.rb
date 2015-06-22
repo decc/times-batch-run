@@ -264,18 +264,10 @@ class BatchRun
       Pathname.new(File.join(settings.results_folder, name)).mkpath
 
       puts "Creating cost-emissions scatter"
-      extractor = ExtractOverallCostAndEmissions.new
-      extractor.gdx = gdx
-      extractor.scenario_name = name
-      results = extractor.extract_overall_cost_and_emissions
-      write_result name, "costs-and-emissions-overview.json", results.to_json
+      extract_and_write_result name, gdx, ExtractOverallCostAndEmissions.new, "costs-and-emissions-overview.json"
       
       puts "Creating build rate charts"
-      extractor = ExtractBuildRates.new
-      extractor.gdx = gdx
-      extractor.scenario_name = name
-      results = extractor.extract_new_capacity_with_cost_per_unit_sorted
-      write_result name, "build-rates.json", results.to_json
+      extract_and_write_result name, gdx, ExtractBuildRates.new, "build-rates.json"
     end
 
     puts "Creating flying brick cost charts"
@@ -292,6 +284,13 @@ class BatchRun
 
     puts "Creating the index"
     write_index_txt
+  end
+
+  def extract_and_write_result(name, gdx, extractor, filename)
+    extractor.gdx = gdx
+    extractor.scenario_name = name
+    results = extractor.extract_results
+    write_result name, filename, results.to_json
   end
 
   def write_result(case_name, result, data)
