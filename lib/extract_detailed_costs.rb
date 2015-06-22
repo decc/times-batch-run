@@ -26,6 +26,10 @@ class ExtractDetailedCosts
   attr_accessor :gdx
   attr_accessor :discount_factors
   
+  def extract_results
+    extract_detailed_costs
+  end
+
   def extract_detailed_costs
     processes_by_year = Hash.new() { |hash, new_key| hash[new_key] = Hash.new(0) }
     results = { 
