@@ -8,12 +8,9 @@ class ExtractBuildRates
   YEARS = [2011, 2012, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060] # The gdx data doesn't include zero values, so we have to include them manually. <sigh>
 
   attr_accessor :scenarios
+  attr_accessor :scenario_name
+  attr_accessor :gdx
   
-  def initialize(scenarios)
-    @scenarios = scenarios.map do |scenario_name, gdx_filename|
-      [scenario_name, Gdx.new(gdx_filename)]
-    end
-  end
 
   def extract_new_capacity_cost
     
@@ -23,19 +20,17 @@ class ExtractBuildRates
 
     reformatted_results = {}
 
-    scenarios.each do |scenario_name, gdx|
-      gdx.symbol(:CAP_NEW).each do |datum|
-         gdx.reshape_cast(
-           reformatted_results, 
-           datum,
-           identifier: identifier, # We identify the record by its process name
-           attribute: :item, # We group data according to 'INSTCAP' and 'LUMPINV'
-           scenario: scenario_name, # This is so we can compare two runs
-           keys: [:allyear],  # This is the investment year
-           values: [:val], # This is the quanitity
-           drop: [ :r, :allyear_1 ] # We ignore region and vintage
-         )
-      end
+    gdx.symbol(:CAP_NEW).each do |datum|
+      gdx.reshape_cast(
+        reformatted_results, 
+        datum,
+        identifier: identifier, # We identify the record by its process name
+        attribute: :item, # We group data according to 'INSTCAP' and 'LUMPINV'
+        scenario: scenario_name, # This is so we can compare two runs
+        keys: [:allyear],  # This is the investment year
+        values: [:val], # This is the quanitity
+        drop: [ :r, :allyear_1 ] # We ignore region and vintage
+      )
     end
     reformatted_results
   end
@@ -178,7 +173,7 @@ class ExtractBuildRates
   def load_length_of_periods
     h = {}
     # FIXME: Assumes length of period same across gdx files
-    scenarios.first.last.symbol(:LEAD).each do |data|
+    gdx.symbol(:LEAD).each do |data|
       h[data[:allyear]] = data[:val]
     end
     h

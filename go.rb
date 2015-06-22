@@ -272,13 +272,17 @@ class BatchRun
       File.open(File.join(settings.results_folder, name, "costs-and-emissions-overview.json"), 'w') do |f|
         f.puts results.to_json
       end
+      
+      puts "Creating build rate charts"
+      extractor = ExtractBuildRates.new
+      extractor.gdx = gdx
+      extractor.scenario_name = name
+      results = extractor.extract_new_capacity_with_cost_per_unit_sorted
+      
+      File.open(File.join(settings.results_folder, name, "build-rates.json"), 'w') do |f|
+        f.puts results.to_json
+      end
     end
-
-    puts "Creating build rate charts"
-    writer = WriteBuildRates.new
-    writer.file_names =  gdx_files
-    writer.data_directory = settings.results_folder
-    writer.run
 
     puts "Creating flying brick cost charts"
     writer = WriteDetailedCosts.new
