@@ -8,7 +8,7 @@ require_relative 'lib/monte_carlo'
 require_relative 'lib/create_run_files'
 require_relative 'lib/list_of_cases'
 require_relative 'lib/extract_overall_cost_and_emissions'
-require_relative 'lib/write_build_rates'
+require_relative 'lib/extract_build_rates'
 require_relative 'lib/write_detailed_costs'
 require_relative 'lib/write_detailed_emissions'
 
@@ -268,20 +268,14 @@ class BatchRun
       extractor.gdx = gdx
       extractor.scenario_name = name
       results = extractor.extract_overall_cost_and_emissions
-      
-      File.open(File.join(settings.results_folder, name, "costs-and-emissions-overview.json"), 'w') do |f|
-        f.puts results.to_json
-      end
+      write_result name, "costs-and-emissions-overview.json", results.to_json
       
       puts "Creating build rate charts"
       extractor = ExtractBuildRates.new
       extractor.gdx = gdx
       extractor.scenario_name = name
       results = extractor.extract_new_capacity_with_cost_per_unit_sorted
-      
-      File.open(File.join(settings.results_folder, name, "build-rates.json"), 'w') do |f|
-        f.puts results.to_json
-      end
+      write_result name, "build-rates.json", results.to_json
     end
 
     puts "Creating flying brick cost charts"
@@ -298,6 +292,12 @@ class BatchRun
 
     puts "Creating the index"
     write_index_txt
+  end
+
+  def write_result(case_name, result, data)
+    File.open(File.join(settings.results_folder, case_name, result), 'w') do |f|
+      f.puts data
+    end
   end
 
   # This ensures that index.txt in the results folder has ALL the results
