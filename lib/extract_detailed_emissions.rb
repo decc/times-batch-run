@@ -48,6 +48,8 @@ class ExtractDetailedEmissions
         end
       end
     end
+    @commodities_to_include["Traded-Emission-ETS"] = true
+    @commodities_to_include["Traded-Emission-Non-ETS"] = true
     @commodities_to_include
   end
 
@@ -55,13 +57,23 @@ class ExtractDetailedEmissions
     processes_by_year = results[:processes_by_year]
     flows_out.each do |flow|
       process_name = combined_process_name(flow[:p])
-      value = flow[:val] / 1000.0 # * 1000 in order to turn into MtCO2e
+      commodity_name = flow[:c]
+      if flow[:c] =~ /^Traded-Emissions/i
+        value = -flow[:val] / 1000.0 # Reverse the direction of traded flows
+      else
+        value = flow[:val] / 1000.0 # * 1000 in order to turn into MtCO2e
+      end
       year = flow[:t]
       processes_by_year[process_name][year] += value
     end
     flows_in.each do |flow|
       process_name = combined_process_name(flow[:p])
-      value = -flow[:val] / 1000.0 # Negative because a flow in *1000 in order to turn into MtCO2e
+      commodity_name = flow[:c]
+      if flow[:c] =~ /^Traded-Emissions/i
+        value = flow[:val] / 1000.0 # Reverse the direction of traded flows
+      else
+        value = -flow[:val] / 1000.0 # Negative because a flow in *1000 in order to turn into MtCO2e
+      end
       year = flow[:t]
       processes_by_year[process_name][year] += value
     end
