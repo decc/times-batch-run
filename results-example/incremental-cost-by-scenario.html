@@ -462,15 +462,20 @@ function reformatData(data, from_scenario, to_scenario) {
 };
 
 var data = [];
-from_scenario = "cb5-2100";
-to_scenario =  "cb5-1600";
+var from_scenario = undefined;
+var to_scenario =  undefined;
 
 scenarios_to_compare = window.location.hash.slice(1).split(',');
+
+window.onhashchange = function() { window.location.reload(false) };
 	
 if(scenarios_to_compare.length == 2) {
 	from_scenario = scenarios_to_compare[0];
 	to_scenario = scenarios_to_compare[1];
+} else {
+  window.location = "#budget_2030_3000,budget_2030_1000";
 }
+
 
 function all_cases_loaded() {
     var formatted_data = reformatData(data, from_scenario, to_scenario);

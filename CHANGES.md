@@ -1,3 +1,7 @@
+#2015-06-23
+
+* Altered the incremental cost by scenario to show compared scenarios in hash
+
 #2015-06-22
 
 * Refactoring: extracted list of cases into its own class
