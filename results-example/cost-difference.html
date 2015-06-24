@@ -105,19 +105,19 @@ table#pairs {
 <div id='results'>
   <div id='chart'>
   </div>
-  <table id='pairs'>
-    <thead>
-      <tr>
-        <th colspan='2' id='left_scenario_title'>Left scenarios</th>
-        <th colspan='2' id='right_scenario_title'>Right scenarios</th>
-        <th>Cost difference</th>
-        <th colspan='3'>Detailed comparisons</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
 </div>
+<table id='pairs'>
+  <thead>
+    <tr>
+      <th colspan='2' id='left_scenario_title'>Left scenarios</th>
+      <th colspan='2' id='right_scenario_title'>Right scenarios</th>
+      <th>Cost difference</th>
+      <th colspan='3'>Detailed comparisons</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
 <script>
 
 var all_cases = d3.map();
@@ -157,9 +157,24 @@ function setup_once_all_cases_loaded() {
 }
 
 function display() {
+  update_hash();
   create_data_to_display_for_user_choice();
   draw_chart();
   draw_table();
+};
+
+function update_hash() {
+   window.location = "#"+hash_code_for_comparisons()+hash_code_for_scenarios_that_must_be_included();
+  
+};
+
+function hash_code_for_comparisons() {
+  return left_scenario+","+right_scenario;
+};
+
+function hash_code_for_scenarios_that_must_be_included() {
+  if(scenarios_that_must_be_included.empty()) { return ""; };
+  return ","+scenarios_that_must_be_included.values().join(",");
 };
 
 function load_all_cases(next_function) {
@@ -249,13 +264,24 @@ function setup_data_structures() {
 };
 
 function setup_user_choices() {
-  // Faked at the moment
-  left_scenario = list_of_scenarios()[0];
-  right_scenario = list_of_scenarios()[1];
-
+  read_user_choices_from_hash();
   setup_dropdowns();
   setup_checkboxes();
 }
+
+function read_user_choices_from_hash() {
+  hash = window.location.hash.slice(1).split(',');
+  if(hash.length < 2) { 
+    left_scenario = list_of_scenarios()[0];
+    right_scenario = list_of_scenarios()[1];
+  } else {
+    left_scenario = hash[0];
+    right_scenario = hash[1];
+    hash.slice(2).forEach(function(scenario) {
+      scenarios_that_must_be_included.add(scenario);
+    });
+  }
+};
 
 function setup_dropdowns() {
   setup_scenario_dropdown("#left_scenario_name", left_scenario);
@@ -295,6 +321,7 @@ function setup_checkboxes() {
       .attr("type", "checkbox")
       .attr("name", Object)
       .attr("value",Object )
+      .property("checked", function(d) { return scenarios_that_must_be_included.has(d); })
       .on("change", function(d) { 
           if(this.checked) { 
             scenarios_that_must_be_included.add(d);
@@ -303,7 +330,7 @@ function setup_checkboxes() {
           }
           display();
         });
-          
+
   table_rows.exit().remove();
 
 };
