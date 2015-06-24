@@ -1,0 +1,741 @@
+<html>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta charset='utf-8'>
+<script src='javascript/d3.min.js'></script>
+<title>Variation in total cost with scenario from UK TIMES</title>
+<style>
+body {
+  font: 10px sans-serif;
+}
+
+table {
+  font-size: 10px;
+}
+
+div {
+  margin: 0;
+  padding: 0;
+}
+
+#title {
+  width: 100%;
+  font-size: 16px;
+  height: 30px;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  text-align: center;
+  font-size: 12px;
+  height: 24px;
+}
+
+div#results {
+  width: 48%;
+}
+
+div#controls {
+  float: right;
+  width: 50%;
+  padding-top: 20px;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis .tick line, .axis path {
+  stroke: none;
+}
+
+text.range {
+  fill: steelblue;
+}
+
+text.cost_difference_ratio {
+  fill: red;
+}
+
+rect {
+  fill: black;
+}
+
+rect.hover {
+  fill: yellow;
+  fill-opacity: 1;
+}
+
+table#pairs {
+  width: 100%;
+  margin-top: 50px;
+}
+
+#pairs th {
+  text-align: left;
+}
+
+#checkboxes table {
+  float: left;
+  margin-right: 20px;
+}
+
+</style>
+<body>
+<h1 id='title'></h1>
+<div id='controls'>
+  <div>
+    Compare&nbsp;
+    <select id='left_scenario_name'>
+    </select>
+    &nbsp; scenarios with&nbsp; 
+    <select id='right_scenario_name'>
+    </select>
+    &nbsp; scenarios.
+  </div>
+  <div>
+  Only show scenarios that also include:
+  <div id='checkboxes'>
+  </div>
+  </div>
+</div>
+<div id='results'>
+  <div id='chart'>
+  </div>
+  <table id='pairs'>
+    <thead>
+      <tr>
+        <th colspan='2' id='left_scenario_title'>Left scenarios</th>
+        <th colspan='2' id='right_scenario_title'>Right scenarios</th>
+        <th>Cost difference</th>
+        <th colspan='3'>Detailed comparisons</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+</div>
+<script>
+
+var all_cases = d3.map();
+var scenario_names = [];
+var cases_for_scenario = d3.map();
+var left_scenario = undefined;
+var right_scenario = undefined;
+var scenarios_that_must_be_included = d3.set();
+var data_to_display = undefined;
+var scenario_human_names = scenario_human_name_lookup();
+
+function scenario_human_name_lookup() {
+  var codes = d3.map();
+
+  d3.tsv("scenario_names.tsv").get(function(error, rows) {
+      if (error) return console.warn(error);
+
+      rows.forEach(function(row) {
+        codes.set(row['Code'], row['Name']);
+        });
+      });
+
+  function lookup(code) {
+    return codes.get(code) || code;
+  };
+
+  return lookup;
+}
+
+
+load_all_cases(setup_once_all_cases_loaded);
+
+function setup_once_all_cases_loaded() {
+  setup_data_structures();
+  setup_user_choices();
+  display();
+}
+
+function display() {
+  create_data_to_display_for_user_choice();
+  draw_chart();
+  draw_table();
+};
+
+function load_all_cases(next_function) {
+  var list_of_case_names;
+  var index_file = 'index.txt';
+  var data_file_name = "/costs-and-emissions-overview.json"; 
+  var line_endings = /[\r\n]+/;
+  
+  load_list_of_cases();
+
+  function load_list_of_cases() {
+    d3.text(index_file, list_of_cases_loaded);
+  };
+
+  function list_of_cases_loaded(list_of_cases) {
+    list_of_case_names = clean_list(list_of_cases);
+    list_of_case_names.forEach(load_case);
+  };
+
+  function clean_list(list) {
+    return list
+      .split(line_endings)
+      .filter(line_not_empty)
+      .filter(line_not_comment);
+  };
+  
+  function line_not_empty(line) { return line.trim().length != 0 };
+
+  function line_not_comment(line) { return line.trim()[0] != "#" };
+
+  function load_case(case_name) {
+    d3.json(case_name+data_file_name, case_loaded);
+  };
+
+  function case_loaded(individual_case) {
+    store_case(individual_case);
+    if(all_cases_have_been_loaded()) { finished() };
+  };
+
+  function store_case(individual_case) {
+    all_cases.set(individual_case.name, individual_case);
+  };
+
+  // FIXME: How do we deal with failiures to load cases?
+  function all_cases_have_been_loaded() {
+    return all_cases.size() == list_of_case_names.length;
+  };
+
+  function finished() {
+    next_function();
+  };
+};
+
+function setup_data_structures() {
+
+  create_cases_for_scenario();
+  create_list_of_scenarios();
+  
+  function create_cases_for_scenario() {
+    all_cases.forEach(add_case_to_scenarios);
+  };
+
+  function add_case_to_scenarios(case_name, case_data) {
+    case_data.scenarios.forEach(function(scenario) {
+        add_case_to_scenario(scenario, case_name);
+    }); 
+  };
+
+  function add_case_to_scenario(scenario, case_name) {
+    cases = existing_cases_for_scenario(scenario);
+    cases.add(case_name);
+    cases_for_scenario.set(scenario, cases);
+  };
+
+  function existing_cases_for_scenario(scenario) {
+    return cases_for_scenario.get(scenario) || d3.set();
+  };
+
+  function create_list_of_scenarios() {
+    scenario_names = cases_for_scenario.keys().filter(scenario_does_not_appear_in_every_case);
+  };
+
+  function scenario_does_not_appear_in_every_case(scenario_name) {
+    return cases_for_scenario.get(scenario_name).size() != all_cases.size();
+  }
+
+};
+
+function setup_user_choices() {
+  // Faked at the moment
+  left_scenario = list_of_scenarios()[0];
+  right_scenario = list_of_scenarios()[1];
+
+  setup_dropdowns();
+  setup_checkboxes();
+}
+
+function setup_dropdowns() {
+  setup_scenario_dropdown("#left_scenario_name", left_scenario);
+  setup_scenario_dropdown("#right_scenario_name", right_scenario);
+
+  d3.select("#left_scenario_name").on("change", function() {
+      left_scenario = this.value;
+      display();
+  });
+
+  d3.select("#right_scenario_name").on("change", function() {
+      right_scenario = this.value;
+      display();
+  });
+};
+
+function setup_checkboxes() {
+  var data = list_of_scenarios()
+    .sort(function(a,b) { return d3.ascending(scenario_human_names(a), scenario_human_names(b))});
+  var break_point = Math.ceil(data.length/2);
+  data = [data.slice(0,break_point), data.slice(break_point)];
+
+  var tables = d3.select("#checkboxes").selectAll("table").data(data);
+
+  tables.exit().remove();
+  var new_table = tables.enter().append("table");
+
+  var table_rows = tables.selectAll("tr").data(Object);
+
+  var new_table_rows = table_rows.enter().append("tr");
+
+  new_table_rows.append("td")
+    .text(function(d) { return scenario_human_names(d); });
+
+  new_table_rows.append("td")
+    .append("input")
+      .attr("type", "checkbox")
+      .attr("name", Object)
+      .attr("value",Object )
+      .on("change", function(d) { 
+          if(this.checked) { 
+            scenarios_that_must_be_included.add(d);
+          } else {
+            scenarios_that_must_be_included.remove(d);
+          }
+          display();
+        });
+          
+  table_rows.exit().remove();
+
+};
+
+function setup_scenario_dropdown(id, selected_value) {
+  var select = d3.select(id)
+  var options = select.selectAll("option").data(list_of_scenarios());
+
+  options.enter().append("option");
+
+  options.exit().remove();
+
+  options
+    .attr('value', Object)
+    .text(function(d) { return scenario_human_names(d); });
+
+  select.property("value", selected_value);
+};
+
+function list_of_scenarios() {
+  return scenario_names;
+}
+
+// FIXME: How do we warn user when chosen scenarios are not mutually exclusive?
+function create_data_to_display_for_user_choice() {
+
+  var scenario_ids_for_case = d3.map();
+  var pairs = [];
+
+  var left_case_names = cases_with_scenarios_that_must_be_included(left_scenario);
+  var right_case_names = cases_with_scenarios_that_must_be_included(right_scenario);
+
+  calculate_pairs();
+
+  data_to_display = pairs;
+
+
+  function cases_with_scenarios_that_must_be_included(scenario) {
+    // Special case where the user hasn't specified any further constraints
+    if(scenarios_that_must_be_included.empty()) { 
+      return get_cases_for_scenario(scenario);
+    }
+    // Now we know we are going to have to find cases that have all the required scenarios
+    var all_scenarios_to_include = d3.set(scenarios_that_must_be_included.values());
+    all_scenarios_to_include.remove(left_scenario);
+    all_scenarios_to_include.remove(right_scenario);
+    all_scenarios_to_include = all_scenarios_to_include.values().concat(scenario);
+    return union(all_scenarios_to_include);
+  };
+
+  function get_cases_for_scenario(scenario) {
+    return cases_for_scenario.get(scenario) || d3.set();
+  }
+
+  function union(list_of_scenarios) {
+    return union_of_sets_of_cases(list_of_scenarios.map(get_cases_for_scenario));
+  };
+
+  function union_of_sets_of_cases(array_of_sets_of_cases) {
+    if(array_of_sets_of_cases.length == 0) { return d3.set(); };
+    if(array_of_sets_of_cases.length == 1) { return array_of_sets_of_cases[0] };
+    
+    var first_set_as_array = array_of_sets_of_cases[0].values();
+    var rest_of_sets = array_of_sets_of_cases.slice(1);
+  
+    function contained_in_rest_of_sets(case_name) {
+      for(var i=0; i<rest_of_sets.length; i++) {
+        var other_set = rest_of_sets[i];
+        if(!other_set.has(case_name)) { return false; }
+      }
+      return true;
+    }
+    
+    var matches = first_set_as_array.filter(contained_in_rest_of_sets);
+    
+    return d3.set(matches);
+  };
+
+  function calculate_pairs() {
+    calculate_scenario_ids_for_cases();
+    find_cases_with_matching_scenario_ids();
+    replace_case_names_with_case_data();
+    calculate_differences_within_pairs();
+    calculate_differences_across_pairs();
+  };
+
+  function calculate_scenario_ids_for_cases() {
+    left_case_names.forEach(calculate_scenario_ids_for_case);
+    right_case_names.forEach(calculate_scenario_ids_for_case);
+  };
+
+  function calculate_scenario_ids_for_case(case_name) {
+    scenario_ids_for_case.set(case_name, scenarios_for_case_name_as_a_sorted_string(case_name));
+  };
+
+  function scenarios_for_case_name_as_a_sorted_string(case_name) {
+    var scenarios = scenarios_for_case_excluding_chosen(case_name);
+    sort(scenarios);
+    return scenarios.join(" ");
+  };
+
+  function sort(list_of_scenarios) {
+    return list_of_scenarios.sort(function(a,b) { return d3.ascending(a,b); })
+  }
+  
+  function scenarios_for_case_excluding_chosen(case_name) {
+    var case_data = all_cases.get(case_name);
+    var scenarios = case_data.scenarios;
+    return scenarios.filter(not_a_chosen_scenario);
+  };
+
+  function not_a_chosen_scenario(scenario_name) {
+    return scenario_name != left_scenario && scenario_name != right_scenario;
+  };
+
+  function find_cases_with_matching_scenario_ids() {
+    left_case_names.forEach(function(left_case_name) {
+        var left_case_scenarios_id = scenario_ids_for_case.get(left_case_name);
+        right_case_names.forEach(function(right_case_name) {
+          var right_case_scenarios_id = scenario_ids_for_case.get(right_case_name);
+          if(left_case_scenarios_id == right_case_scenarios_id) {
+            pairs.push([left_case_name, right_case_name]);
+          }
+        });
+      });
+  }
+
+  function replace_case_names_with_case_data() {
+    pairs = pairs.map(replace_case_name_pair_with_case_name_data);
+  };
+
+  function replace_case_name_pair_with_case_name_data(pair_of_case_names) {
+    return pair_of_case_names.map(function(case_name) { return all_cases.get(case_name); });
+  };
+
+  function calculate_differences_within_pairs() {
+    pairs.forEach(calculate_differences_within_pair);
+  };
+
+  function calculate_differences_within_pair(pair) {
+    pair.cost_difference_absolute = pair[1].cost - pair[0].cost;
+    pair.cost_difference_ratio = (pair.cost_difference_absolute)/pair[0].cost;
+  };
+
+  function calculate_differences_across_pairs() {
+    if(pairs.length == 0) {
+      pairs.cost_difference_range_absolute = [0,0];
+      pairs.cost_difference_range_ratio = [0,0];
+      pairs.cost_left_range = [0,0];
+      pairs.cost_left_mean = 0;
+      pairs.cost_right_range = [0,0];
+    } else {
+      pairs.cost_difference_range_absolute = d3.extent(pairs, function(pair) { return pair.cost_difference_absolute; });
+      pairs.cost_difference_range_ratio = d3.extent(pairs, function(pair) { return pair.cost_difference_ratio; });
+      pairs.cost_left_range = d3.extent(pairs, function(pair) { return pair[0].cost });
+      pairs.cost_left_mean = d3.mean(pairs, function(pair) { return pair[0].cost });
+      pairs.cost_right_range = d3.extent(pairs, function(pair) { return pair[1].cost });
+    }
+
+  };
+};
+
+function draw_chart() {
+  var chart = uncertain_flying_brick();
+  chart
+    .maximum_y_value(15) // FIXME: Calculate from the data
+    .from_scenario(scenario_human_names(left_scenario))
+    .to_scenario(scenario_human_names(right_scenario));
+
+  d3.select("#chart")
+    .datum(data_to_display)
+    .call(chart);
+}
+
+function draw_table() {
+  var table = d3.select("#pairs");
+
+  table.select("#left_scenario_title").text(scenario_human_names(left_scenario)+" scenarios");
+  table.select("#right_scenario_title").text(scenario_human_names(right_scenario)+" scenarios");
+
+  var costDifferenceFormat = d3.format(",.1f");
+  var percentageDifferenceFormat = d3.format("+.1%");
+
+  var data = data_to_display.slice(0);
+  data.sort(function(a,b) {return d3.descending(a.cost_difference_ratio, b.cost_difference_ratio); });
+
+  var rows = table.select("tbody").selectAll("tr").data(data);
+
+  rows.exit().remove();
+
+  var new_rows = rows.enter().append("tr");
+
+  new_rows.append("td").attr("class", "left_scenario_name");
+  new_rows.append("td").attr("class", "left_scenario_cost");
+  new_rows.append("td").attr("class", "right_scenario_name");
+  new_rows.append("td").attr("class", "right_scenario_cost");
+  new_rows.append("td").attr("class", "cost_difference");
+  new_rows.append("td").attr("class", "compare_cost").append("a").text("Compare costs");
+  new_rows.append("td").attr("class", "compare_emissions").append("a").text("Compare emissions");
+  new_rows.append("td").attr("class", "compare_build_rates").append("a").text("Compare build rates");
+
+
+  rows.select("td.left_scenario_name").text(function(d) { return d[0].name});
+  rows.select("td.left_scenario_cost").text(function(d) { return "£"+costDifferenceFormat(d[0].cost)+" trn"; });
+
+  rows.select("td.right_scenario_name").text(function(d) { return d[1].name; });
+  rows.select("td.right_scenario_cost").text(function(d) { return "£"+costDifferenceFormat(d[1].cost)+" trn";  });
+
+  rows.select("td.cost_difference").text(function(d) { return "£"+costDifferenceFormat(d.cost_difference_absolute)+" trn ("+percentageDifferenceFormat(d.cost_difference_ratio)+")" });
+
+  rows.select("td.compare_cost a").attr("href",function(d) { return "detailed-costs.html#"+d[0].name+","+d[1].name; })
+  rows.select("td.compare_emissions a").attr("href",function(d) { return "detailed-emissions.html#"+d[0].name+","+d[1].name+",2050,2050"; })
+  rows.select("td.compare_build_rates a").attr("href",function(d) { return "build-rates.html#"+d[0].name+","+d[1].name; })
+
+};
+
+
+function uncertain_flying_brick() {
+
+  var margin = {top: 20, right: 20, bottom: 20, left: 20},
+      width = 600;
+      height = 600;
+
+  var from_scenario = "From";
+  var to_scenario = "To";
+
+  var x = d3.scale.ordinal();
+
+  var y = d3.scale.linear();
+
+  var maximum_y_value = 50;
+
+  var costFormat = d3.format(",.1f");
+  var costDifferenceFormat = d3.format("+,.1f");
+  var percentageDifferenceFormat = d3.format("+.1%");
+
+  var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+  var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+
+  // Takes a base and a height and either 
+  // returns {base: base, height: height) converted into pixels
+  // using the y scale or, if the height is negative
+  // adjusts the base and height so the height is
+  // positive. 
+  function rect(base, height) {
+    base = y(base);
+    height = y(height) - y(0);
+    if(height < 0) {
+      base = base + height;
+      height = -height;
+    }
+    return {base: base, height: height};
+  };
+
+  // Takes a string formatter and a two element array
+  // and returns a text string for that range
+  // e.g., costFormat, [1.12, 2.25] => "1.1-2.3"
+  // Deals with moments when both elements of the range are the same
+  // e.g., costFormat, [1.12, 1.14] => "1.1"
+  function range_label(format, range) {
+    var left = format(range[0]);
+    var right = format(range[1]);
+    if(left == right) {
+      return left
+    } else {
+      return left+"–"+right;
+    }
+  };
+
+  function chart(selection) {
+    selection.each(function(data) {
+        if(data == undefined) { return; }
+
+        var svg = d3.select(this).selectAll("svg").data([data]);
+
+        // Create any new chart areas
+        var new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
+
+        new_svg.append("g").attr("class", "pairs");
+        new_svg.append("g").attr("class", "x axis");
+        new_svg.append("g").attr("class", "y axis");
+        
+        new_svg.append("text")
+          .attr("class", "y_axis_label")
+          .attr('y', -7)
+          .attr("x", (width-margin.left-margin.right)/2)
+          .attr("text-anchor","middle")
+          .text("Total Cost £trn (2010-2050, discounted)");
+        
+        new_svg.append("text")
+          .attr("class", "range from_range")
+          .attr("text-anchor","middle");
+
+        new_svg.append("text")
+          .attr("class", "range difference_range")
+          .attr("text-anchor","middle");
+
+        new_svg.append("text")
+          .attr("class", "range to_range")
+          .attr("text-anchor","middle");
+
+        new_svg.append("text")
+          .attr("class", "range cost_difference_ratio")
+          .attr("y", 5)
+          .attr("x", (width-margin.left-margin.right)/2)
+          .attr("text-anchor","middle");
+
+        // Update the outer dimensions.
+        svg.attr("width", width)
+          .attr("height", height);
+
+        // Update the inner dimensions.
+        var canvas = svg.select("g.canvas")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Update the y-axis
+        y
+          .domain([0, maximum_y_value])
+          .range([height - margin.top - margin.bottom, 0])
+          .nice();
+
+        // Update the x-axis 
+        x
+          .domain([from_scenario, to_scenario, "difference"])
+          .rangeRoundBands([0, width - margin.left - margin.right],0.1);
+
+        svg.select(".x.axis")
+          .attr("transform", "translate(0," + y.range()[0] + ")")
+          .call(xAxis);
+
+        // And the labels explaining the ranges
+        svg.select(".from_range")
+          .text(range_label(costFormat, data.cost_left_range))
+          .attr("x", x(from_scenario)+(x.rangeBand()/2))
+          .attr("y", y(data.cost_left_range[1])-3);
+
+        svg.select(".difference_range")
+          .text(range_label(costDifferenceFormat, data.cost_difference_range_absolute))
+          .attr("x", x("difference")+(x.rangeBand()/2))
+          .attr("y", y(data.cost_left_mean + data.cost_difference_range_absolute[1])-3);
+
+        svg.select(".to_range")
+          .text(range_label(costFormat, data.cost_right_range))
+          .attr("x", x(to_scenario)+(x.rangeBand()/2))
+          .attr("y", y(data.cost_right_range[1])-3);
+
+        svg.select(".cost_difference_ratio")
+          .text(
+              percentageDifferenceFormat(data.cost_difference_range_ratio[0])+
+              " to "+
+              percentageDifferenceFormat(data.cost_difference_range_ratio[1])+
+              " (n="+
+              data.length+
+              ")"
+              );
+
+        // Now we loop through each pair of cases, adding a group
+        var pairs = canvas.select("g.pairs").selectAll("g.pair").data(Object);
+
+        var new_pairs = pairs.enter().append("g")
+                          .attr("class", "pair");
+
+        pairs.exit().remove();
+
+        // This is used to reformat match data into the 
+        // coordinates for three rectangles
+        function flying_brick(pair) {
+          return [
+          {key: from_scenario, value: rect(0, pair[0].cost)},
+          {key: 'difference', value: rect(data.cost_left_mean, pair[1].cost - pair[0].cost)},
+          {key: to_scenario, value: rect(0, pair[1].cost)}
+          ]
+  };
+
+        // And within each pair, we draw a rect for the from, the to and the difference
+        var cases = pairs.selectAll("rect.case")
+                            .data(flying_brick);
+
+        var new_cases = cases.enter().append("rect").attr("class", "case");
+
+        var case_rectangle_opacity = 1.0 / data.length;
+
+        cases
+          .attr("height", function(d) { return d.value.height; })
+          .attr("width", x.rangeBand())
+          .attr("x", function(d) { return x(d.key); }) // Because the x position is set by the scenario group
+          .attr("y", function(d) { return d.value.base; })
+          .attr("style", "fill-opacity: "+case_rectangle_opacity);
+
+        cases.exit().remove();
+
+    });
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  }
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  }
+
+  chart.from_scenario = function(_) {
+    if(!arguments.length) return from_scenario;
+    from_scenario = _;
+    return chart;
+  }
+
+  chart.to_scenario = function(_) {
+    if(!arguments.length) return to_scenario;
+    to_scenario = _;
+    return chart;
+  }
+
+  chart.maximum_y_value = function(_) {
+    if(!arguments.length) return maximum_y_value;
+    maximum_y_value = _;
+    return chart;
+  }
+
+  return chart; 
+}
+
+</script>
+</html>

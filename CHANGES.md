@@ -1,3 +1,7 @@
+#2015-06-24
+
+* Added a new cost difference output
+
 #2015-06-23
 
 * Altered the incremental cost by scenario to show compared scenarios in hash
