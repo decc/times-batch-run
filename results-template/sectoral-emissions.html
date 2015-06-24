@@ -90,7 +90,32 @@
   
   var code_lookup = code_to_name_lookup();
 
-var topic = "emission";
+  function code_to_sector_lookup() {
+    var regexps = [];
+
+    d3.tsv("process_to_sector.tsv").get(function(error, rows) {
+      rows.forEach(function(row) {
+        regexps.push([new RegExp("^"+row['Process']), row['Sector']]);
+      });
+    });
+    
+    function lookup(code) {
+      for(var i=0; i<regexps.length; i++) {
+        var regexp = regexps[i][0];
+        if(regexp.test(code)) {
+          var sector = regexps[i][1];
+          return sector;
+        }
+      }
+      return code;
+    };
+    
+    return lookup;
+  }
+  
+  var sector_lookup = code_to_sector_lookup();
+
+var topic = "emissions";
 
 var a_name = "Scenario A";
 
@@ -129,7 +154,7 @@ var y = d3.scale.linear()
 var color = d3.scale.category20c();
 var used_ids = d3.set(); // We use these to map from block name to colour
 
-var minimum_pixels_for_display_stack = 15;
+var minimum_pixels_for_display_stack = 2;
 var minimum_value_for_display_stack = 0; // Set once scale is set
 var minimum_pixels_for_display_brick = 2;
 var minimum_value_for_display_brick = 0; // Set once scale is set
@@ -613,23 +638,26 @@ var add_data_point = function(d) { // Munge the data
 
 var left;
 var right;
-var left_period = "2015";
-var right_period = "2050";
+var left_period = "2030";
+var right_period = "2030";
 
 function reformat_data() {
 	combined_data = d3.map();
 	left_data = d3.map(left.processes_by_year);
 	right_data = d3.map(right.processes_by_year);
 	left_data.forEach(function(process_name, year_value_data) {
-    var value;
-    value = year_value_data[left_period] || 0;
-		combined_data.set(process_name, [ process_name, value, 0]);
+    var value = year_value_data[left_period] || 0;
+    var sector_name = sector_lookup(process_name);
+    if(combined_data.has(sector_name)) {
+      value = value + combined_data.get(sector_name)[1];
+    };
+		combined_data.set(sector_name, [ sector_name, value, 0]);
 	});
 	right_data.forEach(function(process_name, year_value_data) {
-    var value;
-    value =  year_value_data[right_period] || 0;
-		if(combined_data.has(process_name)) {
-			combined_data.get(process_name)[2] = value;			
+    var value =  year_value_data[right_period] || 0;
+    var sector_name = sector_lookup(process_name);
+		if(combined_data.has(sector_name)) {
+			combined_data.get(sector_name)[2] = combined_data.get(sector_name)[2] + value;			
 		} else {
 			combined_data.set(process_name, [ process_name, 0, value ]);
 		}
@@ -679,7 +707,7 @@ function case_loaded(individual_case) {
 
 function list_of_cases_loaded() {
 	list_of_cases.forEach(function(case_name) {
-		d3.json(''+case_name+"/sectoral-emissions.json", case_loaded);
+		d3.json(''+case_name+"/detailed-emissions.json", case_loaded);
 	})
 }
 
