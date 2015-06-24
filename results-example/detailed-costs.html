@@ -13,7 +13,7 @@
 	  shape-rendering: crispEdges;
   }
 
-  .axis text {
+  .axis text, #axislabel {
 	  fill: #6baed6;
   }
     
@@ -116,7 +116,7 @@ var a_positive_total = 0,
 
 var number_of_columns = 0;
 
-var margin = {top: 20, right: 120, bottom: 30, left: 50},
+var margin = {top: 40, right: 120, bottom: 30, left: 50},
     width = window.innerWidth - margin.left - margin.right,
     height = window.innerHeight - margin.top - margin.bottom;
 
@@ -139,7 +139,7 @@ var percent_format = d3.format(".0%");
 var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left")
-    .tickFormat(d3.format(".2s"));
+    .tickFormat(d3.format(".0f"));
 
 var svg = d3.select("#chart").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -161,6 +161,14 @@ svg.append("g")
 svg.append("g")
     .attr("class", "y axis")
     .call(yAxis);
+
+svg.append("text")
+  .attr("class", "axis")
+  .attr("id","axislabel")
+  .attr("text-anchor", "left")
+  .attr("y", -15)
+  .attr("x", -margin.left)
+  .text("£trn (2010-2050 NPV)");
 
 svg.append("text")
   .attr("class", "stacklabel")
@@ -381,6 +389,13 @@ var draw = function() {
     .attr('y2', y(0));
 
   // Labels
+
+  if(left_period == "npv") {
+    d3.select('#axislabel').text("£trn (2010-2060 NPV)");
+  } else {
+    d3.select('#axislabel').text("£bn/yr");
+  }
+
   labels = labelgroup.selectAll(".label").data(all_data, function(d) { return d.unique_id; });
   
   labels.exit().remove();
@@ -621,13 +636,21 @@ function reformat_data() {
 	left_data = d3.map(left.processes_by_year);
 	right_data = d3.map(right.processes_by_year);
 	left_data.forEach(function(process_name, year_value_data) {
-    var value;
-    value = year_value_data[left_period] || 0;
+    var value = year_value_data[left_period] || 0;
+    if(left_period == "npv") {
+      value = value / 1e6; // Put it in trillions
+    } else {
+      value = value / 1e3; // Put it in millions
+    }
 		combined_data.set(process_name, [ process_name, value, 0]);
 	});
 	right_data.forEach(function(process_name, year_value_data) {
-    var value;
-    value =  year_value_data[right_period] || 0;
+    var value =  year_value_data[right_period] || 0;
+    if(left_period == "npv") {
+      value = value / 1e6; // Put it in trillions
+    } else {
+      value = value / 1e3; // Put it in millions
+    }
 		if(combined_data.has(process_name)) {
 			combined_data.get(process_name)[2] = value;			
 		} else {

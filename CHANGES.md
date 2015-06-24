@@ -4,6 +4,7 @@
 * Fixed a bug in the counting of traded emissions in the detailed and sectoral emissions charts
 * Added a sectoral-costs output
 * Altered sectoral-emissions to match sectoral-costs approach
+* Fixed axis labelling on flying brick charts
 
 #2015-06-23
 
