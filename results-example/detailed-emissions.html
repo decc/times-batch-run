@@ -61,6 +61,12 @@
 	  shape-rendering: crispEdges;
 	  stroke-thickness: 1px;
   }
+
+  a#chart_link {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
   </style>
   <title></title>
   <body>
@@ -70,6 +76,7 @@
   <div id='chart'>
   </div>
 
+  <a id='chart_link'>See simpler version of this chart</a>
   <script>
 
   function code_to_name_lookup() {
@@ -712,6 +719,9 @@ if(settings[0] == "") {
   }
 	list_of_cases_loaded();
 }
+d3.select("#chart_link").on("click", function() {
+    window.location = "sectoral-emissions.html"+window.location.hash;
+    });
   </script>
 </body>
 </html>

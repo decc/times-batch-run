@@ -61,6 +61,12 @@
 	  shape-rendering: crispEdges;
 	  stroke-thickness: 1px;
   }
+
+  a#chart_link {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
   </style>
   <title></title>
   <body>
@@ -69,6 +75,7 @@
 
   <div id='chart'>
   </div>
+  <a id='chart_link'>See detailed version of this chart</a>
 
   <script>
 
@@ -758,6 +765,10 @@ if(settings[0] == "") {
   }
 	list_of_cases_loaded();
 }
+d3.select("#chart_link").on("click", function() {
+    window.location = "detailed-costs.html"+window.location.hash;
+    });
+
   </script>
 </body>
 </html>
