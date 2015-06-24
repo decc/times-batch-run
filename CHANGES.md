@@ -2,6 +2,7 @@
 
 * Added a new cost difference output
 * Fixed a bug in the counting of traded emissions in the detailed and sectoral emissions charts
+* Added a sectoral-costs output
 
 #2015-06-23
 
