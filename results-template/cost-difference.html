@@ -70,7 +70,6 @@ rect.hover {
 }
 
 table#pairs {
-  width: 100%;
   margin-top: 50px;
 }
 
@@ -528,8 +527,18 @@ function draw_table() {
   new_rows.append("td").attr("class", "right_scenario_name");
   new_rows.append("td").attr("class", "right_scenario_cost");
   new_rows.append("td").attr("class", "cost_difference");
-  new_rows.append("td").attr("class", "compare_cost").append("a").text("Compare costs");
-  new_rows.append("td").attr("class", "compare_emissions").append("a").text("Compare emissions");
+
+  new_rows.append("td").text("Compare costs: ");
+  new_rows.append("td").attr("class", "compare_cost_npv").append("a").text("NPV");
+  new_rows.append("td").attr("class", "compare_cost_2025").append("a").text("2025");
+  new_rows.append("td").attr("class", "compare_cost_2030").append("a").text("2030");
+  new_rows.append("td").attr("class", "compare_cost_2050").append("a").text("2030");
+
+  new_rows.append("td").text("Compare emissions: ");
+  new_rows.append("td").attr("class", "compare_emissions_2025").append("a").text("2025");
+  new_rows.append("td").attr("class", "compare_emissions_2030").append("a").text("2030");
+  new_rows.append("td").attr("class", "compare_emissions_2050").append("a").text("2050");
+
   new_rows.append("td").attr("class", "compare_build_rates").append("a").text("Compare build rates");
 
 
@@ -541,8 +550,14 @@ function draw_table() {
 
   rows.select("td.cost_difference").text(function(d) { return "£"+costDifferenceFormat(d.cost_difference_absolute)+" trn ("+percentageDifferenceFormat(d.cost_difference_ratio)+")" });
 
-  rows.select("td.compare_cost a").attr("href",function(d) { return "detailed-costs.html#"+d[0].name+","+d[1].name; })
-  rows.select("td.compare_emissions a").attr("href",function(d) { return "detailed-emissions.html#"+d[0].name+","+d[1].name+",2050,2050"; })
+  rows.select("td.compare_cost_npv a").attr("href",function(d) { return "detailed-costs.html#"+d[0].name+","+d[1].name+",npv,npv"; })
+  rows.select("td.compare_cost_2025 a").attr("href",function(d) { return "detailed-costs.html#"+d[0].name+","+d[1].name+",2025,2025" })
+  rows.select("td.compare_cost_2030 a").attr("href",function(d) { return "detailed-costs.html#"+d[0].name+","+d[1].name+",2030,2030" })
+  rows.select("td.compare_cost_2050 a").attr("href",function(d) { return "detailed-costs.html#"+d[0].name+","+d[1].name+",2050,2050" })
+
+  rows.select("td.compare_emissions_2025 a").attr("href",function(d) { return "detailed-emissions.html#"+d[0].name+","+d[1].name+",2025,2025"; })
+  rows.select("td.compare_emissions_2030 a").attr("href",function(d) { return "detailed-emissions.html#"+d[0].name+","+d[1].name+",2030,2030"; })
+  rows.select("td.compare_emissions_2050 a").attr("href",function(d) { return "detailed-emissions.html#"+d[0].name+","+d[1].name+",2050,2050"; })
   rows.select("td.compare_build_rates a").attr("href",function(d) { return "build-rates.html#"+d[0].name+","+d[1].name; })
 
 };
