@@ -62,7 +62,7 @@ class ExtractDetailedEmissions
     flows_out.each do |flow|
       process_name = combined_process_name(flow[:p])
       commodity_name = flow[:c]
-      if flow[:c] =~ /^Traded-Emissions/i
+      if flow[:c] =~ /^Traded-Emission/i
         value = -flow[:val] / 1000.0 # Reverse the direction of traded flows
       else
         value = flow[:val] / 1000.0 # * 1000 in order to turn into MtCO2e
@@ -73,7 +73,7 @@ class ExtractDetailedEmissions
     flows_in.each do |flow|
       process_name = combined_process_name(flow[:p])
       commodity_name = flow[:c]
-      if flow[:c] =~ /^Traded-Emissions/i
+      if flow[:c] =~ /^Traded-Emission/i
         value = flow[:val] / 1000.0 # Reverse the direction of traded flows
       else
         value = -flow[:val] / 1000.0 # Negative because a flow in *1000 in order to turn into MtCO2e

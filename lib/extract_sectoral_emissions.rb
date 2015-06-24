@@ -85,7 +85,7 @@ class ExtractSectoralEmissions
     processes_by_year = results[:processes_by_year]
     attribute.each do |flow|
       commodity_name = flow[:c]
-      if commodity_name =~ /^Traded-Emissions/i
+      if commodity_name =~ /^Traded-Emission/i
         value = -flow[:val] / 1000.0 # Reverse the direction of traded flows
       else
         value = flow[:val] / 1000.0 # * 1000 in order to turn into MtCO2e
