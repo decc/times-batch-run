@@ -528,6 +528,8 @@ function draw_table() {
   new_rows.append("td").attr("class", "right_scenario_cost");
   new_rows.append("td").attr("class", "cost_difference");
 
+  new_rows.append("td").attr("class", "compare_build_rates").append("a").text("Compare build rates");
+
   new_rows.append("td").text("Compare costs: ");
   new_rows.append("td").attr("class", "compare_cost_npv").append("a").text("NPV");
   new_rows.append("td").attr("class", "compare_cost_2025").append("a").text("2025");
@@ -538,9 +540,6 @@ function draw_table() {
   new_rows.append("td").attr("class", "compare_emissions_2025").append("a").text("2025");
   new_rows.append("td").attr("class", "compare_emissions_2030").append("a").text("2030");
   new_rows.append("td").attr("class", "compare_emissions_2050").append("a").text("2050");
-
-  new_rows.append("td").attr("class", "compare_build_rates").append("a").text("Compare build rates");
-
 
   rows.select("td.left_scenario_name").text(function(d) { return d[0].name});
   rows.select("td.left_scenario_cost").text(function(d) { return "£"+costDifferenceFormat(d[0].cost)+" trn"; });
