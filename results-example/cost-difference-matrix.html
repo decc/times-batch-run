@@ -5,10 +5,11 @@
 <title>Variation in total cost with scenario from UK TIMES</title>
 <style>
 body {
-  font-family: serif;
+  font: 10px sans-serif;
 }
 
 table {
+  font-size: 10px;
 }
 
 div {
@@ -35,7 +36,7 @@ div#results {
   width: 48%;
 }
 
-#pairs {
+div#controls {
   float: right;
   width: 50%;
   padding-top: 20px;
@@ -52,7 +53,7 @@ div#results {
 }
 
 text.range {
-  fill: black;
+  fill: steelblue;
 }
 
 text.cost_difference_ratio {
@@ -81,30 +82,9 @@ table#pairs {
   margin-right: 20px;
 }
 
-.hide {
-  display: none;
-}
-
 </style>
 <body>
-<h1 id='title'>How much more expensive is <span class='left_name'></span> than <span class='right_name'></span>?</h1>
-<p><span class='headline_results'></span>The chart and table below compares the costs of scenarios that have <span class='left_name'></span> with other scenarios that are identical, except that they have <span class='right_name'></span> instead of <span class='left_name'></span>. <span class='only_show_if_must_include_scenarios'>All scenarios also have <span class='must_include_scenarios'></span>.</span> There are <span class='number_of_scenarios'></span> pairs of scenarios that match this description.</p>
-<table id='pairs'>
-  <thead>
-    <tr>
-      <th colspan='2' id='left_scenario_title'>Left scenarios</th>
-      <th colspan='2' id='right_scenario_title'>Right scenarios</th>
-      <th>Cost difference</th>
-      <th colspan='3'>Detailed comparisons</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-<div id='results'>
-  <div id='chart'>
-  </div>
-</div>
+<h1 id='title'></h1>
 <div id='controls'>
   <div>
     Compare&nbsp;
@@ -121,6 +101,22 @@ table#pairs {
   </div>
   </div>
 </div>
+<div id='results'>
+  <div id='chart'>
+  </div>
+</div>
+<table id='pairs'>
+  <thead>
+    <tr>
+      <th colspan='2' id='left_scenario_title'>Left scenarios</th>
+      <th colspan='2' id='right_scenario_title'>Right scenarios</th>
+      <th>Cost difference</th>
+      <th colspan='3'>Detailed comparisons</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
 <script>
 
 var all_cases = d3.map();
@@ -132,24 +128,43 @@ var scenarios_that_must_be_included = d3.set();
 var data_to_display = undefined;
 var scenario_human_names = scenario_human_name_lookup();
 
+function scenario_human_name_lookup() {
+  var codes = d3.map();
+
+  d3.tsv("scenario_names.tsv").get(function(error, rows) {
+      if (error) return console.warn(error);
+
+      rows.forEach(function(row) {
+        codes.set(row['Code'], row['Name']);
+        });
+      });
+
+  function lookup(code) {
+    return codes.get(code) || code;
+  };
+
+  return lookup;
+}
+
+
 load_all_cases(setup_once_all_cases_loaded);
 
 function setup_once_all_cases_loaded() {
   setup_data_structures();
-  setup_user_choices();
-  display();
+  scenario_names.forEach(function(left) {
+      scenario_names.forEach(function(right) {
+        left_scenario = left;
+        right_scenario = right;
+        create_data_to_display_for_user_choice();
+        console.log([left, right, data_to_display.length, data_to_display.cost_difference_range_ratio]);
+        });
+      });
 }
 
-function display() {
-  update_hash();
-  create_data_to_display_for_user_choice();
-  update_text();
-  draw_chart();
-  draw_table();
-};
 
 function update_hash() {
    window.location = "#"+hash_code_for_comparisons()+hash_code_for_scenarios_that_must_be_included();
+  
 };
 
 function hash_code_for_comparisons() {
@@ -256,36 +271,35 @@ function setup_user_choices() {
 function read_user_choices_from_hash() {
   hash = window.location.hash.slice(1).split(',');
   if(hash.length < 2) { 
-    set_default_user_choices();
+    left_scenario = list_of_scenarios()[0];
+    right_scenario = list_of_scenarios()[1];
   } else {
-    set_left_scenario(hash[0]);
-    set_right_scenario(hash[1]);
+    left_scenario = hash[0];
+    right_scenario = hash[1];
     hash.slice(2).forEach(function(scenario) {
       scenarios_that_must_be_included.add(scenario);
     });
   }
 };
 
-function set_default_user_choices() {
-  set_left_scenario(list_of_scenarios()[0]);
-  set_right_scenario(list_of_scenarios()[1]);
-}
-
 function setup_dropdowns() {
-  setup_scenario_dropdown("#left_scenario_name", set_left_scenario, left_scenario);
-  setup_scenario_dropdown("#right_scenario_name", set_right_scenario, right_scenario);
-};
+  setup_scenario_dropdown("#left_scenario_name", left_scenario);
+  setup_scenario_dropdown("#right_scenario_name", right_scenario);
 
-function set_left_scenario(value) {
-  left_scenario = value;
-};
+  d3.select("#left_scenario_name").on("change", function() {
+      left_scenario = this.value;
+      display();
+  });
 
-function set_right_scenario(value) {
-  right_scenario = value;
-}
+  d3.select("#right_scenario_name").on("change", function() {
+      right_scenario = this.value;
+      display();
+  });
+};
 
 function setup_checkboxes() {
-  var data = sorted_list_of_scenarios();
+  var data = list_of_scenarios()
+    .sort(function(a,b) { return d3.ascending(scenario_human_names(a), scenario_human_names(b))});
   var break_point = Math.ceil(data.length/2);
   data = [data.slice(0,break_point), data.slice(break_point)];
 
@@ -317,20 +331,12 @@ function setup_checkboxes() {
         });
 
   table_rows.exit().remove();
+
 };
 
-function sorted_list_of_scenarios() {
-  return list_of_scenarios().sort(function(a,b) { 
-      return d3.ascending( 
-        scenario_human_names(a), 
-        scenario_human_names(b)
-      )
-  });
-}
-
-function setup_scenario_dropdown(id, input_to_change, selected_value) {
+function setup_scenario_dropdown(id, selected_value) {
   var select = d3.select(id)
-  var options = select.selectAll("option").data(sorted_list_of_scenarios());
+  var options = select.selectAll("option").data(list_of_scenarios());
 
   options.enter().append("option");
 
@@ -340,12 +346,7 @@ function setup_scenario_dropdown(id, input_to_change, selected_value) {
     .attr('value', Object)
     .text(function(d) { return scenario_human_names(d); });
 
-  select
-    .property("value", selected_value)
-    .on("change", function() {
-      input_to_change(this.value);
-      display();
-    });
+  select.property("value", selected_value);
 };
 
 function list_of_scenarios() {
@@ -361,19 +362,18 @@ function create_data_to_display_for_user_choice() {
   var left_case_names = cases_with_scenarios_that_must_be_included(left_scenario);
   var right_case_names = cases_with_scenarios_that_must_be_included(right_scenario);
 
-  remove_cases_that_are_in_both_left_and_right();
-
   calculate_pairs();
 
   data_to_display = pairs;
 
+
   function cases_with_scenarios_that_must_be_included(scenario) {
     // Special case where the user hasn't specified any further constraints
     if(scenarios_that_must_be_included.empty()) { 
-      return duplicate_set(get_cases_for_scenario(scenario));
+      return get_cases_for_scenario(scenario);
     }
     // Now we know we are going to have to find cases that have all the required scenarios
-    var all_scenarios_to_include = duplicate_set(scenarios_that_must_be_included);
+    var all_scenarios_to_include = d3.set(scenarios_that_must_be_included.values());
     all_scenarios_to_include.remove(left_scenario);
     all_scenarios_to_include.remove(right_scenario);
     all_scenarios_to_include = all_scenarios_to_include.values().concat(scenario);
@@ -390,6 +390,7 @@ function create_data_to_display_for_user_choice() {
 
   function union_of_sets_of_cases(array_of_sets_of_cases) {
     if(array_of_sets_of_cases.length == 0) { return d3.set(); };
+    if(array_of_sets_of_cases.length == 1) { return array_of_sets_of_cases[0] };
     
     var first_set_as_array = array_of_sets_of_cases[0].values();
     var rest_of_sets = array_of_sets_of_cases.slice(1);
@@ -405,19 +406,6 @@ function create_data_to_display_for_user_choice() {
     var matches = first_set_as_array.filter(contained_in_rest_of_sets);
     
     return d3.set(matches);
-  };
-
-  function duplicate_set(set) {
-    return d3.set(set.values());
-  }
-
-  function remove_cases_that_are_in_both_left_and_right() {
-    left_case_names.forEach(function(left_case_name) {
-      if(right_case_names.has(left_case_name)) {
-        left_case_names.remove(left_case_name);
-        right_case_names.remove(left_case_name);
-      }
-    });
   };
 
   function calculate_pairs() {
@@ -504,46 +492,10 @@ function create_data_to_display_for_user_choice() {
   };
 };
 
-function update_text() {
-  d3.selectAll(".left_name").text(scenario_human_names(left_scenario));
-  d3.selectAll(".right_name").text(scenario_human_names(right_scenario));
-  if(scenarios_that_must_be_included.empty()) {
-    d3.selectAll(".only_show_if_must_include_scenarios").classed("hide", true);
-  } else {
-    d3.selectAll(".only_show_if_must_include_scenarios").classed("hide", false);
-    d3.selectAll(".must_include_scenarios").text(scenarios_that_must_be_included.values().map(function(s) { return scenario_human_names(s); }).join(", "));
-    d3.selectAll(".number_of_scenarios").text(data_to_display.length);
-  };
-  if(data_to_display.length = 0) {
-    d3.select(".headline_results").text("");
-  } else {
-    d3.select(".headline_results").text(headline_results());
-  }
-};
-
-function headline_results() {
-  var percentageDifferenceFormat = d3.format(".0%");
-  var low_percent = percentageDifferenceFormat(Math.abs(data_to_display.cost_difference_range_ratio[0]));
-  var high_percent = percentageDifferenceFormat(Math.abs(data_to_display.cost_difference_range_ratio[1]));
-  if(low_percent == high_percent) {
-    var percent_message = "about "+low_percent;
-  } else {
-    var percent_message = low_percent + " to " + high_percent;
-  }
-  var direction_message =  ((data_to_display.cost_difference_range_ratio[1] > 0) ? " more " : " less ");
-  return scenario_human_names(right_scenario) + " is " +
-          percent_message + 
-          direction_message + 
-          "expensive than " +
-          scenario_human_names(left_scenario) + 
-          ". ";
-};
-
-var chart = uncertain_flying_brick();
-
 function draw_chart() {
+  var chart = uncertain_flying_brick();
   chart
-    .maximum_y_value(12) // FIXME: Calculate from the data
+    .maximum_y_value(15) // FIXME: Calculate from the data
     .from_scenario(scenario_human_names(left_scenario))
     .to_scenario(scenario_human_names(right_scenario));
 
@@ -575,7 +527,19 @@ function draw_table() {
   new_rows.append("td").attr("class", "right_scenario_name");
   new_rows.append("td").attr("class", "right_scenario_cost");
   new_rows.append("td").attr("class", "cost_difference");
-  new_rows.append("td").attr("class", "comparison").append("a").text("Compare the two scenarios");
+
+  new_rows.append("td").attr("class", "compare_build_rates").append("a").text("Compare build rates");
+
+  new_rows.append("td").text("Compare costs: ");
+  new_rows.append("td").attr("class", "compare_cost_npv").append("a").text("NPV");
+  new_rows.append("td").attr("class", "compare_cost_2025").append("a").text("2025");
+  new_rows.append("td").attr("class", "compare_cost_2030").append("a").text("2030");
+  new_rows.append("td").attr("class", "compare_cost_2050").append("a").text("2050");
+
+  new_rows.append("td").text("Compare emissions: ");
+  new_rows.append("td").attr("class", "compare_emissions_2025").append("a").text("2025");
+  new_rows.append("td").attr("class", "compare_emissions_2030").append("a").text("2030");
+  new_rows.append("td").attr("class", "compare_emissions_2050").append("a").text("2050");
 
   rows.select("td.left_scenario_name").text(function(d) { return d[0].name});
   rows.select("td.left_scenario_cost").text(function(d) { return "£"+costDifferenceFormat(d[0].cost)+" trn"; });
@@ -585,14 +549,22 @@ function draw_table() {
 
   rows.select("td.cost_difference").text(function(d) { return "£"+costDifferenceFormat(d.cost_difference_absolute)+" trn ("+percentageDifferenceFormat(d.cost_difference_ratio)+")" });
 
-  rows.select("td.comparison a").attr("href", function(d) { return "comparison.html#"+d[0].name+","+d[1].name; });
+  rows.select("td.compare_cost_npv a").attr("href",function(d) { return "sectoral-costs.html#"+d[0].name+","+d[1].name+",npv,npv"; })
+  rows.select("td.compare_cost_2025 a").attr("href",function(d) { return "sectoral-costs.html#"+d[0].name+","+d[1].name+",2025,2025" })
+  rows.select("td.compare_cost_2030 a").attr("href",function(d) { return "sectoral-costs.html#"+d[0].name+","+d[1].name+",2030,2030" })
+  rows.select("td.compare_cost_2050 a").attr("href",function(d) { return "sectoral-costs.html#"+d[0].name+","+d[1].name+",2050,2050" })
+
+  rows.select("td.compare_emissions_2025 a").attr("href",function(d) { return "sectoral-emissions.html#"+d[0].name+","+d[1].name+",2025,2025"; })
+  rows.select("td.compare_emissions_2030 a").attr("href",function(d) { return "sectoral-emissions.html#"+d[0].name+","+d[1].name+",2030,2030"; })
+  rows.select("td.compare_emissions_2050 a").attr("href",function(d) { return "sectoral-emissions.html#"+d[0].name+","+d[1].name+",2050,2050"; })
+  rows.select("td.compare_build_rates a").attr("href",function(d) { return "build-rates.html#"+d[0].name+","+d[1].name; })
 
 };
 
 
 function uncertain_flying_brick() {
 
-  var margin = {top: 20, right: 20, bottom: 30, left: 20},
+  var margin = {top: 20, right: 20, bottom: 20, left: 20},
       width = 600;
       height = 600;
 
@@ -718,7 +690,7 @@ function uncertain_flying_brick() {
         svg.select(".difference_range")
           .text(range_label(costDifferenceFormat, data.cost_difference_range_absolute))
           .attr("x", x("difference")+(x.rangeBand()/2))
-          .attr("y", y(data.cost_left_mean + Math.max(data.cost_difference_range_absolute[1],0))-3);
+          .attr("y", y(data.cost_left_mean + data.cost_difference_range_absolute[1])-3);
 
         svg.select(".to_range")
           .text(range_label(costFormat, data.cost_right_range))
@@ -805,25 +777,6 @@ function uncertain_flying_brick() {
 
   return chart; 
 }
-
-function scenario_human_name_lookup() {
-  var codes = d3.map();
-
-  d3.tsv("scenario_names.tsv").get(function(error, rows) {
-      if (error) return console.warn(error);
-
-      rows.forEach(function(row) {
-        codes.set(row['Code'], row['Name']);
-        });
-      });
-
-  function lookup(code) {
-    return codes.get(code) || code;
-  };
-
-  return lookup;
-}
-
 
 </script>
 </html>
