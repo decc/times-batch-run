@@ -5,11 +5,10 @@
 <title>Variation in total cost with scenario from UK TIMES</title>
 <style>
 body {
-  font: 10px sans-serif;
+  font-family: serif;
 }
 
 table {
-  font-size: 10px;
 }
 
 div {
@@ -17,26 +16,15 @@ div {
   padding: 0;
 }
 
-#title {
-  width: 100%;
-  font-size: 16px;
-  height: 30px;
+h1, h2 {
   text-align: center;
-  margin: 0;
-  padding: 0;
-}
-
-h2 {
-  text-align: center;
-  font-size: 12px;
-  height: 24px;
 }
 
 div#results {
   width: 48%;
 }
 
-div#controls {
+#pairs {
   float: right;
   width: 50%;
   padding-top: 20px;
@@ -49,11 +37,10 @@ div#controls {
 }
 
 .axis .tick line, .axis path {
-  stroke: none;
 }
 
 text.range {
-  fill: steelblue;
+  fill: black;
 }
 
 text.cost_difference_ratio {
@@ -70,7 +57,7 @@ rect.hover {
 }
 
 table#pairs {
-  margin-top: 50px;
+  margin-top: 0px;
 }
 
 #pairs th {
@@ -82,10 +69,42 @@ table#pairs {
   margin-right: 20px;
 }
 
+.hide {
+  display: none;
+}
+
+#controls {
+  padding: 10px;
+  margin: 40px;
+  background-color: #ccc;
+}
+
+.headline {
+  margin: 20px 40px;
+}
+
 </style>
 <body>
-<h1 id='title'></h1>
+<h1 id='title'>How much more expensive is <span class='left_name'></span> than <span class='right_name'></span>?</h1>
+<p class='headline'><span class='headline_results'></span>The chart and table below compares the costs of scenarios that have <span class='left_name'></span> with other scenarios that are identical, except that they have <span class='right_name'></span> instead of <span class='left_name'></span>. <span class='only_show_if_must_include_scenarios'>All scenarios also have <span class='must_include_scenarios'></span>.</span> There are <span class='number_of_scenarios'></span> pairs of scenarios that match this description.</p>
+<table id='pairs'>
+  <thead>
+    <tr>
+      <th colspan='2' id='left_scenario_title'>Left scenarios</th>
+      <th colspan='2' id='right_scenario_title'>Right scenarios</th>
+      <th>Cost difference</th>
+      <th colspan='1'></th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<div id='results'>
+  <div id='chart'>
+  </div>
+</div>
 <div id='controls'>
+  <h2>Settings</h2>
   <div>
     Compare&nbsp;
     <select id='left_scenario_name'>
@@ -100,23 +119,8 @@ table#pairs {
   <div id='checkboxes'>
   </div>
   </div>
+  <div style='clear:both;'></div>
 </div>
-<div id='results'>
-  <div id='chart'>
-  </div>
-</div>
-<table id='pairs'>
-  <thead>
-    <tr>
-      <th colspan='2' id='left_scenario_title'>Left scenarios</th>
-      <th colspan='2' id='right_scenario_title'>Right scenarios</th>
-      <th>Cost difference</th>
-      <th colspan='3'>Detailed comparisons</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
 <script>
 
 var all_cases = d3.map();
@@ -139,6 +143,7 @@ function setup_once_all_cases_loaded() {
 function display() {
   update_hash();
   create_data_to_display_for_user_choice();
+  update_text();
   draw_chart();
   draw_table();
 };
@@ -499,6 +504,41 @@ function create_data_to_display_for_user_choice() {
   };
 };
 
+function update_text() {
+  d3.selectAll(".left_name").text(scenario_human_names(left_scenario));
+  d3.selectAll(".right_name").text(scenario_human_names(right_scenario));
+  if(scenarios_that_must_be_included.empty()) {
+    d3.selectAll(".only_show_if_must_include_scenarios").classed("hide", true);
+  } else {
+    d3.selectAll(".only_show_if_must_include_scenarios").classed("hide", false);
+    d3.selectAll(".must_include_scenarios").text(scenarios_that_must_be_included.values().map(function(s) { return scenario_human_names(s); }).join(", "));
+    d3.selectAll(".number_of_scenarios").text(data_to_display.length);
+  };
+  if(data_to_display.length == 0) {
+    d3.select(".headline_results").text("");
+  } else {
+    d3.select(".headline_results").text(headline_results());
+  }
+};
+
+function headline_results() {
+  var percentageDifferenceFormat = d3.format(".0%");
+  var low_percent = percentageDifferenceFormat(Math.abs(data_to_display.cost_difference_range_ratio[0]));
+  var high_percent = percentageDifferenceFormat(Math.abs(data_to_display.cost_difference_range_ratio[1]));
+  if(low_percent == high_percent) {
+    var percent_message = "about "+low_percent;
+  } else {
+    var percent_message = low_percent + " to " + high_percent;
+  }
+  var direction_message =  ((data_to_display.cost_difference_range_ratio[1] > 0) ? " more " : " less ");
+  return scenario_human_names(right_scenario) + " is " +
+          percent_message + 
+          direction_message + 
+          "expensive than " +
+          scenario_human_names(left_scenario) + 
+          ". ";
+};
+
 var chart = uncertain_flying_brick();
 
 function draw_chart() {
@@ -515,8 +555,8 @@ function draw_chart() {
 function draw_table() {
   var table = d3.select("#pairs");
 
-  table.select("#left_scenario_title").text(scenario_human_names(left_scenario)+" scenarios");
-  table.select("#right_scenario_title").text(scenario_human_names(right_scenario)+" scenarios");
+  table.select("#left_scenario_title").text(scenario_human_names(left_scenario));
+  table.select("#right_scenario_title").text(scenario_human_names(right_scenario));
 
   var costDifferenceFormat = d3.format(",.1f");
   var percentageDifferenceFormat = d3.format("+.1%");
@@ -535,19 +575,7 @@ function draw_table() {
   new_rows.append("td").attr("class", "right_scenario_name");
   new_rows.append("td").attr("class", "right_scenario_cost");
   new_rows.append("td").attr("class", "cost_difference");
-
-  new_rows.append("td").attr("class", "compare_build_rates").append("a").text("Compare build rates");
-
-  new_rows.append("td").text("Compare costs: ");
-  new_rows.append("td").attr("class", "compare_cost_npv").append("a").text("NPV");
-  new_rows.append("td").attr("class", "compare_cost_2025").append("a").text("2025");
-  new_rows.append("td").attr("class", "compare_cost_2030").append("a").text("2030");
-  new_rows.append("td").attr("class", "compare_cost_2050").append("a").text("2050");
-
-  new_rows.append("td").text("Compare emissions: ");
-  new_rows.append("td").attr("class", "compare_emissions_2025").append("a").text("2025");
-  new_rows.append("td").attr("class", "compare_emissions_2030").append("a").text("2030");
-  new_rows.append("td").attr("class", "compare_emissions_2050").append("a").text("2050");
+  new_rows.append("td").attr("class", "comparison").append("a").text("Compare scenarios");
 
   rows.select("td.left_scenario_name").text(function(d) { return d[0].name});
   rows.select("td.left_scenario_cost").text(function(d) { return "£"+costDifferenceFormat(d[0].cost)+" trn"; });
@@ -557,22 +585,14 @@ function draw_table() {
 
   rows.select("td.cost_difference").text(function(d) { return "£"+costDifferenceFormat(d.cost_difference_absolute)+" trn ("+percentageDifferenceFormat(d.cost_difference_ratio)+")" });
 
-  rows.select("td.compare_cost_npv a").attr("href",function(d) { return "sectoral-costs.html#"+d[0].name+","+d[1].name+",npv,npv"; })
-  rows.select("td.compare_cost_2025 a").attr("href",function(d) { return "sectoral-costs.html#"+d[0].name+","+d[1].name+",2025,2025" })
-  rows.select("td.compare_cost_2030 a").attr("href",function(d) { return "sectoral-costs.html#"+d[0].name+","+d[1].name+",2030,2030" })
-  rows.select("td.compare_cost_2050 a").attr("href",function(d) { return "sectoral-costs.html#"+d[0].name+","+d[1].name+",2050,2050" })
-
-  rows.select("td.compare_emissions_2025 a").attr("href",function(d) { return "sectoral-emissions.html#"+d[0].name+","+d[1].name+",2025,2025"; })
-  rows.select("td.compare_emissions_2030 a").attr("href",function(d) { return "sectoral-emissions.html#"+d[0].name+","+d[1].name+",2030,2030"; })
-  rows.select("td.compare_emissions_2050 a").attr("href",function(d) { return "sectoral-emissions.html#"+d[0].name+","+d[1].name+",2050,2050"; })
-  rows.select("td.compare_build_rates a").attr("href",function(d) { return "build-rates.html#"+d[0].name+","+d[1].name; })
+  rows.select("td.comparison a").attr("href", function(d) { return "comparison.html#"+d[0].name+","+d[1].name; });
 
 };
 
 
 function uncertain_flying_brick() {
 
-  var margin = {top: 20, right: 20, bottom: 20, left: 20},
+  var margin = {top: 50, right: 20, bottom: 30, left: 50},
       width = 600;
       height = 600;
 
@@ -643,9 +663,9 @@ function uncertain_flying_brick() {
         
         new_svg.append("text")
           .attr("class", "y_axis_label")
-          .attr('y', -7)
-          .attr("x", (width-margin.left-margin.right)/2)
-          .attr("text-anchor","middle")
+          .attr('y', -20)
+          .attr("x", -margin.left)
+          .attr("text-anchor","start")
           .text("Total Cost £trn (2010-2050, discounted)");
         
         new_svg.append("text")
@@ -689,6 +709,9 @@ function uncertain_flying_brick() {
           .attr("transform", "translate(0," + y.range()[0] + ")")
           .call(xAxis);
 
+        svg.select(".y.axis")
+          .call(yAxis);
+
         // And the labels explaining the ranges
         svg.select(".from_range")
           .text(range_label(costFormat, data.cost_left_range))
@@ -698,7 +721,7 @@ function uncertain_flying_brick() {
         svg.select(".difference_range")
           .text(range_label(costDifferenceFormat, data.cost_difference_range_absolute))
           .attr("x", x("difference")+(x.rangeBand()/2))
-          .attr("y", y(data.cost_left_mean + data.cost_difference_range_absolute[1])-3);
+          .attr("y", y(data.cost_left_mean + Math.max(data.cost_difference_range_absolute[1],0))-3);
 
         svg.select(".to_range")
           .text(range_label(costFormat, data.cost_right_range))
@@ -706,14 +729,9 @@ function uncertain_flying_brick() {
           .attr("y", y(data.cost_right_range[1])-3);
 
         svg.select(".cost_difference_ratio")
-          .text(
-              percentageDifferenceFormat(data.cost_difference_range_ratio[0])+
-              " to "+
-              percentageDifferenceFormat(data.cost_difference_range_ratio[1])+
-              " (n="+
-              data.length+
-              ")"
-              );
+          .text(range_label(percentageDifferenceFormat,data.cost_difference_range_ratio))
+          .attr("x", x("difference")+(x.rangeBand()/2))
+          .attr("y", y(data.cost_left_mean + Math.max(data.cost_difference_range_absolute[1],0))-30);
 
         // Now we loop through each pair of cases, adding a group
         var pairs = canvas.select("g.pairs").selectAll("g.pair").data(Object);
@@ -731,7 +749,7 @@ function uncertain_flying_brick() {
           {key: 'difference', value: rect(data.cost_left_mean, pair[1].cost - pair[0].cost)},
           {key: to_scenario, value: rect(0, pair[1].cost)}
           ]
-  };
+        };
 
         // And within each pair, we draw a rect for the from, the to and the difference
         var cases = pairs.selectAll("rect.case")
