@@ -128,25 +128,6 @@ var scenarios_that_must_be_included = d3.set();
 var data_to_display = undefined;
 var scenario_human_names = scenario_human_name_lookup();
 
-function scenario_human_name_lookup() {
-  var codes = d3.map();
-
-  d3.tsv("scenario_names.tsv").get(function(error, rows) {
-      if (error) return console.warn(error);
-
-      rows.forEach(function(row) {
-        codes.set(row['Code'], row['Name']);
-        });
-      });
-
-  function lookup(code) {
-    return codes.get(code) || code;
-  };
-
-  return lookup;
-}
-
-
 load_all_cases(setup_once_all_cases_loaded);
 
 function setup_once_all_cases_loaded() {
@@ -164,7 +145,6 @@ function display() {
 
 function update_hash() {
    window.location = "#"+hash_code_for_comparisons()+hash_code_for_scenarios_that_must_be_included();
-  
 };
 
 function hash_code_for_comparisons() {
@@ -271,35 +251,36 @@ function setup_user_choices() {
 function read_user_choices_from_hash() {
   hash = window.location.hash.slice(1).split(',');
   if(hash.length < 2) { 
-    left_scenario = list_of_scenarios()[0];
-    right_scenario = list_of_scenarios()[1];
+    set_default_user_choices();
   } else {
-    left_scenario = hash[0];
-    right_scenario = hash[1];
+    set_left_scenario(hash[0]);
+    set_right_scenario(hash[1]);
     hash.slice(2).forEach(function(scenario) {
       scenarios_that_must_be_included.add(scenario);
     });
   }
 };
 
+function set_default_user_choices() {
+  set_left_scenario(list_of_scenarios()[0]);
+  set_right_scenario(list_of_scenarios()[1]);
+}
+
 function setup_dropdowns() {
-  setup_scenario_dropdown("#left_scenario_name", left_scenario);
-  setup_scenario_dropdown("#right_scenario_name", right_scenario);
-
-  d3.select("#left_scenario_name").on("change", function() {
-      left_scenario = this.value;
-      display();
-  });
-
-  d3.select("#right_scenario_name").on("change", function() {
-      right_scenario = this.value;
-      display();
-  });
+  setup_scenario_dropdown("#left_scenario_name", set_left_scenario, left_scenario);
+  setup_scenario_dropdown("#right_scenario_name", set_right_scenario, right_scenario);
 };
 
+function set_left_scenario(value) {
+  left_scenario = value;
+};
+
+function set_right_scenario(value) {
+  right_scenario = value;
+}
+
 function setup_checkboxes() {
-  var data = list_of_scenarios()
-    .sort(function(a,b) { return d3.ascending(scenario_human_names(a), scenario_human_names(b))});
+  var data = sorted_list_of_scenarios();
   var break_point = Math.ceil(data.length/2);
   data = [data.slice(0,break_point), data.slice(break_point)];
 
@@ -331,12 +312,20 @@ function setup_checkboxes() {
         });
 
   table_rows.exit().remove();
-
 };
 
-function setup_scenario_dropdown(id, selected_value) {
+function sorted_list_of_scenarios() {
+  return list_of_scenarios().sort(function(a,b) { 
+      return d3.ascending( 
+        scenario_human_names(a), 
+        scenario_human_names(b)
+      )
+  });
+}
+
+function setup_scenario_dropdown(id, input_to_change, selected_value) {
   var select = d3.select(id)
-  var options = select.selectAll("option").data(list_of_scenarios());
+  var options = select.selectAll("option").data(sorted_list_of_scenarios());
 
   options.enter().append("option");
 
@@ -346,7 +335,12 @@ function setup_scenario_dropdown(id, selected_value) {
     .attr('value', Object)
     .text(function(d) { return scenario_human_names(d); });
 
-  select.property("value", selected_value);
+  select
+    .property("value", selected_value)
+    .on("change", function() {
+      input_to_change(this.value);
+      display();
+    });
 };
 
 function list_of_scenarios() {
@@ -362,18 +356,19 @@ function create_data_to_display_for_user_choice() {
   var left_case_names = cases_with_scenarios_that_must_be_included(left_scenario);
   var right_case_names = cases_with_scenarios_that_must_be_included(right_scenario);
 
+  remove_cases_that_are_in_both_left_and_right();
+
   calculate_pairs();
 
   data_to_display = pairs;
 
-
   function cases_with_scenarios_that_must_be_included(scenario) {
     // Special case where the user hasn't specified any further constraints
     if(scenarios_that_must_be_included.empty()) { 
-      return get_cases_for_scenario(scenario);
+      return duplicate_set(get_cases_for_scenario(scenario));
     }
     // Now we know we are going to have to find cases that have all the required scenarios
-    var all_scenarios_to_include = d3.set(scenarios_that_must_be_included.values());
+    var all_scenarios_to_include = duplicate_set(scenarios_that_must_be_included);
     all_scenarios_to_include.remove(left_scenario);
     all_scenarios_to_include.remove(right_scenario);
     all_scenarios_to_include = all_scenarios_to_include.values().concat(scenario);
@@ -390,7 +385,6 @@ function create_data_to_display_for_user_choice() {
 
   function union_of_sets_of_cases(array_of_sets_of_cases) {
     if(array_of_sets_of_cases.length == 0) { return d3.set(); };
-    if(array_of_sets_of_cases.length == 1) { return array_of_sets_of_cases[0] };
     
     var first_set_as_array = array_of_sets_of_cases[0].values();
     var rest_of_sets = array_of_sets_of_cases.slice(1);
@@ -406,6 +400,19 @@ function create_data_to_display_for_user_choice() {
     var matches = first_set_as_array.filter(contained_in_rest_of_sets);
     
     return d3.set(matches);
+  };
+
+  function duplicate_set(set) {
+    return d3.set(set.values());
+  }
+
+  function remove_cases_that_are_in_both_left_and_right() {
+    left_case_names.forEach(function(left_case_name) {
+      if(right_case_names.has(left_case_name)) {
+        left_case_names.remove(left_case_name);
+        right_case_names.remove(left_case_name);
+      }
+    });
   };
 
   function calculate_pairs() {
@@ -492,10 +499,11 @@ function create_data_to_display_for_user_choice() {
   };
 };
 
+var chart = uncertain_flying_brick();
+
 function draw_chart() {
-  var chart = uncertain_flying_brick();
   chart
-    .maximum_y_value(15) // FIXME: Calculate from the data
+    .maximum_y_value(12) // FIXME: Calculate from the data
     .from_scenario(scenario_human_names(left_scenario))
     .to_scenario(scenario_human_names(right_scenario));
 
@@ -777,6 +785,25 @@ function uncertain_flying_brick() {
 
   return chart; 
 }
+
+function scenario_human_name_lookup() {
+  var codes = d3.map();
+
+  d3.tsv("scenario_names.tsv").get(function(error, rows) {
+      if (error) return console.warn(error);
+
+      rows.forEach(function(row) {
+        codes.set(row['Code'], row['Name']);
+        });
+      });
+
+  function lookup(code) {
+    return codes.get(code) || code;
+  };
+
+  return lookup;
+}
+
 
 </script>
 </html>
