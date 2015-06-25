@@ -1,6 +1,7 @@
 #2015-06-25
 
 * Added a update-index.rb utility to the results folder to allow easy index updates
+* Added a default index.html page to the results folder
 
 #2015-06-24
 
