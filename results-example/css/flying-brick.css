@@ -1,0 +1,64 @@
+body {
+}
+
+.axis path, .axis line {
+fill: none;
+stroke: #6baed6;
+        stroke-width: 1px;
+        shape-rendering: crispEdges;
+}
+
+.axis text, #axislabel {
+fill: #6baed6;
+}
+
+rect.brick {
+stroke: #fff;
+        shape-rendering: crispEdges;
+}
+
+text.ld, text.lu {
+}
+
+text.stacklabel {
+  font-weight: bold;
+}
+
+text.label {
+  font-size: 10px;
+}
+
+line.connector {
+stroke: #000;
+fill: none;
+      shape-rendering: crispEdges;
+      stroke-thickness: 1px;
+}
+
+#backing rect {
+fill: #eef;
+      fill-opacity: 0.5;
+stroke: none;
+}
+
+#tsv {
+width: 97%;
+height: 200px;
+}
+
+text#b_over_a_label, text#diff_over_a_total_label {
+  font-size: 10px;
+fill: #6baed6;
+}
+
+line#a_total_line, line#b_total_line, line#diff_total_line {
+stroke: rgb(231,231,231);
+        shape-rendering: crispEdges;
+        stroke-thickness: 1px;
+}
+
+a#chart_link {
+  text-decoration: underline;
+cursor: pointer;
+}
+

@@ -1,3 +1,7 @@
+#2015-06-26
+
+* Refactored the flying-bricks to share code
+
 #2015-06-25
 
 * Added a update-index.rb utility to the results folder to allow easy index updates
