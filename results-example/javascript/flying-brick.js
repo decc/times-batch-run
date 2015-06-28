@@ -124,13 +124,13 @@ var yAxis = d3.svg.axis()
   .attr("class", "stacklabel")
   .attr("id","leftlabel")
   .attr("text-anchor", "middle")
-  .attr("y", 15);
+  .attr("y", -15);
 
   svg.append("text")
   .attr("class", "stacklabel")
   .attr("id","rightlabel")
   .attr("text-anchor", "middle")
-  .attr("y", 15);
+  .attr("y", -15);
 
   svg.append("text")
   .attr("class", "stacklabel")
@@ -148,7 +148,7 @@ var yAxis = d3.svg.axis()
   .attr("class", "stacklabel")
   .attr("id","difflabel")
   .attr("text-anchor", "middle")
-  .attr("y", 15)
+  .attr("y", -15)
   .attr("x", width/2);
 
   var differencegroup = svg.append("g").attr("class","diffrencegroup");

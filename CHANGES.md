@@ -1,3 +1,7 @@
+#2015-06-28
+
+* Moved flying bricks labels higher
+
 #2015-06-26
 
 * Refactored the flying-bricks to share code
