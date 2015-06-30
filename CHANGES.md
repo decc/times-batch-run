@@ -1,6 +1,7 @@
 #2015-06-30
 
 * Can now click on a case to see details about that individual case
+* Added missing demand scenarios to possible_scenarios.tsv
 
 #2015-06-29
 

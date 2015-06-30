@@ -1,75 +1,1 @@
-# This file lays out all the possible scenarios																						
-# Lines starting with # are ignored																						
-# Empty lines are ignored																						
-# Anything in column B or beyond is expected to be the name of a dd file that VEDA generates																						
-# Column A can be anything you like. It is just to help you keep organised.																						
-																						
-# We start with things that are always included in any scenario																						
-Always	base																					
-Always	newagr																					
-Always	newelc																					
-Always	newind																					
-Always	newprc																					
-Always	newres																					
-Always	newrsr																					
-Always	newser																					
-Always	newtra																					
-Always	syssettings																					
-Always	uc_base																					
-Always	uc_ind																					
-Always	uc_prc																					
-Always	uc_res																					
-Always	uc_rsr																					
-Always	uc_ser																					
-Always	uc_tra																					
-Always	accounting																					
-																						
-# This is a temporary fix to give international aviation an abatement option. Otherwise the model often fails to solve																						
-Always	scen_rsr_impbiojet-ft_act																					
-																						
-# Now we have things that are only included sometimes																						
-"# Each row is a mutually exclusive set (i.e., can only have one of the things in the row in any given scenario)"																						
-"# E.g., it is only possible to have one discount rate at at time, but it could be the private one or it could be the stern one"																						
-Discount rate	discount_private	discount_stern																				
-																						
-# I have setup some dd files that accept arguments. One is the budget dd file which accepts a year and then a 5 year MtCO2e budget level																						
-"# First is budget, second is actual"																						
-# CB1	budget 2010 3018	budget 2010 2982																				
-"# If you constrain to CB1, then triggers dummy imports. GHG calibration out?"																						
-CB1	budget 2010 3500																					
-"# First is budget, second is forecast"																						
-CB2	budget 2015 2782	budget 2015 2706																				
-"# First is budget, second is forecast"																						
-CB3	budget 2020 2544	budget 2020 2464																				
-"# First is budget, second is forecast"																						
-CB4	budget 2025 1950	budget 2025 2083																				
-"# CB5 is unknown, so provide full range of options"																						
-CB5	budget 2030 1000	budget 2030 1100	budget 2030 1200	budget 2030 1300	budget 2030 1400	budget 2030 1500	budget 2030 1600	budget 2030 1700	budget 2030 1800	budget 2030 1900	budget 2030 2000	budget 2030 2100	budget 2030 2200	budget 2030 2300	budget 2030 2400	budget 2030 2500	budget 2030 2600	budget 2030 2700	budget 2030 2800	budget 2030 2900	budget 2030 3000	budget 2030 3100
-																						
-"# The 2050 target is known, but the last option simulates abandoning it, which we model 1 in 4 times"																						
-twenty_fifty_target	total_cap 2050 160	total_cap 2050 160	total_cap 2050 160	total_cap 2050 999																		
-																						
-																						
-# We need to decide about the EU ETS price and size																						
-ets_price	TradedPriceLow	TradedPriceCentral	TradedPriceHigh																			
-ets_cap 2015	ets_cap 2015 212																					
-ets_cap 2020	ets_cap 2020 145																					
-ets_cap 2025	ets_cap 2025 109																					
-ets_cap 2030	ets_cap 2030 90																					
-ets_cap 2050	ets_cap 2050 45																					
-																						
-# We need to include international aviation and shipping at some point (2100 means effectively never)																						
-international_aviation_and_shipping	remaining_ias_from 2020	remaining_ias_from 2025	remaining_ias_from 2030	remaining_ias_from 2050	remaining_ias_from 2100																	
-																						
-# And do we stop using the EU ETS accounting approach and budget territorial emissions at some point?																						
-territorial_from	territorial_from 2000	territorial_from 2030	territorial_from 2100																			
-																						
-																						
-# NIL in a column means it is possible for nothing to be included from this row in a scenario																						
-"# So, in this case, 4 out of 5 scenarios will leave nuclear alone, 1 out of 5 secnarios will not permit nuclear"																						
-Nuclear	NIL	NIL	NIL	NIL	uc_nonuc																	
-CCS	NIL	NIL	NIL	NIL	uc_noccs																	
-Renewables Target	re_target	NIL																				
-																						
-# And now a variety of electricity build rate constraints.																						
-ElectricityBuildRate	uc_elc	UC_ELC_DECCDDM_0.2																				
+# This file lays out all the possible scenarios																						# Lines starting with # are ignored																						# Empty lines are ignored																						# Anything in column B or beyond is expected to be the name of a dd file that VEDA generates																						# Column A can be anything you like. It is just to help you keep organised.																																												# We start with things that are always included in any scenario																						Always	base																					Always	newagr																					Always	newelc																					Always	newind																					Always	newprc																					Always	newres																					Always	newrsr																					Always	newser																					Always	newtra																					Always	syssettings																					Always	uc_base																					Always	uc_ind																					Always	uc_prc																					Always	uc_res																					Always	uc_rsr																					Always	uc_ser																					Always	uc_tra																					Always	accounting																																											Demand	decc_low	decc_central	decc_high																																									# This is a temporary fix to give international aviation an abatement option. Otherwise the model often fails to solve																						Always	scen_rsr_impbiojet-ft_act																																											# Now we have things that are only included sometimes																						"# Each row is a mutually exclusive set (i.e., can only have one of the things in the row in any given scenario)"																						"# E.g., it is only possible to have one discount rate at at time, but it could be the private one or it could be the stern one"																						Discount rate	discount_private	discount_stern																																										# I have setup some dd files that accept arguments. One is the budget dd file which accepts a year and then a 5 year MtCO2e budget level																						"# First is budget, second is actual"																						# CB1	budget 2010 3018	budget 2010 2982																				"# If you constrain to CB1, then triggers dummy imports. GHG calibration out?"																						CB1	budget 2010 3500																					"# First is budget, second is forecast"																						CB2	budget 2015 2782	budget 2015 2706																				"# First is budget, second is forecast"																						CB3	budget 2020 2544	budget 2020 2464																				"# First is budget, second is forecast"																						CB4	budget 2025 1950	budget 2025 2083																				"# CB5 is unknown, so provide full range of options"																						CB5	budget 2030 1000	budget 2030 1100	budget 2030 1200	budget 2030 1300	budget 2030 1400	budget 2030 1500	budget 2030 1600	budget 2030 1700	budget 2030 1800	budget 2030 1900	budget 2030 2000	budget 2030 2100	budget 2030 2200	budget 2030 2300	budget 2030 2400	budget 2030 2500	budget 2030 2600	budget 2030 2700	budget 2030 2800	budget 2030 2900	budget 2030 3000	budget 2030 3100																						"# The 2050 target is known, but the last option simulates abandoning it, which we model 1 in 4 times"																						twenty_fifty_target	total_cap 2050 160	total_cap 2050 160	total_cap 2050 160	total_cap 2050 999																																																														# We need to decide about the EU ETS price and size																						ets_price	TradedPriceLow	TradedPriceCentral	TradedPriceHigh																			ets_cap 2015	ets_cap 2015 212																					ets_cap 2020	ets_cap 2020 145																					ets_cap 2025	ets_cap 2025 109																					ets_cap 2030	ets_cap 2030 90																					ets_cap 2050	ets_cap 2050 45																																											# We need to include international aviation and shipping at some point (2100 means effectively never)																						international_aviation_and_shipping	remaining_ias_from 2020	remaining_ias_from 2025	remaining_ias_from 2030	remaining_ias_from 2050	remaining_ias_from 2100																																							# And do we stop using the EU ETS accounting approach and budget territorial emissions at some point?																						territorial_from	territorial_from 2000	territorial_from 2030	territorial_from 2100																																																															# NIL in a column means it is possible for nothing to be included from this row in a scenario																						"# So, in this case, 4 out of 5 scenarios will leave nuclear alone, 1 out of 5 secnarios will not permit nuclear"																						Nuclear	NIL	NIL	NIL	NIL	uc_nonuc																	CCS	NIL	NIL	NIL	NIL	uc_noccs																	Renewables Target	re_target	NIL																																										# And now a variety of electricity build rate constraints.																						ElectricityBuildRate	uc_elc	UC_ELC_DECCDDM_0.2																				
