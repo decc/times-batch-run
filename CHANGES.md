@@ -2,6 +2,10 @@
 
 * Can now click on a case to see details about that individual case
 
+#2015-06-29
+
+* Settting a total_cap constraint to 999 will now REMOVE the constraint, and any ETS constraint.
+
 #2015-06-28
 
 * Moved flying bricks labels higher

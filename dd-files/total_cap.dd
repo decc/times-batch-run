@@ -7,6 +7,9 @@ $batinclude total_cap YEAR CAP
 
 The cap is an annual figure in MtCO2e.
 
+There is a special case. If you specify the CAP as 999 then it REMOVES the cap. It also removes any ETS caps in that year as well.
+
+Use this to specify that we have given up.
 $offtext
 
 $eolcom #
@@ -17,4 +20,10 @@ $ONMULTI # This allows us to overwrite previously set items
 
 COM_BNDNET('UK','0','GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','UP') = 1; # This forces interpolation between data points but no extrapolation
 COM_BNDNET('UK','%1','GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','UP') = (%2 * 1000); # We multiply by 1000 because UK TIMES measures in ktCO2e
+
+$OFFEPS # This is to remove the following caps
+COM_BNDNET('UK','%1','GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','UP')$(%2 == 999) = 0; # Means delete the cap altogether if you specify it as 999
+
+# We also switch off any ETS cap in this year
+COM_BNDNET('UK','%1','GHG-ETS-NO-IAS-NET','ANNUAL','FX')$(%2 == 999) = 0; # Zero should mean delete
 ;

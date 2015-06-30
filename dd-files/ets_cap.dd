@@ -21,4 +21,4 @@ COM_BNDNET('UK','%1','GHG-ETS-NO-IAS-NET','ANNUAL','FX') = (%2 * 1000); # We mul
 ;
 
 $OFFEPS
-COM_BNDNET('UK','%1','Traded-Emission-ETS','ANNUAL','FX') = 0;
+COM_BNDNET('UK','%1','Traded-Emission-ETS','ANNUAL','FX') = 0; # Allows permits to be traded in this year by removing any fixed constraint
