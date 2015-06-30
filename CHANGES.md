@@ -1,3 +1,7 @@
+#2015-06-30
+
+* Can now click on a case to see details about that individual case
+
 #2015-06-28
 
 * Moved flying bricks labels higher

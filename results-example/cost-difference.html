@@ -569,17 +569,17 @@ function draw_table() {
 
   var new_rows = rows.enter().append("tr");
 
-  new_rows.append("td").attr("class", "left_scenario_name");
+  new_rows.append("td").attr("class", "left_scenario_name").append("a");
   new_rows.append("td").attr("class", "left_scenario_cost");
-  new_rows.append("td").attr("class", "right_scenario_name");
+  new_rows.append("td").attr("class", "right_scenario_name").append("a");
   new_rows.append("td").attr("class", "right_scenario_cost");
   new_rows.append("td").attr("class", "cost_difference");
   new_rows.append("td").attr("class", "comparison").append("a").text("Compare scenarios");
 
-  rows.select("td.left_scenario_name").text(function(d) { return d[0].name});
+  rows.select("td.left_scenario_name a").text(function(d) { return d[0].name}).attr("href", function(d) { return "case.html#"+d[0].name; });
   rows.select("td.left_scenario_cost").text(function(d) { return "£"+costDifferenceFormat(d[0].cost)+" trn"; });
 
-  rows.select("td.right_scenario_name").text(function(d) { return d[1].name; });
+  rows.select("td.right_scenario_name a").text(function(d) { return d[1].name; }).attr("href", function(d) { return "case.html#"+d[1].name; });
   rows.select("td.right_scenario_cost").text(function(d) { return "£"+costDifferenceFormat(d[1].cost)+" trn";  });
 
   rows.select("td.cost_difference").text(function(d) { return "£"+costDifferenceFormat(d.cost_difference_absolute)+" trn ("+percentageDifferenceFormat(d.cost_difference_ratio)+")" });

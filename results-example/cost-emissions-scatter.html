@@ -477,22 +477,26 @@ function setupScenarios() {
 function setupCaseInformation() {
   var scenario_rows = d3.selectAll("tr.scenario");
 
-  d3.selectAll("g.case").on("mouseover", function(selected_case) {
-    // Highlight this case
-    d3.select(this).classed("selected", true);
+  d3.selectAll("g.case")
+    .on("mouseover", function(selected_case) {
+      // Highlight this case
+      d3.select(this).classed("selected", true);
 
-    // Adjust the filter table to hide scenarios not in this case
-    scenario_rows.classed("not_included", function(scenario_row) {
-      if(selected_case.scenarios.indexOf(scenario_row.key) == -1) {
-        return true;
-      } else {
-        return false;
-      }
+      // Adjust the filter table to hide scenarios not in this case
+      scenario_rows.classed("not_included", function(scenario_row) {
+        if(selected_case.scenarios.indexOf(scenario_row.key) == -1) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+
+      chart.update_crosshairs(selected_case);
+
+    })
+    .on("click", function(selected_case) {
+      window.location = "case.html#"+selected_case.name;
     });
-
-    chart.update_crosshairs(selected_case);
-
-  });
 
   d3.selectAll("g.case").on("mouseout", function() {
     d3.select(".selected").classed("selected", false);
