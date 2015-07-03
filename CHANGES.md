@@ -1,5 +1,9 @@
 #2015-06-30
 
+* Fixed typo in total_cap.dd (GAMS uses = for equality test, not ==)
+
+#2015-06-30
+
 * Can now click on a case to see details about that individual case
 * Added missing demand scenarios to possible_scenarios.tsv
 
