@@ -33,6 +33,18 @@ Always	scen_rsr_impbiojet-ft_act
 "# Each row is a mutually exclusive set (i.e., can only have one of the things in the row in any given scenario)"																						
 "# E.g., it is only possible to have one discount rate at at time, but it could be the private one or it could be the stern one"																						
 Discount rate	discount_elc-ddm	discount_private_ccc	discount_private	discount_stern																		
+# NIL in a column means it is possible for nothing to be included from this row in a scenario																						
+"# So, in this case, 4 out of 5 scenarios will leave nuclear alone, 1 out of 5 secnarios will not permit nuclear"																						
+Nuclear	NIL	NIL	NIL	NIL	uc_nonuc																	
+CCS	NIL	NIL	NIL	NIL	uc_noccs																	
+Renewables Target	re_target	NIL																				
+Onshore wind	NIL	uc_noonshorewind																				
+																						
+# And now a variety of electricity build rate constraints.																						
+ElectricityBuildRate	UC_ELC_DECCDDM_0.2	uc_elc																				
+																						
+# Some fossil fuel price variations																						
+Fuel Prices	NIL	scen_rsr_ff-price-high	scen_rsr_ff-price-low																			
 																						
 # I have setup some dd files that accept arguments. One is the budget dd file which accepts a year and then a 5 year MtCO2e budget level																						
 "# First is budget, second is actual"																						
@@ -51,7 +63,6 @@ CB5	budget 2030 1800	budget 2030 1000	budget 2030 1100	budget 2030 1200	budget 2
 "# The 2050 target is known, but the last option simulates abandoning it, which we model 1 in 4 times"																						
 twenty_fifty_target	total_cap 2050 160	total_cap 2050 160	total_cap 2050 160	total_cap 2050 999																		
 																						
-																						
 # We need to decide about the EU ETS price and size																						
 ets_price	TradedPriceCentral	TradedPriceLow	TradedPriceHigh																			
 ets_cap 2015	ets_cap 2015 212																					
@@ -60,22 +71,14 @@ ets_cap 2025	ets_cap 2025 109
 ets_cap 2030	ets_cap 2030 90																					
 ets_cap 2050	ets_cap 2050 45																					
 																						
+"# This has to come after 2050 values set, but before IAS and territorial settings"																						
+after 2050	after_2050_same_as_2050																					
+																						
+																						
+# The following lines must be set AFTER all the above emissions constraints are set																						
+																						
 # We need to include international aviation and shipping at some point (2100 means effectively never)																						
 international_aviation_and_shipping	remaining_ias_from 2050	remaining_ias_from 2020	remaining_ias_from 2025	remaining_ias_from 2030	remaining_ias_from 2100																	
 																						
 # And do we stop using the EU ETS accounting approach and budget territorial emissions at some point?																						
 territorial_from	territorial_from 2100	territorial_from 2000	territorial_from 2030																			
-																						
-																						
-# NIL in a column means it is possible for nothing to be included from this row in a scenario																						
-"# So, in this case, 4 out of 5 scenarios will leave nuclear alone, 1 out of 5 secnarios will not permit nuclear"																						
-Nuclear	NIL	NIL	NIL	NIL	uc_nonuc																	
-CCS	NIL	NIL	NIL	NIL	uc_noccs																	
-Renewables Target	re_target	NIL																				
-Onshore wind	NIL	uc_noonshorewind																				
-																						
-# And now a variety of electricity build rate constraints.																						
-ElectricityBuildRate	UC_ELC_DECCDDM_0.2	uc_elc																				
-																						
-# Some fossil fuel price variations																						
-Fuel Prices	NIL	scen_rsr_ff-price-high	scen_rsr_ff-price-low																			

@@ -1,6 +1,7 @@
 #2015-06-30
 
 * Fixed typo in total_cap.dd (GAMS uses = for equality test, not ==)
+* Added an after_2050_same_as_2050 dd file to allow 2055 and 2060 emissions to be automatically aligned with those in 2050
 
 #2015-06-30
 
