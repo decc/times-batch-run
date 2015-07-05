@@ -1,6 +1,7 @@
 #2015-07-05
 
 * Removed the dd file check from the monte-carlo generation (it still happens in case file generation)
+* monte-carlo no longer sorts the list of cases it generates
 
 #2015-06-30
 

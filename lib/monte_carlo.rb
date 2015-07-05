@@ -8,23 +8,39 @@ class MonteCarlo
   attr_accessor :name_of_list_of_cases
   attr_accessor :number_of_cases_to_generate
   attr_accessor :file_containing_possible_combinations_of_scenarios
-  attr_accessor :set_of_all_possible_scenarios
-  attr_accessor :places_to_look_for_scenario_files
-  attr_accessor :missing_scenario_files
-  attr_accessor :cases
   attr_accessor :prefix
-  attr_accessor :number_of_scenarios_per_set
 
   def run!
-    set_prefix
+    initialize_list_of_cases
+    set_case_name_prefix
     check_file_containing_possible_combinations_of_scenarios_exists
     load_set_of_all_possible_scenarios
     create_list_of_cases
     write_cases_to_file
   end
 
-  def set_prefix
+  def print_intent
+    puts "Generating #{number_of_cases_to_generate} cases from #{File.expand_path(file_containing_possible_combinations_of_scenarios)} and putting them in #{File.expand_path(name_of_list_of_cases)}"
+  end
+
+  private
+
+  attr_accessor :set_of_all_possible_scenarios
+  attr_accessor :number_of_scenarios_per_set
+  attr_accessor :cases
+
+  def initialize_list_of_cases
+    @cases = []
+  end
+
+  def set_case_name_prefix
     @prefix ||= File.basename(name_of_list_of_cases,'.*')
+  end
+
+  def check_file_containing_possible_combinations_of_scenarios_exists
+    return if File.exist?(file_containing_possible_combinations_of_scenarios)
+    puts "Can't find file containing possile scenarios: '#{File.expand_path(file_containing_possible_combinations_of_scenarios)}'" 
+    exit
   end
 
   def load_set_of_all_possible_scenarios
@@ -54,11 +70,6 @@ class MonteCarlo
     end
   end
 
-  def check_file_containing_possible_combinations_of_scenarios_exists
-    return if File.exist?(file_containing_possible_combinations_of_scenarios)
-    puts "Can't find file containing possile scenarios: '#{File.expand_path(file_containing_possible_combinations_of_scenarios)}'" 
-    exit
-  end
 
   def count_of_possible_scenario_files
     set_of_all_possible_scenarios.inject(0) do |count, set_of_scenarios| 
@@ -73,19 +84,27 @@ class MonteCarlo
   end
 
   def create_list_of_cases
-    @cases = []
-
-    number_of_cases_to_generate.times do
-      case_scenario_indexes = number_of_scenarios_per_set.map { |n| rand(n) }
-      case_scenarios = case_scenario_indexes.map.with_index { |column, row| set_of_all_possible_scenarios[row][column+1] }
-      case_name = case_name_for(case_scenario_indexes)
-      cases << [case_name].concat(case_scenarios)
+    while cases.length < number_of_cases_to_generate do
+      add random_set_of_scenario_indexes
     end
-    cases.sort_by! { |c| c.first } # Sort the cases alphabetically by the case name
   end
-  
 
-  
+  def random_set_of_scenario_indexes
+    number_of_scenarios_per_set.map { |n| rand(n) }
+  end
+
+  def add(case_scenario_indexes)
+    case_scenarios = scenarios_for_scenario_indexes(case_scenario_indexes) 
+    case_name = case_name_for(case_scenario_indexes)
+    cases << [case_name].concat(case_scenarios)
+  end
+
+  def scenarios_for_scenario_indexes(scenario_indexes)
+    scenario_indexes.map.with_index do |column, row| 
+      set_of_all_possible_scenarios[row][column+1] # +1 to avoid the name
+    end
+  end
+
   def case_name_for(scenarios)
     "#{prefix}#{encode(scenarios,number_of_scenarios_per_set).to_s(36)}" # Encode the scenarios and write in base 36
   end
@@ -99,8 +118,5 @@ class MonteCarlo
     end
   end
 
-  def print_intent
-    puts "Generating #{number_of_cases_to_generate} cases from #{File.expand_path(file_containing_possible_combinations_of_scenarios)} and putting them in #{File.expand_path(name_of_list_of_cases)}"
-  end
 
 end
