@@ -100,6 +100,25 @@ class BatchRun
     monte_carlo.print_intent
   end
 
+  def create_run_files
+    settings.list_of_cases_files.each do |list_of_cases_file|
+      create_run_files_for_list_of_cases(list_of_cases_file)
+    end
+  end
+
+  def create_run_files_for_list_of_cases(list_of_cases_file)
+    create_run_files = CreateRunFiles.new
+
+    # Set our defaults
+    create_run_files.destination_folder_for_run_files  =  '.'
+    create_run_files.name_of_file_containing_cases = list_of_cases_file
+    create_run_files.name_of_run_file_template = settings.run_file_template
+    create_run_files.run
+
+    warn_about_missing_scenarios(create_run_files.missing_scenario_files.keys)
+    exit if create_run_files.missing_scenario_files.length > 0
+  end
+
   def warn_about_missing_scenarios(missing_scenario_files)
     return unless missing_scenario_files.length > 0
     puts <<-END
@@ -118,25 +137,6 @@ class BatchRun
 
     Then re-run this script
     END
-  end
-
-  def create_run_files
-    settings.list_of_cases_files.each do |list_of_cases_file|
-      create_run_files_for_list_of_cases(list_of_cases_file)
-    end
-  end
-
-  def create_run_files_for_list_of_cases(list_of_cases_file)
-    create_run_files = CreateRunFiles.new
-
-    # Set our defaults
-    create_run_files.destination_folder_for_run_files  =  '.'
-    create_run_files.name_of_file_containing_cases = list_of_cases_file
-    create_run_files.name_of_run_file_template = settings.run_file_template
-    create_run_files.run
-
-    warn_about_missing_scenarios(create_run_files.missing_scenario_files.keys)
-    exit if create_run_files.missing_scenario_files.length > 0
   end
 
   def names_of_all_the_cases
@@ -184,11 +184,6 @@ class BatchRun
     [settings.number_of_cases_to_optimize_simultaneously,names_of_all_the_cases.length].min
   end
 
-  def number_of_cases_per_thread
-    # Ceil in case not precisely divisable
-    (settings.number_of_cases_to_montecarlo/names_of_all_the_cases.length).ceil
-  end
-
   def run_case(case_name)
     puts "Looking for #{case_name}.RUN"
     unless File.exist?("#{case_name}.RUN")
@@ -218,17 +213,16 @@ class BatchRun
   end
 
   def run_cases
-    cases_to_run = names_of_all_the_cases.dup
-    lock = Mutex.new
+    cases_to_run = Queue.new
+
+    names_of_all_the_cases.each do |case_name|
+      cases_to_run.push(case_name)
+    end
+
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
-          case_name = nil
-          lock.synchronize {
-            break if cases_to_run.empty?
-            case_name = cases_to_run.pop
-          }
-          break unless case_name # Shouldn't be needed
+          case_name = cases_to_run.pop(true) # True means don't block
           run_case(case_name)
         end
         Thread::exit
