@@ -1,9 +1,9 @@
 require 'erb'
-require_relative 'monte_carlo'
+require_relative 'scenario_file_methods'
 require_relative 'list_of_cases'
 
 class CreateRunFiles
-  include CommonMethods
+  include ScenarioFileMethods
 
   attr_accessor :destination_folder_for_run_files
   attr_accessor :name_of_file_containing_cases
