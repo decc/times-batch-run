@@ -4,6 +4,7 @@
 * monte-carlo no longer sorts the list of cases it generates
 * Added sensitivities.rb that generates all the sensitivites in possible_scenarios.tsv (treating the first column as the base)
 * Added monte-carlo-sensitivities.rb that repeatedly generates all the senstivities against a random baseline
+* go.rb now defaults to using monte-carlo-sensitivities and to generating 2000 cases
 
 #2015-06-30
 

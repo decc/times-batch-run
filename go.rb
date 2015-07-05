@@ -5,7 +5,7 @@ require 'optparse'
 require 'thwait'
 require 'json'
 
-require_relative 'lib/monte_carlo'
+require_relative 'lib/monte_carlo_sensitivities'
 require_relative 'lib/create_run_files'
 require_relative 'lib/list_of_cases'
 require_relative 'lib/extract_overall_cost_and_emissions'
@@ -23,7 +23,7 @@ class BatchRun
 
   def set_defaults
     @settings = OpenStruct.new
-    settings.number_of_cases_to_montecarlo = 200
+    settings.number_of_cases_to_montecarlo = 2000
     settings.gams_working_folder =  "GAMS_WrkTIMES"
     settings.monte_carlo_file = "possible_scenarios.tsv"
     settings.results_folder = "results"
@@ -91,13 +91,13 @@ class BatchRun
   end
 
   def create_list_of_cases_using_montecarlo(list_of_cases_file)
-    puts "Can't find #{list_of_cases_file} so I'm going to generate it using the monte-carlo routine"
-    monte_carlo = MonteCarlo.new
+    puts "Can't find #{list_of_cases_file} so I'm going to generate it using the monte-carlo-sensitivities routine"
+    monte_carlo = MonteCarloSensitivities.new
     monte_carlo.name_of_list_of_cases = list_of_cases_file
     monte_carlo.number_of_cases_to_generate = settings.number_of_cases_to_montecarlo
     monte_carlo.file_containing_possible_combinations_of_scenarios = settings.monte_carlo_file
-    monte_carlo.print_intent
     monte_carlo.run!
+    monte_carlo.print_intent
   end
 
   def warn_about_missing_scenarios(missing_scenario_files)
