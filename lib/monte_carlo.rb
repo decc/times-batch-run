@@ -1,6 +1,6 @@
 require_relative 'encode_case'
 
-# These are shared wiht create-run-files
+# These are shared with create-run-files
 module CommonMethods
   def nil_scenario_file?(scenario_name)
     scenario_name.strip =~ /^nil$/i
@@ -34,12 +34,15 @@ class MonteCarlo
   attr_accessor :number_of_scenarios_per_set
 
   def run!
-    @prefix ||= File.basename(name_of_list_of_cases,'.*')
+    set_prefix
     check_file_containing_possible_combinations_of_scenarios_exists
     load_set_of_all_possible_scenarios
-    check_for_missing_scenario_files
     create_list_of_cases
     write_cases_to_file
+  end
+
+  def set_prefix
+    @prefix ||= File.basename(name_of_list_of_cases,'.*')
   end
 
   def load_set_of_all_possible_scenarios
@@ -75,42 +78,6 @@ class MonteCarlo
     exit
   end
 
-  def check_for_missing_scenario_files
-    @missing_scenario_files ||= []
-
-    set_of_all_possible_scenarios.each do |scenario|
-      scenario.each.with_index do |one_possible_scenario_file,i|
-        next if i == 0 # The first element in each row is the name of the set
-        
-         # Can supply scenarios in the form: name space <arguments>
-        scenario_parts = one_possible_scenario_file.split(/\s+/)
-        scenario_name = scenario_parts.first
-        scenario_arguments = scenario_parts[1..-1]
-        
-        next if scenario_file_exists?(scenario_name)
-        missing_scenario_files << scenario_name 
-      end
-    end
-  end
-
-  def warn_about_missing_scenario_files
-    if missing_scenario_files.length == 0
-      puts "Found all the scenario files"
-
-    elsif missing_scenario_files.length == count_of_possible_scenario_files
-      puts "Can't find ANY of the scenario files in #{file_containing_possible_combinations_of_scenarios}."
-      puts "This is ok, if you plan to move #{name_of_list_of_cases} somewhere else later,"
-      puts "or if you plan to create the scenario files later"
-    
-    else
-      puts "The following scenario files are missing:"
-      puts missing_scenario_files.map { |scenario_name| scenario_filename_from_name(scenario_name) }
-      puts
-      puts "This is ok, if you plan to move #{name_of_list_of_cases} somewhere else later,"
-      puts "or if you plan to create the scenario files later"
-    end
-  end
-
   def count_of_possible_scenario_files
     set_of_all_possible_scenarios.inject(0) do |count, set_of_scenarios| 
       count - 1 + set_of_scenarios.inject(0) do |count, possible_scenario, i|
@@ -122,14 +89,6 @@ class MonteCarlo
       end
     end 
   end
-
-  def places_to_look_for_scenario_files 
-    @places_to_look_for_scenario_files ||= [
-      File.dirname(file_containing_possible_combinations_of_scenarios),
-      File.dirname(name_of_list_of_cases)
-    ]
-  end
-
 
   def create_list_of_cases
     @cases = []

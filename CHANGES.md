@@ -1,3 +1,7 @@
+#2015-07-05
+
+* Removed the dd file check from the monte-carlo generation (it still happens in case file generation)
+
 #2015-06-30
 
 * Fixed typo in total_cap.dd (GAMS uses = for equality test, not ==)

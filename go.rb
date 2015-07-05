@@ -98,8 +98,6 @@ class BatchRun
     monte_carlo.file_containing_possible_combinations_of_scenarios = settings.monte_carlo_file
     monte_carlo.print_intent
     monte_carlo.run!
-
-    warn_about_missing_scenarios(monte_carlo.missing_scenario_files)
   end
 
   def warn_about_missing_scenarios(missing_scenario_files)
