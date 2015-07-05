@@ -3,6 +3,7 @@
 * Removed the dd file check from the monte-carlo generation (it still happens in case file generation)
 * monte-carlo no longer sorts the list of cases it generates
 * Added sensitivities.rb that generates all the sensitivites in possible_scenarios.tsv (treating the first column as the base)
+* Added monte-carlo-sensitivities.rb that repeatedly generates all the senstivities against a random baseline
 
 #2015-06-30
 
