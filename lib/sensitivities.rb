@@ -1,5 +1,3 @@
-require_relative 'encode_case'
-require_relative 'scenario_file_methods'
 require_relative 'monte_carlo'
 
 class Sensitivities < MonteCarlo
