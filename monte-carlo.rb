@@ -17,4 +17,3 @@ m.name_of_list_of_cases = ARGV[1] || 'cases.tsv'
 
 m.print_intent
 m.run!
-m.warn_about_missing_scenario_files
