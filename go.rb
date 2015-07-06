@@ -13,6 +13,7 @@ require_relative 'lib/extract_build_rates'
 require_relative 'lib/extract_detailed_costs'
 require_relative 'lib/extract_detailed_emissions'
 require_relative 'lib/extract_electricity_flows'
+require_relative 'lib/extract_transport_flows'
 
 class BatchRun
 
@@ -250,7 +251,6 @@ class BatchRun
       Thread.new do
         loop do
           gdx_file_name = gdx_files_to_process.pop(true) # True means don't block
-          write_results(gdx_file_name)
           write_results([gdx_file_name])
         end
         Thread::exit
@@ -296,6 +296,9 @@ class BatchRun
 
       puts "Creating electricity charts"
       extract_and_write_result name, gdx, ExtractElectricityFlows.new, "electricity-flows.json"
+
+      puts "Creating transport charts"
+      extract_and_write_result name, gdx, ExtractTransportFlows.new, "transport-flows.json"
     end
 
     puts "Creating the index"
