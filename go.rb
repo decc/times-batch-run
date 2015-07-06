@@ -251,6 +251,7 @@ class BatchRun
         loop do
           gdx_file_name = gdx_files_to_process.pop(true) # True means don't block
           write_results(gdx_file_name)
+          write_results([gdx_file_name])
         end
         Thread::exit
       end
