@@ -20,7 +20,6 @@ class ExtractHeatingFlows
   attr_accessor :commodities_included
   
   def extract_results
-    p HEATING_COMMODITIES
     extract_heating_flows
   end
 
