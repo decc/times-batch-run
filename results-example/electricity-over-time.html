@@ -254,7 +254,7 @@ var formatted_data;
 var aggregated_data;
 var case_name;
 var year_for_data = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
-var threshold = 100;
+var threshold = 50;
 
     function go() {
       settings = window.location.hash.slice(1).split(',');
@@ -294,26 +294,37 @@ function reformat_data() {
 
 function aggregate_data() {
   aggregated_data = d3.map();
-  var other = {
-    key: "Other",
-    value: year_for_data.map(function(year) { return { x: year, y: 0 }; }),
-    total: 0
-  };
-  formatted_data.forEach(function(series_name, series) {
-      var i;
+   formatted_data.forEach(function(series_name, series) {
       if(Math.abs(series.total) > threshold) {
         aggregated_data.set(series_name, series);
       } else {
+        aggregate_into("other", series);
+      }
+  });
+};
+
+function aggregate_into(series_name, series) {
+  var other = existing_data_for(series_name);
+      var i;
         other.total = other.total + series.total;
         for(i=0; i<series.value.length; i++) {
         other.value[i].y = other.value[i].y + series.value[i].y;
         }
-      }
-  });
-  if(other.total != 0) {
-    aggregated_data.set("other", other);
+}
+
+function existing_data_for(series_name) {
+  if(aggregated_data.has(series_name)) {
+    return aggregated_data.get(series_name);
+  } else {
+    var new_series = {
+key: series_name,
+     value: year_for_data.map(function(year) { return { x: year, y: 0 }; }),
+     total: 0
+    };
+    aggregated_data.set(series_name, new_series);
+    return new_series;
   }
-};
+}
 
 function draw() {
   var chart = timeSeriesStackedAreaChart();
