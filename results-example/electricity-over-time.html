@@ -245,10 +245,10 @@ tr.primary_energy_notes {
 
   </style>
   <body>
-  <p>Note: This currently doesn't include CHP generation</p>
   <div id='chart' class='chart'> </div>
   <script src="javascript/stacked_area_chart.js"></script>
   <script>
+var category_file_name = "electricity_to_low_or_high_carbon.tsv"
 var data;
 var formatted_data;
 var aggregated_data;
@@ -295,11 +295,8 @@ function reformat_data() {
 function aggregate_data() {
   aggregated_data = d3.map();
    formatted_data.forEach(function(series_name, series) {
-      if(Math.abs(series.total) > threshold) {
-        aggregated_data.set(series_name, series);
-      } else {
-        aggregate_into("other", series);
-      }
+      var category = category_for_name(series_name);
+      aggregate_into(category, series);
   });
 };
 
@@ -325,6 +322,31 @@ key: series_name,
     return new_series;
   }
 }
+
+function name_to_category_lookup() {
+  var regexps = [];
+
+  d3.tsv(category_file_name).get(function(error, rows) {
+    rows.forEach(function(row) {
+      regexps.push([new RegExp("^"+row['Process']), row['Sector']]);
+    });
+  });
+
+  function lookup(code) {
+    for(var i=0; i<regexps.length; i++) {
+      var regexp = regexps[i][0];
+      if(regexp.test(code)) {
+        var sector = regexps[i][1];
+        return sector;
+      }
+    }
+    return code;
+  };
+
+  return lookup;
+}
+
+var category_for_name = name_to_category_lookup();
 
 function draw() {
   var chart = timeSeriesStackedAreaChart();
