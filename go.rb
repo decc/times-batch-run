@@ -357,7 +357,7 @@ class BatchRun
   def tell_the_user_how_to_view_results
     puts "You can now view the results by running:"
     puts "ruby -run -e httpd #{settings.results_folder} -p 8000"
-    puts "And then opening your webbrowser at http://localhost:8000/cost-emissions-scatter.html"
+    puts "And then opening your web browser at http://localhost:8000/"
   end
 
 end
