@@ -1,1 +1,18 @@
 Process	Sector
+RH..AHP.*	Low Carbon
+RH..BLC.*	High Carbon
+RH..BLRRC.*	High Carbon
+RH..BLRRE.*	Low Carbon
+RH..BLRRG.*	High Carbon
+RH..BLRRO.*	High Carbon
+RH..BLRRW.*	Low Carbon
+RH..DH.*	District Heating
+RH..NSTRE.*	Low Carbon
+RH..SHTRE.*	Low Carbon
+RH..SHTRG.*	High Carbon
+RH..CSV.*	Efficiency
+RH..CHBRH.*	Low Carbon
+RH..AHBRE.*	Hybrid
+RH..AHHRE.*	Low Carbon
+S....CON.*	Efficiency
+S....CAE.*	Low Carbon
