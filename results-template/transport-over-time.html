@@ -1,0 +1,385 @@
+<html>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta charset='utf-8'>
+  <script src="javascript/d3.min.js"></script>
+  <link rel='stylesheet' href='css/colorbrewer.css'>
+  <style>
+svg {
+  overflow: visible; }
+
+.chart {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  margin-left: 2.4%;
+  width: 30%;
+  margin-bottom: 0px;
+  float: left; }
+
+.chart rect.backgroundrect {
+  fill: #fff; }
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges; }
+
+.charttitle {
+  text-anchor: middle;
+  font-size: 1em; }
+
+#unzoom {
+  text-anchor: middle;
+  font-size: 1em;
+  text-decoration: underline;
+  fill: #00f;
+  cursor: pointer; }
+
+text.target {
+  text-anchor: middle;
+  font-size: 0.72em; }
+
+g.drawing {
+  pointer-events: all; }
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1px; }
+
+.axis text {
+  font-size: 0.72em;
+  fill: #000; }
+
+.axislabel {
+  text-anchor: end;
+  font-size: 0.72em; }
+
+.line {
+  fill: none;
+  stroke: black;
+  stroke-width: 3px; }
+
+.linelabel {
+  font-size: 0.72em;
+  cursor: default; }
+
+.area {
+  fill-opacity: 1; }
+
+path.total {
+  stroke: black;
+  stroke-width: 2px;
+  fill: none; }
+
+text.seriesValue {
+  font-size: 0.72em;
+  text-anchor: middle; }
+
+path.total.hover {
+  stroke-width: 3px; }
+
+path.hover {
+  stroke: black;
+  stroke-width: 1px; }
+
+.linelabel.hover {
+  fill: black !important;
+  font-weight: bold; }
+
+.labelbackground {
+  fill: white; }
+
+g.context path {
+  fill: grey;
+  fill-opacity: 0.02; }
+
+.environmentalheat {
+  fill: #c7c728; }
+
+.gas {
+  fill: #660066; }
+
+.importedgas {
+  fill: #79187f; 
+}
+
+.coal {
+  fill: #000000; }
+
+.importedcoal {
+  fill: #393939; }
+
+.oil {
+  fill: #00782A; }
+
+.importedoil {
+  fill: #009636; }
+
+.bioenergy {
+  fill: #81b51a; }
+
+.importedbioenergy {
+  fill: #90c91d; }
+
+.environmentalheat {
+  fill: #ff0000; }
+
+.geothermal {
+  fill: #B36305; }
+
+.h2 {
+  fill: #ff0000; }
+
+.hydro {
+  fill: #0099CC; }
+
+.nuclear {
+  fill: #EE7C0E; }
+
+.offshorewind {
+  fill: #006992; }
+
+.onshorewind {
+  fill: #00a2e1; }
+
+.solar {
+  fill: #FFD300; }
+
+text.solar {
+  fill: #be9d00; }
+
+.tidal {
+  fill: #ff0000; }
+
+.wave {
+  fill: #003688; }
+
+.wind {
+  fill: #0098D4; }
+
+.ccs {
+  fill: #00A4A7; }
+
+.conventional {
+  fill: #660066; }
+
+.tidalandwave {
+  fill: #003688; }
+
+.electricity {
+  fill: #0064F5; }
+
+.transport {
+  fill: #F3A9BB; }
+
+.heatingcooling {
+  fill: #E32017; }
+
+.industry {
+  fill: #A0A5A9; }
+
+.lightingappliances {
+  fill: #FFD300; }
+
+text.lightingappliances {
+  fill: #be9d00; }
+
+.carboncapture {
+  fill: #00A4A7; }
+
+.lulucf {
+  fill: #ff0000; }
+
+.fuelcombustion {
+  fill: #95CDBA; }
+
+.aviationandshipping {
+  fill: #CC9999; }
+
+.waste {
+  fill: #ff0000; }
+
+.agriculture {
+  fill: #84B817; }
+
+.commercialheat {
+  fill: #ff0000; }
+
+.commerciallight {
+  fill: #ff0000; }
+
+.districtheating {
+  fill: #ff0000; }
+
+.domesticfreight {
+  fill: #ff0000; }
+
+.domesticlight {
+  fill: #ff0000; }
+
+.domesticpassengertransport {
+  fill: #ff0000; }
+
+.domesticheat {
+  fill: #ff0000; }
+
+circle.target {
+  fill: #000;
+  stroke: #fff;
+}
+
+g.targetlabel text {
+  font-size: 0.72em;
+}
+
+g.targetlabel line {
+  stroke: #ccc;
+  stroke-thickness: 1;
+}
+
+tr.primary_energy_notes {
+  display: none;
+}
+
+
+  </style>
+  <body>
+  <div id='chart' class='chart'> </div>
+  <script src="javascript/stacked_area_chart.js"></script>
+  <script>
+var category_file_name = "transport_to_low_or_high_carbon.tsv"
+var data;
+var formatted_data;
+var aggregated_data;
+var case_name;
+var year_for_data = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
+var threshold = 50;
+var unit = "Road billion vehicle km/yr"
+
+    function go() {
+      settings = window.location.hash.slice(1).split(',');
+      case_name = settings[0];
+      load_case(case_name);
+    };
+
+    function load_case(case_name) {
+      d3.json(url_for_case_data(case_name), case_loaded);
+    }
+
+  function case_loaded(individual_case) {
+    data = d3.map(individual_case.processes_by_year);
+    reformat_data();
+    aggregate_data();
+    draw();
+  }
+
+
+function reformat_data() {
+  formatted_data = d3.map();
+  data.forEach(function(series_name, series_data) {
+      series = {};
+      series.key = series_name;
+      series.value = [];
+      total = 0;
+      values = d3.map(series_data);
+      year_for_data.forEach(function(year_for_data) {
+        value = values.get(year_for_data) || 0;
+        total += value;
+        series.value.push({x:year_for_data, y: value});
+        });
+      series.total = total;
+      formatted_data.set(series_name, series);
+      });
+}
+
+function aggregate_data() {
+  aggregated_data = d3.map();
+   formatted_data.forEach(function(series_name, series) {
+      var category = category_for_name(series_name);
+      aggregate_into(category, series);
+  });
+};
+
+function aggregate_into(series_name, series) {
+  var other = existing_data_for(series_name);
+      var i;
+        other.total = other.total + series.total;
+        for(i=0; i<series.value.length; i++) {
+        other.value[i].y = other.value[i].y + series.value[i].y;
+        }
+}
+
+function existing_data_for(series_name) {
+  if(aggregated_data.has(series_name)) {
+    return aggregated_data.get(series_name);
+  } else {
+    var new_series = {
+key: series_name,
+     value: year_for_data.map(function(year) { return { x: year, y: 0 }; }),
+     total: 0
+    };
+    aggregated_data.set(series_name, new_series);
+    return new_series;
+  }
+}
+
+function name_to_category_lookup() {
+  var regexps = [];
+
+  d3.tsv(category_file_name).get(function(error, rows) {
+    rows.forEach(function(row) {
+      regexps.push([new RegExp("^"+row['Process']), row['Sector']]);
+    });
+  });
+
+  function lookup(code) {
+    for(var i=0; i<regexps.length; i++) {
+      var regexp = regexps[i][0];
+      if(regexp.test(code)) {
+        var sector = regexps[i][1];
+        return sector;
+      }
+    }
+    return code;
+  };
+
+  return lookup;
+}
+
+var category_for_name = name_to_category_lookup();
+
+function draw() {
+  var chart = timeSeriesStackedAreaChart().unit(unit);
+
+  d3.select('#chart')
+    .datum(aggregated_data)
+    .call(chart);
+
+}
+
+function code_to_name_lookup() {
+  var codes = d3.map();
+
+  d3.tsv("codes.tsv").get(function(error, rows) {
+    rows.forEach(function(row) {
+      codes.set(row['Code'], row['Short']);
+    });
+  });
+
+  function lookup(code) {
+    return codes.get(code) || code;
+  };
+
+  return lookup;
+}
+
+var code_lookup = code_to_name_lookup();
+
+    function url_for_case_data(case_name) {
+      return case_name + "/transport-flows.json";
+    };
+  go();
+  </script>
+</body>
+</html>

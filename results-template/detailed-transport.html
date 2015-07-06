@@ -1,0 +1,22 @@
+<html>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta charset='utf-8'>
+  <script src="javascript/d3.min.js"></script>
+  <link rel='stylesheet' href='css/flying-brick.css'>
+  <body>
+  <div id='chart'> </div>
+  <a id='chart_link'>See simpler version of this chart</a>
+  <script src="javascript/flying-brick.js"></script>
+  <script>
+    var topic = "Transport distance";
+    var y_axis_label = "Road Billion vehicle km/yr";
+    var left_period = 2050;
+    var right_period = 2050;
+
+    function url_for_case_data(case_name) {
+      return case_name + "/transport-flows.json";
+    };
+  go();
+  </script>
+</body>
+</html>
