@@ -12,6 +12,7 @@ require_relative 'lib/extract_overall_cost_and_emissions'
 require_relative 'lib/extract_build_rates'
 require_relative 'lib/extract_detailed_costs'
 require_relative 'lib/extract_detailed_emissions'
+require_relative 'lib/extract_electricity_flows'
 
 class BatchRun
 
@@ -267,6 +268,9 @@ class BatchRun
 
       puts "Creating detailed emissions charts"
       extract_and_write_result name, gdx, ExtractDetailedEmissions.new, "detailed-emissions.json"
+
+      puts "Creating electricity charts"
+      extract_and_write_result name, gdx, ExtractElectricityFlows.new, "electricity-flows.json"
     end
 
     puts "Creating the index"

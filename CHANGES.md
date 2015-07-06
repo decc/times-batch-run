@@ -1,3 +1,7 @@
+#2015-07-06
+
+* Now generates data about electricity generation (excluding CHP at the moment)
+
 #2015-07-05
 
 * Removed the dd file check from the monte-carlo generation (it still happens in case file generation)

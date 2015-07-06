@@ -1,0 +1,22 @@
+<html>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta charset='utf-8'>
+  <script src="javascript/d3.min.js"></script>
+  <link rel='stylesheet' href='css/flying-brick.css'>
+  <body>
+  <p>Note: This currently doesn't include CHP generation</p>
+  <div id='chart'> </div>
+  <script src="javascript/flying-brick.js"></script>
+  <script>
+    var topic = "electricity flows";
+    var y_axis_label = "TWh/yr";
+    var left_period = 2050;
+    var right_period = 2050;
+
+    function url_for_case_data(case_name) {
+      return case_name + "/electricity-flows.json";
+    };
+  go();
+  </script>
+</body>
+</html>
