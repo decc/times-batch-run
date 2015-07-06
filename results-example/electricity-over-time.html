@@ -251,7 +251,10 @@ tr.primary_energy_notes {
   <script>
 var data;
 var formatted_data;
+var aggregated_data;
 var case_name;
+var year_for_data = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
+var threshold = 100;
 
     function go() {
       settings = window.location.hash.slice(1).split(',');
@@ -265,18 +268,59 @@ var case_name;
 
   function case_loaded(individual_case) {
     data = d3.map(individual_case.processes_by_year);
-    formatted_data = reformat(data);
+    reformat_data();
+    aggregate_data();
     draw();
   }
 
-function reformat(data) {
-  return data;
+
+function reformat_data() {
+  formatted_data = d3.map();
+  data.forEach(function(series_name, series_data) {
+      series = {};
+      series.key = series_name;
+      series.value = [];
+      total = 0;
+      values = d3.map(series_data);
+      year_for_data.forEach(function(year_for_data) {
+        value = values.get(year_for_data) || 0;
+        total += value;
+        series.value.push({x:year_for_data, y: value});
+        });
+      series.total = total;
+      formatted_data.set(series_name, series);
+      });
 }
+
+function aggregate_data() {
+  aggregated_data = d3.map();
+  var other = {
+    key: "Other",
+    value: year_for_data.map(function(year) { return { x: year, y: 0 }; }),
+    total: 0
+  };
+  formatted_data.forEach(function(series_name, series) {
+      var i;
+      if(Math.abs(series.total) > threshold) {
+        aggregated_data.set(series_name, series);
+      } else {
+        other.total = other.total + series.total;
+        for(i=0; i<series.value.length; i++) {
+        other.value[i].y = other.value[i].y + series.value[i].y;
+        }
+      }
+  });
+  if(other.total != 0) {
+    aggregated_data.set("other", other);
+  }
+};
 
 function draw() {
   var chart = timeSeriesStackedAreaChart();
 
-  d3.select('#chart').datum(formatted_data).call(chart);
+  d3.select('#chart')
+    .datum(aggregated_data)
+    .call(chart);
 
 }
 

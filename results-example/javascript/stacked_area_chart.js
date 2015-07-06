@@ -16,7 +16,7 @@ window.timeSeriesStackedAreaChart = function() {
   year_for_ticks = [2010, 2020, 2030, 2040, 2050];
 
   min_value = 0; // This is the minimum for the y-axis
-  max_value = 800; // This is the maximum for the y-axis
+  max_value = 1000; // This is the maximum for the y-axis
 
   min_year = year_for_ticks[0]; // This is the minimum for the x-axis. Defaults to first year of data, but doesn't have to be.
   max_year = year_for_ticks[year_for_ticks.length-1]; // This is the maximum for the x-axis
@@ -120,18 +120,7 @@ window.timeSeriesStackedAreaChart = function() {
           negative_series = [];
           total_series = [];
           // Loop through each series in turn
-          data.forEach(function(series_name, series_data) {
-            series = {};
-            series.key = series_name;
-            series.value = [];
-            total = 0;
-            values = d3.map(series_data);
-            year_for_data.forEach(function(year_for_data) {
-              value = values.get(year_for_data) || 0;
-              total += value;
-              series.value.push({x:year_for_data, y: value});
-            });
-            series.total = total;
+          data.forEach(function(series_name, series) {
 
             // First we check if the label matches the total_label regular
             // expression defined above (default is to test whether the 
