@@ -29,14 +29,16 @@ cb5-3000	CB5 is 3000 MtCO2e
 default_CCS	CCS is available
 default_Nuclear	Nuclear is available
 default_Renewables	2020 Renewable target missed
-discount_private	Discount rates - higher
-discount_stern	Discount rates - lower
+discount_private	Discount rates - private sector
+discount_stern	Discount rates - stern
+discount_elc-ddm	Discount rates - DDM
+discount_private_ccc	Discount rates - CCC
 re_target	2020 renewable target hit
-decc_low	Demand projections - DECC Low
-decc_central	Demand projections - DECC Central
-decc_high	Demand projections - DECC High
-refscenario_deccv1_0	Demand projections - DECC Central
-refscenario_ucl	Demand projections - UCL
+decc_low	Demand - DECC Low
+decc_central	Demand - DECC Central
+decc_high	Demand - DECC High
+refscenario_deccv1_0	Demand - DECC Central
+refscenario_ucl	Demand - UCL
 UC_ELC_DECCDDM_0_2	Electricity deployment limits - DDM
 uc_elc	Electricity deployment limits - UCL
 uc_noccs	CCS is NOT available
@@ -97,3 +99,8 @@ remaining_ias_from_2100	Include int. aviation and shipping - Never
 territorial_from_2000	Territorial budget
 territorial_from_2030	Territorial budget from 2030
 territorial_from_2100	Territorial budget - Never
+default_Fuel	Fuel prices - Central
+scen_rsr_ff-price-high	Fuel prices - High
+scen_rsr_ff-price-low	Fuel prices - Low
+default_Onshore	Onshore wind available
+uc_noonshorewind	Onshore wind NOT available
