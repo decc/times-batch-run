@@ -1,6 +1,7 @@
 #2015-07-06
 
 * Now generates data about electricity generation (excluding CHP at the moment)
+* go.rb can now multi-thread when operating in results only mode
 
 #2015-07-05
 

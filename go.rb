@@ -50,7 +50,7 @@ class BatchRun
 
   def run_results_only
     find_existing_gdx_files
-    write_results
+    write_results_in_parallel
     tell_the_user_how_to_view_results
   end
   
@@ -239,7 +239,31 @@ class BatchRun
     names_of_all_the_cases_that_solved.map { |case_name| File.join(gdx_save_folder, "#{case_name}.gdx") }
   end
 
-  def write_results(gdx_files = list_of_gdx_files)
+  def write_results_in_parallel
+    gdx_files_to_process = Queue.new
+
+    list_of_gdx_files.each do |gdx_file_name|
+      gdx_files_to_process.push(gdx_file_name)
+    end
+
+    threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
+      Thread.new do
+        loop do
+          gdx_file_name = gdx_files_to_process.pop(true) # True means don't block
+          write_results(gdx_file_name)
+        end
+        Thread::exit
+      end
+    end
+
+    ThreadsWait.all_waits(*threads) do |t|
+      puts "Thread #{t} has finished"
+    end
+    write_index_txt
+  end
+
+
+  def write_results(gdx_files)
     # Now we are ready to write some results
     unless File.exist?(settings.results_folder)
       puts "Creating a results folder: #{File.expand_path(settings.results_folder)}"
