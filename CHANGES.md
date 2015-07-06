@@ -2,6 +2,7 @@
 
 * Now generates data about electricity generation (excluding CHP at the moment)
 * go.rb can now multi-thread when operating in results only mode
+* First attempt at data about road transport and heating
 
 #2015-07-05
 
