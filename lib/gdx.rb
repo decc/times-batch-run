@@ -1,9 +1,12 @@
 require 'csv'
 
+GDXCache = {}
+
 class Gdx
   attr_accessor :gdx_filename
 
   def initialize(gdx_filename)
+    GDXCache[gdx_filename] ||= {}
     @gdx_filename = gdx_filename
   end
 
@@ -17,10 +20,27 @@ class Gdx
   end
 
   def symbol(symbol)
+    result = get_symbol_from_cache(symbol)
+    return result if result
+    result = get_symbol_from_gdx(symbol)
+    set_symbol_in_cache(symbol, result)
+    result
+  end
+
+  def get_symbol_from_gdx(symbol)
     csv = `gdxdump #{gdx_filename} Symb=#{symbol} Format=csv`
     csv.gsub!(/,Eps\b/,',0.0') # \b matches word boundry. We are expecting comma or newline
     CSV.new(csv, headers: :true, converters: :all, header_converters: :symbol).to_a.map(&:to_hash)
   end
+
+  def get_symbol_from_cache(symbol)
+    GDXCache[gdx_filename][symbol]
+  end
+
+  def set_symbol_in_cache(symbol, result)
+    GDXCache[gdx_filename][symbol] = result
+  end
+
 
   def scenarios
     symbol(:Scenarios).map { |hash| hash[:dim1] }
