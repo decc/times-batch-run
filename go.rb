@@ -202,8 +202,8 @@ class BatchRun
       names_of_all_the_cases_that_solved.push(case_name)
       puts "Putting #{case_name} into VEDA"
       `GDX2VEDA #{output_gdx_name.gsub('/','\\')} #{times_2_veda} #{case_name} > #{case_name}`
-      puts "Updating the results"
-      write_results(["#{output_gdx_name}.gdx"])
+
+      cases_to_write_results_for.push("#{output_gdx_name}.gdx")
     else
       puts "Case #{case_name} failed to solve - couldn't find valid #{output_gdx_name}.gdx"
     end
@@ -214,11 +214,25 @@ class BatchRun
     File.exist?(output_gdx_name+".gdx") && Gdx.new(output_gdx_name+".gdx").valid?
   end
 
+  attr_accessor :cases_to_write_results_for
+
   def run_cases
     cases_to_run = Queue.new
+    @cases_to_write_results_for = Queue.new
 
     names_of_all_the_cases.each do |case_name|
       cases_to_run.push(case_name)
+    end
+
+    result_writer = Thread.new do
+	    loop do
+		begin
+			gdx_name = cases_to_write_results_for.pop
+			write_results([gdx_name])
+		rescue Exception => e
+			puts e
+		end
+	    end
     end
 
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
@@ -235,10 +249,13 @@ class BatchRun
       end
     end
 
+    threads.push result_writer
+
     ThreadsWait.all_waits(*threads) do |t|
       puts "Thread #{t} has finished"
     end
   end
+
 
   def list_of_gdx_files
     names_of_all_the_cases_that_solved.map { |case_name| File.join(gdx_save_folder, "#{case_name}.gdx") }
