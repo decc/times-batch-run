@@ -46,7 +46,6 @@ class BatchRun
     create_run_files
     check_files_needed_to_run_times_are_available
     run_cases
-    write_results
     tell_the_user_how_to_view_results
   end
 
@@ -225,8 +224,12 @@ class BatchRun
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
-          case_name = cases_to_run.pop(true) # True means don't block
+	begin
+          case_name = cases_to_run.pop(false) # True means don't block
           run_case(case_name)
+	 rescue Exception => e
+	  puts e
+	 end
         end
         Thread::exit
       end
@@ -251,10 +254,13 @@ class BatchRun
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
+	begin
           gdx_file_name = gdx_files_to_process.pop(true) # True means don't block
           write_results([gdx_file_name])
+	rescue Exception => e
+	 puts e
         end
-        Thread::exit
+	end
       end
     end
 
