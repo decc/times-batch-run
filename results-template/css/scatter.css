@@ -1,0 +1,115 @@
+body {
+  font: 10px sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+div {
+  margin: 0;
+  padding: 0;
+}
+
+div#chart {
+  width: 58%;
+}
+
+div#filter {
+  float: right;
+  width: 40%;
+  padding-top: 20px;
+}
+
+table {
+  font: 10px sans-serif;
+}
+
+table.filter_table {
+  float: left;
+  width: 45%;
+}
+
+table.filter_on td {
+  opacity: 0.1;
+};
+
+table.permanent_filter_on td {
+  opacity: 0.1;
+};
+
+table.filter_table th {
+  text-align: left;
+}
+
+tr.scenario {
+  cursor: pointer;
+}
+
+tr.not_included {
+}
+
+#title {
+  width: 100%;
+  font-size: 16px;
+  height: 30px;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+circle {
+  stroke-width: 0px;
+}
+
+.selected circle, circle.selected {
+  fill: black;
+  fill-opacity: 1.0;
+}
+
+tr.selected td {
+  opacity: 1.0;
+  color: black;
+}
+
+tr.permanently_selected td {
+  opacity: 1.0;
+  color: black;
+}
+
+.case {
+  fill-opacity: 0.5;
+  fill: steelblue;
+  color: steelblue;
+}
+
+line.show_crosshairs {
+  stroke-width: 1px;
+  stroke: black;
+}
+
+text#x_value_of_case, text#y_value_of_case, text#name_of_case {
+  stroke: none;
+  fill: none;
+}
+
+text#x_value_of_case.show_crosshairs, text#y_value_of_case.show_crosshairs, text#name_of_case.show_crosshairs {
+  fill: black;
+}
+
+
+table.cases th, table.cases td {
+  text-align: center;
+}
+
+table.cases th.name, table.cases td.name {
+  text-align: left;
+}
+
+.hidden {
+  display: none;
+}
