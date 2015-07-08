@@ -46,7 +46,6 @@ class BatchRun
     create_run_files
     check_files_needed_to_run_times_are_available
     run_cases
-    write_results
     tell_the_user_how_to_view_results
   end
 
@@ -203,8 +202,8 @@ class BatchRun
       names_of_all_the_cases_that_solved.push(case_name)
       puts "Putting #{case_name} into VEDA"
       `GDX2VEDA #{output_gdx_name.gsub('/','\\')} #{times_2_veda} #{case_name} > #{case_name}`
-      puts "Updating the results"
-      write_results(["#{output_gdx_name}.gdx"])
+
+      cases_to_write_results_for.push("#{output_gdx_name}.gdx")
     else
       puts "Case #{case_name} failed to solve - couldn't find valid #{output_gdx_name}.gdx"
     end
@@ -215,27 +214,48 @@ class BatchRun
     File.exist?(output_gdx_name+".gdx") && Gdx.new(output_gdx_name+".gdx").valid?
   end
 
+  attr_accessor :cases_to_write_results_for
+
   def run_cases
     cases_to_run = Queue.new
+    @cases_to_write_results_for = Queue.new
 
     names_of_all_the_cases.each do |case_name|
       cases_to_run.push(case_name)
     end
 
+    result_writer = Thread.new do
+	    loop do
+		begin
+			gdx_name = cases_to_write_results_for.pop
+			write_results([gdx_name])
+		rescue Exception => e
+			puts e
+		end
+	    end
+    end
+
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
-          case_name = cases_to_run.pop(true) # True means don't block
+	begin
+          case_name = cases_to_run.pop(false) # True means don't block
           run_case(case_name)
+	 rescue Exception => e
+	  puts e
+	 end
         end
         Thread::exit
       end
     end
 
+    threads.push result_writer
+
     ThreadsWait.all_waits(*threads) do |t|
       puts "Thread #{t} has finished"
     end
   end
+
 
   def list_of_gdx_files
     names_of_all_the_cases_that_solved.map { |case_name| File.join(gdx_save_folder, "#{case_name}.gdx") }
@@ -251,10 +271,13 @@ class BatchRun
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
+	begin
           gdx_file_name = gdx_files_to_process.pop(true) # True means don't block
           write_results([gdx_file_name])
+	rescue Exception => e
+	 puts e
         end
-        Thread::exit
+	end
       end
     end
 
