@@ -238,12 +238,8 @@ class BatchRun
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
-	begin
-          case_name = cases_to_run.pop(false) # True means don't block
+          case_name = cases_to_run.pop(true) # True means don't block
           run_case(case_name)
-	 rescue Exception => e
-	  puts e
-	 end
         end
         Thread::exit
       end
