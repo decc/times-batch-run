@@ -263,6 +263,7 @@ class BatchRun
 
   def write_results_in_parallel
     gdx_files_to_process = Queue.new
+    command = "#{File.expand_path(File.join(File.dirname(__FILE__), "update-result-from-gdx.rb"))} #{settings.results_folder} "
 
     list_of_gdx_files.each do |gdx_file_name|
       gdx_files_to_process.push(gdx_file_name)
@@ -271,13 +272,9 @@ class BatchRun
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
-	begin
           gdx_file_name = gdx_files_to_process.pop(true) # True means don't block
-          write_results([gdx_file_name])
-	rescue Exception => e
-	 puts e
+          puts `ruby #{command} #{gdx_file_name}`
         end
-	end
       end
     end
 
