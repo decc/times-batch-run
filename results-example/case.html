@@ -6,9 +6,11 @@
 <h1>Details on scenario <span class='a'>A</span></h1>
 <ul>
   <li><a id='compare_build_rates' >Build rates</a></li>
+  <li><a id='costs_over_time' href=''>Costs over time</a></li>
   <li><a id='compare_cost_2025' href=''>Costs in 2025</a> (in <a id='detailed_compare_cost_2025'>detail</a>)</li>
   <li><a id='compare_cost_2030' href=''>Costs in 2030</a> (in <a id='detailed_compare_cost_2030'>detail</a>)</li>
   <li><a id='compare_cost_2050' href=''>Costs in 2050</a> (in <a id='detailed_compare_cost_2050'>detail</a>)</li>
+  <li>Greenhouse gas <a id='emissions_over_time' href=''>emissions over time</a></li>
   <li>Greenhouse gas <a id='compare_emission_2025' href=''>emissions in 2025</a> (in <a id='detailed_compare_emission_2025'>detail</a>)</li>
   <li>Greenhouse gas <a id='compare_emission_2030' href=''>emissions in 2030</a> (in <a id='detailed_compare_emission_2030'>detail</a>)</li>
   <li>Greenhouse gas <a id='compare_emission_2050' href=''>emissions in 2050</a> (in <a id='detailed_compare_emission_2050'>detail</a>)</li>
@@ -54,6 +56,8 @@ d3.select("#compare_heating_2025").attr("href", "detailed-heating.html#"+d[0]+",
 d3.select("#compare_heating_2030").attr("href", "detailed-heating.html#"+d[0]+","+d[0]+",2015,2030");
 d3.select("#compare_heating_2050").attr("href", "detailed-heating.html#"+d[0]+","+d[0]+",2015,2050");
 
+d3.select("#costs_over_time").attr("href", "costs-over-time.html#"+d[0]);
+d3.select("#emissions_over_time").attr("href", "emissions-over-time.html#"+d[0]);
 d3.select("#electricity_over_time").attr("href", "electricity-over-time.html#"+d[0]);
 d3.select("#transport_over_time").attr("href", "transport-over-time.html#"+d[0]);
 d3.select("#heating_over_time").attr("href", "heating-over-time.html#"+d[0]);

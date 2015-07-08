@@ -1,6 +1,8 @@
 var category_file_name = "electricity_to_low_or_high_carbon.tsv";
 var data_file_name = "electricity-flows.json";
 var details_file_name = "detailed-electricity.html";
+var y_max = 1000;
+var y_label = "TWh/yr";
 var category_for_name;
 var code_lookup = code_to_name_lookup();
 var data;
@@ -102,7 +104,9 @@ function name_to_category_lookup() {
 
 
 function draw() {
-  var chart = timeSeriesStackedAreaChart();
+  var chart = timeSeriesStackedAreaChart()
+    .max_value(y_max)
+    .unit(y_label);
 
   d3.select('#chart')
     .datum(aggregated_data)
