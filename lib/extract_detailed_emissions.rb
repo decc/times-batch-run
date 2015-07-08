@@ -31,12 +31,12 @@ class ExtractDetailedEmissions
   end
 
   def filter_emissions_flows
-    flows_in.delete_if { |flow| exclude_commodity?(flow[:c]) }
-    flows_out.delete_if { |flow| exclude_commodity?(flow[:c]) }
+    @flows_in = flows_in.select { |flow| include_commodity?(flow[:c]) }
+    @flows_out = flows_out.select { |flow| include_commodity?(flow[:c]) }
   end
 
-  def exclude_commodity?(commodity)
-    not commodities_to_include.has_key?(commodity)
+  def include_commodity?(commodity)
+    commodities_to_include.has_key?(commodity)
   end
 
   def commodities_to_include

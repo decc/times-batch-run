@@ -30,11 +30,11 @@ class ExtractTransportFlows
   end
 
   def filter_transport_flows
-    flows_out.delete_if { |flow| exclude_commodity?(flow[:c]) }
+    @flows_out = flows_out.select { |flow| include_commodity?(flow[:c]) }
   end
 
-  def exclude_commodity?(commodity)
-    !TRANSPORT_COMMODITIES.include?(commodity)
+  def include_commodity?(commodity)
+    TRANSPORT_COMMODITIES.include?(commodity)
   end
 
   def aggregate_transport_flows

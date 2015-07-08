@@ -41,7 +41,6 @@ class Gdx
     GDXCache[gdx_filename][symbol] = result
   end
 
-
   def scenarios
     symbol(:Scenarios).map { |hash| hash[:dim1] }
   end

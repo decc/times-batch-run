@@ -39,11 +39,11 @@ class ExtractHeatingFlows
   end
 
   def filter_heating_flows
-    flows_out.delete_if { |flow| exclude_commodity?(flow[:c]) }
+    @flows_out = flows_out.select { |flow| include_commodity?(flow[:c]) }
   end
 
-  def exclude_commodity?(commodity)
-    !HEATING_COMMODITIES.include?(commodity)
+  def include_commodity?(commodity)
+    HEATING_COMMODITIES.include?(commodity)
   end
 
   def aggregate_heating_flows
