@@ -152,20 +152,21 @@ function draw_scenario_table() {
   var filter_tables = d3.select("#filter").selectAll("table.filter_table")
   	.data(split_scenarios);
 
-  var new_filter_table_header = filter_tables.enter().append("table")
-    .attr("class",filter_table_class).append("tr");
-
-  new_filter_table_header.append("th").html("&lsquo;What if&rsquo;");
-
+  filter_tables.enter().append("table");
+    
   filter_tables.exit().remove();
+
+  filter_tables.attr("class",filter_table_class);
 
   var scenario_rows = filter_tables.selectAll("tr.scenario").data(Object);
 
-  var new_scenario_row = scenario_rows.enter()
-    .append("tr")
-    .attr("class", filter_table_row_class);
+  var new_scenario_row = scenario_rows.enter().append("tr");
 
   new_scenario_row.append("td").attr("class", "name");
+
+  scenario_rows.exit().remove();
+
+  scenario_rows.attr("class", filter_table_row_class);
 
   scenario_rows.select("td.name")
     .text(function(d) { return scenario_names(d); });
@@ -441,45 +442,45 @@ function draw_case_table() {
   var table_data = data;
   table_data.sort(function(a,b) { return d3.descending(a.cost, b.cost) });
 
-  if(table_data.length > 200) {
-    table_data = table_data.slice(0,100).concat(table_data.slice(table_data.length-100));
-    d3.select("overflow_message").classed("hidden",false);
+  if(table_data.length > 50) {
+    table_data = table_data.slice(0,25).concat(table_data.slice(table_data.length-25));
+    d3.select("#overflow_message").classed("hidden",false);
   } else {
-    d3.select("overflow_message").classed("hidden",true);
+    d3.select("#overflow_message").classed("hidden",true);
   }
 
   var case_tables = d3.select("#cases").selectAll("table.case_table")
-  	.data([data]);
+  	.data([table_data]);
 
   var new_case_table_header = case_tables.enter().append("table")
     .attr("class",'case_table').append("tr");
 
-  new_case_table_header.append("th").html("Scenario");
+  new_case_table_header.append("th").attr("class", "name").html("Scenario");
   new_case_table_header.append("th").html(cost_label);
   new_case_table_header.append("th").html(emissions_label());
 
   var case_rows = case_tables.selectAll("tr.case").data(Object);
 
-  var new_case_row = case_rows.enter()
-    .append("tr");
+  case_rows.exit().remove();
 
-  new_case_row.append("td").append("a").attr("class", "name");
+  var new_case_row = case_rows.enter().append("tr");
+
+  new_case_row.append("td").attr("class", "name").append("a").attr("class", "name");
   new_case_row.append("td").append("a").attr("class", "cost");
   new_case_row.append("td").append("a").attr("class", "budget_emissions");
 
-  case_rows.select(".name")
+  case_rows.select("a.name")
     .text(function(d) { return d.name; })
     .attr("href", function(d) { return "case.html#"+d.name; });
 
-  case_rows.select(".cost")
+  case_rows.select("a.cost")
     .text(function(d) { return cost_format(d.cost); })
     .attr("href", function(d) { return "sectoral-costs.html#"+d.name+","+d.name+",2015,2050"; });
 
-  case_rows.select(".budget_emissions")
+  case_rows.select("a.budget_emissions")
     .text(function(d) { return emissions_format(d.budget[year_to_display]); })
     .attr("href", function(d) { return "sectoral-emissions.html#"+d.name+","+d.name+",2015,"+year_to_display; });
 
-  case_rows.exit().remove();
 };
 
 function scenario_code_to_name_lookup() {

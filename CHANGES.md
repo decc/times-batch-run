@@ -1,3 +1,7 @@
+#2015-07-08
+
+* Updated the cost-emissions scatter chart
+
 #2015-07-07
 
 * GDX now caches results

@@ -30,14 +30,10 @@ table.filter_table {
 
 table.filter_on td {
   opacity: 0.1;
-};
+}
 
-table.permanent_filter_on td {
+table.filter_table td {
   opacity: 0.1;
-};
-
-table.filter_table th {
-  text-align: left;
 }
 
 tr.scenario {
@@ -67,7 +63,7 @@ circle {
 }
 
 .selected circle, circle.selected {
-  fill: black;
+  fill: yellow;
   fill-opacity: 1.0;
 }
 
@@ -89,7 +85,7 @@ tr.permanently_selected td {
 
 line.show_crosshairs {
   stroke-width: 1px;
-  stroke: black;
+  stroke: yellow;
 }
 
 text#x_value_of_case, text#y_value_of_case, text#name_of_case {
@@ -102,12 +98,16 @@ text#x_value_of_case.show_crosshairs, text#y_value_of_case.show_crosshairs, text
 }
 
 
-table.cases th, table.cases td {
+table.case_table th, table.case_table td {
   text-align: center;
 }
 
-table.cases th.name, table.cases td.name {
+table.case_table th.name, table.case_table td.name {
   text-align: left;
+}
+
+tr:hover td {
+  background-color: yellow;
 }
 
 .hidden {
