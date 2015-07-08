@@ -12,12 +12,15 @@
   <li>Greenhouse gas <a id='compare_emission_2025' href=''>emissions in 2025</a> (in <a id='detailed_compare_emission_2025'>detail</a>)</li>
   <li>Greenhouse gas <a id='compare_emission_2030' href=''>emissions in 2030</a> (in <a id='detailed_compare_emission_2030'>detail</a>)</li>
   <li>Greenhouse gas <a id='compare_emission_2050' href=''>emissions in 2050</a> (in <a id='detailed_compare_emission_2050'>detail</a>)</li>
+  <li><a id='electricity_over_time' href=''>Electricity generation over time</a></li>
   <li><a id='compare_electricity_2025' href=''>Electricity generation in 2025</a></li>
   <li><a id='compare_electricity_2030' href=''>Electricity generation in 2030</a></li>
   <li><a id='compare_electricity_2050' href=''>Electricity generation in 2050</a></li>
+  <li><a id='transport_over_time' href=''>Transport over time</a></li>
   <li><a id='compare_transport_2025' href=''>Transport in 2025</a></li>
   <li><a id='compare_transport_2030' href=''>Transport in 2030</a></li>
   <li><a id='compare_transport_2050' href=''>Transport in 2050</a></li>
+  <li><a id='heating_over_time' href=''>Heating over time</a></li>
   <li><a id='compare_heating_2025' href=''>Heating in 2025</a></li>
   <li><a id='compare_heating_2030' href=''>Heating in 2030</a></li>
   <li><a id='compare_heating_2050' href=''>Heating in 2050</a></li>
@@ -50,6 +53,10 @@ d3.select("#compare_transport_2050").attr("href", "detailed-transport.html#"+d[0
 d3.select("#compare_heating_2025").attr("href", "detailed-heating.html#"+d[0]+","+d[0]+",2015,2025");
 d3.select("#compare_heating_2030").attr("href", "detailed-heating.html#"+d[0]+","+d[0]+",2015,2030");
 d3.select("#compare_heating_2050").attr("href", "detailed-heating.html#"+d[0]+","+d[0]+",2015,2050");
+
+d3.select("#electricity_over_time").attr("href", "electricity-over-time.html#"+d[0]);
+d3.select("#transport_over_time").attr("href", "transport-over-time.html#"+d[0]);
+d3.select("#heating_over_time").attr("href", "heating-over-time.html#"+d[0]);
 </script>
 </body>
 </html>
