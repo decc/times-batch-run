@@ -1,3 +1,9 @@
+#2015-07-07
+
+* GDX now caches results
+* Now does results production on a seperate thread from calculation
+* When you request --results-only it now produces results in separate processes
+
 #2015-07-06
 
 * Now generates data about electricity generation (excluding CHP at the moment)
