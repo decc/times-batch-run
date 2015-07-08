@@ -77,7 +77,7 @@ window.timeSeriesStackedAreaChart = function() {
     css_for_label[d.key] = c;
     color_class_index++;
     if(color_class_index==11) { color_class_index = 0 };
-    return c + " "+d.key.toLowerCase();
+    return c + " "+d.name_as_css;
   }
 
   // We only show the chart labels when the total area of the chart is above a threshold
@@ -88,6 +88,12 @@ window.timeSeriesStackedAreaChart = function() {
   };
 
   dataTableFormat = d3.format(".0f"); // We don't show any decimal places in the data table
+
+  var name_as_css_regexp = new RegExp('[^A-Za-z]','g');
+
+  function name_as_css(name) {
+    return name.replace(name_as_css_regexp, '');
+  }
 
   // This is the main function of timeSeriesStackedAreaChart()
   chart = function(selection) {
@@ -127,12 +133,14 @@ window.timeSeriesStackedAreaChart = function() {
             // label starts with 'total'
             if (total_label.test(series.key)) {
               series.path = line;
+              series.name_as_css = name_as_css(series.key);
               series.css = seriesClass(series, function() { return "total" });
               total_series.push(series);
             // If not a total, then put it into either the positive_series
             // or negative_series arrays
             } else {
               series.path = area;
+              series.name_as_css = name_as_css(series.key);
               series.css = seriesClass(series, automaticallyAsignCSS);
               if (total >= 0) {
                 positive_series.push(series);
@@ -203,7 +211,7 @@ window.timeSeriesStackedAreaChart = function() {
               .attr("class", function(d, i) { return d.css; }) // Make sure the area has the right class 
               .on("mouseover", function(d, i) { // On hover we want to highlight this are, its label and show the data table
                 var c, l, s;
-                c = d.key;
+                c = d.name_as_css;
                 dataTable(d); // Show the data table
                 g.selectAll("." + c).classed("hover", true); // Highlight the area and the label
                 if (!showLabelFilter(d)) { // If the label was hidden 
@@ -217,7 +225,7 @@ window.timeSeriesStackedAreaChart = function() {
               }).on("mouseout", function(d, i) { // When the mouse has left the area
                 var c;
                 removeDataTable(); // Hide the data table
-                c = d.key
+                c = d.name_as_css
                 g.selectAll("." + c).classed("hover", false); // Unhighlight the label and area
                 if (!showLabelFilter(d)) { // And, if the area is too small for a label, hide it again
                   g.selectAll("." + c + ".linelabel").attr("display", "none"); // That means hiding the label
@@ -365,10 +373,10 @@ window.timeSeriesStackedAreaChart = function() {
             .text(function(d) { return code_lookup(d.key); }) 
             .on("mouseover", function(d, i) { // When mouse goes over, highlight area and the data table
               dataTable(d);
-              g.selectAll("." + d.key ).classed("hover", true);
+              g.selectAll("." + d.name_as_css ).classed("hover", true);
             }).on("mouseout", function(d, i) { // When mouse leaves, un-highlight the area and hide the data table
               removeDataTable();
-              g.selectAll("." + d.key).classed("hover", false);
+              g.selectAll("." + d.name_as_css).classed("hover", false);
           });
 
           // Remove any labels that aren't needed any more

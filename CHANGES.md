@@ -1,6 +1,7 @@
 #2015-07-08
 
 * Updated the cost-emissions scatter chart
+* Refactored the over-time charts
 
 #2015-07-07
 
