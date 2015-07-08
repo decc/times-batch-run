@@ -5,7 +5,7 @@
 <body>
 <h1>Details on scenario <span class='a'>A</span></h1>
 <ul>
-  <li><a id='compare_build_rates' >build rates</a></li>
+  <li><a id='compare_build_rates' >Build rates</a></li>
   <li><a id='compare_cost_2025' href=''>Costs in 2025</a> (in <a id='detailed_compare_cost_2025'>detail</a>)</li>
   <li><a id='compare_cost_2030' href=''>Costs in 2030</a> (in <a id='detailed_compare_cost_2030'>detail</a>)</li>
   <li><a id='compare_cost_2050' href=''>Costs in 2050</a> (in <a id='detailed_compare_cost_2050'>detail</a>)</li>
@@ -15,6 +15,12 @@
   <li><a id='compare_electricity_2025' href=''>Electricity generation in 2025</a></li>
   <li><a id='compare_electricity_2030' href=''>Electricity generation in 2030</a></li>
   <li><a id='compare_electricity_2050' href=''>Electricity generation in 2050</a></li>
+  <li><a id='compare_transport_2025' href=''>Transport in 2025</a></li>
+  <li><a id='compare_transport_2030' href=''>Transport in 2030</a></li>
+  <li><a id='compare_transport_2050' href=''>Transport in 2050</a></li>
+  <li><a id='compare_heating_2025' href=''>Heating in 2025</a></li>
+  <li><a id='compare_heating_2030' href=''>Heating in 2030</a></li>
+  <li><a id='compare_heating_2050' href=''>Heating in 2050</a></li>
 </ul>
 
 <script>
@@ -38,6 +44,12 @@ d3.select("#detailed_compare_emission_2050").attr("href", "detailed-emissions.ht
 d3.select("#compare_electricity_2025").attr("href", "detailed-electricity.html#"+d[0]+","+d[0]+",2015,2025");
 d3.select("#compare_electricity_2030").attr("href", "detailed-electricity.html#"+d[0]+","+d[0]+",2015,2030");
 d3.select("#compare_electricity_2050").attr("href", "detailed-electricity.html#"+d[0]+","+d[0]+",2015,2050");
+d3.select("#compare_transport_2025").attr("href", "detailed-transport.html#"+d[0]+","+d[0]+",2015,2025");
+d3.select("#compare_transport_2030").attr("href", "detailed-transport.html#"+d[0]+","+d[0]+",2015,2030");
+d3.select("#compare_transport_2050").attr("href", "detailed-transport.html#"+d[0]+","+d[0]+",2015,2050");
+d3.select("#compare_heating_2025").attr("href", "detailed-heating.html#"+d[0]+","+d[0]+",2015,2025");
+d3.select("#compare_heating_2030").attr("href", "detailed-heating.html#"+d[0]+","+d[0]+",2015,2030");
+d3.select("#compare_heating_2050").attr("href", "detailed-heating.html#"+d[0]+","+d[0]+",2015,2050");
 </script>
 </body>
 </html>
