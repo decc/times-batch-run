@@ -45,16 +45,10 @@ class BatchRun
   end
 
   def run_results_only
-    find_existing_gdx_files
     write_results_in_parallel
     tell_the_user_how_to_view_results
   end
   
-  def find_existing_gdx_files
-    @names_of_all_the_cases_that_solved = names_of_all_the_cases.select {|case_name| gdx_ok?(case_name)}
-    puts "Found existing solutions for #{names_of_all_the_cases_that_solved.length} of the #{names_of_all_the_cases.length} cases in #{settings.list_of_cases_files.join(" ")}"
-  end
-
   def check_we_are_in_the_right_spot
     return if Pathname.getwd.basename.to_s =~ /#{Regexp.escape(settings.gams_working_folder)}/i
     puts "This script needs to be run from within the GAMS working folder."
@@ -155,22 +149,11 @@ class BatchRun
     @names_of_all_the_cases.concat(list_of_cases.case_names)
   end
 
-  def names_of_all_the_cases_that_solved
-    @names_of_all_the_cases_that_solved ||= []
-  end
-
-
-  def number_of_threads
-    # min so that don't have more threads than cases to run
-    [settings.number_of_cases_to_optimize_simultaneously,names_of_all_the_cases.length].min
-  end
 
   def gdx_ok?(case_name)
     output_gdx_name = File.join(gdx_save_folder, case_name)+".gdx"
     Gdx.new(output_gdx_name+".gdx").valid?
   end
-
-  attr_accessor :cases_to_write_results_for
 
   def run_cases
     cases_to_run = Queue.new
@@ -179,17 +162,8 @@ class BatchRun
 
     extract_results = ExtractResults.new(settings)
     
-    @cases_to_write_results_for = Queue.new
-
     names_of_all_the_cases.each do |case_name|
       cases_to_run.push(case_name)
-    end
-
-    result_writer = Thread.new do
-	    loop do
-        gdx_name = cases_to_write_results_for.pop
-        extract_results.write_results([gdx_name])
-	    end
     end
 
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
@@ -197,44 +171,45 @@ class BatchRun
         loop do
           case_name = cases_to_run.pop(true) # True means don't block
           gdx_file = run_optimsiation.run_case(case_name)
-          cases_to_write_results_for.push(gdx_file) if gdx_file
+          run_shell_command_to_extract_results(gdx_file)
         end
       end
     end
-
-    threads.push result_writer
 
     ThreadsWait.all_waits(*threads) do |t|
       puts "Thread #{t} has finished"
     end
   end
 
-
-  def list_of_gdx_files
-    names_of_all_the_cases_that_solved.map { |case_name| File.join(gdx_save_folder, "#{case_name}.gdx") }
+  def run_shell_command_to_extract_results(gdx_name)
+    return unless gdx_name
+    puts `ruby #{File.expand_path(File.join(File.dirname(__FILE__), "update-result-from-gdx.rb"))} #{settings.results_folder} #{gdx_name}`
   end
 
   def write_results_in_parallel
-    gdx_files_to_process = Queue.new
-    command = "#{File.expand_path(File.join(File.dirname(__FILE__), "update-result-from-gdx.rb"))} #{settings.results_folder} "
+    cases_to_run = Queue.new
 
-    list_of_gdx_files.each do |gdx_file_name|
-      gdx_files_to_process.push(gdx_file_name)
+    names_of_all_the_cases.each do |case_name|
+      cases_to_run.push(case_name)
     end
 
-    threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
+    threads = Array.new(number_of_threads).map do
       Thread.new do
         loop do
-          gdx_file_name = gdx_files_to_process.pop(true) # True means don't block
-          puts `ruby #{command} #{gdx_file_name}`
-        end
+          case_name = cases_to_run.pop(true) # True means don't block
+          gdx_name = File.join(gdx_save_folder, "#{case_name}.gdx")
+          run_shell_command_to_extract_results(gdx_name) if Gdx.new(gdx_name).valid? 
+       end
       end
     end
 
     ThreadsWait.all_waits(*threads) do |t|
       puts "Thread #{t} has finished"
     end
-    write_index_txt
+  end
+  
+  def gdx_save_folder
+    Pathname.getwd.parent + settings.gams_working_folder + settings.gams_save_folder
   end
 
   def tell_the_user_how_to_view_results
@@ -243,6 +218,10 @@ class BatchRun
     puts "And then opening your web browser at http://localhost:8000/"
   end
 
+  def number_of_threads
+    # min so that don't have more threads than cases to run
+    [settings.number_of_cases_to_optimize_simultaneously,names_of_all_the_cases.length].min
+  end
 end
 
 if __FILE__ == $0

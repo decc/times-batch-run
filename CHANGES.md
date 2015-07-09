@@ -1,3 +1,7 @@
+#2015-07-09
+
+* Refactored some of go.rb
+
 #2015-07-08
 
 * Updated the cost-emissions scatter chart
