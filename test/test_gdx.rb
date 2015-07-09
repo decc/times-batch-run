@@ -12,6 +12,7 @@ class TestGdx < MiniTest::Test
   def test_valid
     assert @gdx.valid?
     refute Gdx.new(__FILE__).valid?
+    refute Gdx.new(File.join($this_directory, "file_that_does_not_exist")).valid?
   end
 
   def test_objective_function_cost
