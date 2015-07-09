@@ -1,5 +1,7 @@
 require 'ostruct'
 require 'json'
+require 'fileutils'
+require 'pathname'
 
 require_relative 'extract_overall_cost_and_emissions'
 require_relative 'extract_build_rates'
@@ -13,12 +15,11 @@ class ExtractResults
 
   attr_accessor :settings
 
-  def initialize(settings = OpenSruct.new)
+  def initialize(settings = OpenStruct.new)
     @settings = settings
   end
 
-  def write_results(gdx_files)
-    # Now we are ready to write some results
+  def write_results(gdx_file_name)
     unless File.exist?(settings.results_folder)
       log.info "Creating a results folder: #{File.expand_path(settings.results_folder)}"
       Pathname.new(settings.results_folder).mkpath
@@ -27,37 +28,35 @@ class ExtractResults
     log.info "Copying accross html"
     FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),"results-template",'*')),settings.results_folder)
 
-    gdx_files.each do |gdx_file_name|
-      log.info "Writing results for #{gdx_file_name}"
+    log.info "Writing results for #{gdx_file_name}"
 
-      gdx = Gdx.new(gdx_file_name)
-      name = File.basename(gdx_file_name, '.*')
+    gdx = Gdx.new(gdx_file_name)
+    name = File.basename(gdx_file_name, '.*')
 
-      Pathname.new(File.join(settings.results_folder, name)).mkpath
+    Pathname.new(File.join(settings.results_folder, name)).mkpath
 
-      log.info "Creating cost-emissions scatter"
-      extract_and_write_result name, gdx, ExtractOverallCostAndEmissions.new, "costs-and-emissions-overview.json"
+    log.info "Creating cost-emissions scatter for #{gdx_file_name}"
+    extract_and_write_result name, gdx, ExtractOverallCostAndEmissions.new, "costs-and-emissions-overview.json"
 
-      log.info "Creating build rate charts"
-      extract_and_write_result name, gdx, ExtractBuildRates.new, "build-rates.json"
+    log.info "Creating build rate charts for #{gdx_file_name}"
+    extract_and_write_result name, gdx, ExtractBuildRates.new, "build-rates.json"
 
-      log.info "Creating flying brick cost charts"
-      extract_and_write_result name, gdx, ExtractDetailedCosts.new, "detailed-costs.json"
+    log.info "Creating flying brick cost charts for #{gdx_file_name}"
+    extract_and_write_result name, gdx, ExtractDetailedCosts.new, "detailed-costs.json"
 
-      log.info "Creating detailed emissions charts"
-      extract_and_write_result name, gdx, ExtractDetailedEmissions.new, "detailed-emissions.json"
+    log.info "Creating detailed emissions charts for #{gdx_file_name}"
+    extract_and_write_result name, gdx, ExtractDetailedEmissions.new, "detailed-emissions.json"
 
-      log.info "Creating electricity charts"
-      extract_and_write_result name, gdx, ExtractElectricityFlows.new, "electricity-flows.json"
+    log.info "Creating electricity charts for #{gdx_file_name}"
+    extract_and_write_result name, gdx, ExtractElectricityFlows.new, "electricity-flows.json"
 
-      log.info "Creating transport charts"
-      extract_and_write_result name, gdx, ExtractTransportFlows.new, "transport-flows.json"
+    log.info "Creating transport charts for #{gdx_file_name}"
+    extract_and_write_result name, gdx, ExtractTransportFlows.new, "transport-flows.json"
 
-      log.info "Creating heating charts"
-      extract_and_write_result name, gdx, ExtractHeatingFlows.new, "heating-flows.json"
-    end
+    log.info "Creating heating charts for #{gdx_file_name}"
+    extract_and_write_result name, gdx, ExtractHeatingFlows.new, "heating-flows.json"
 
-    log.info "Creating the index"
+    log.info "Creating the index for #{gdx_file_name}"
     write_index_txt
   end
 
@@ -76,6 +75,7 @@ class ExtractResults
 
   # This ensures that index.txt in the results folder has ALL the results
   # not just those produced in this run
+  # FIXME: Race condition?
   def write_index_txt
     # Case directories are the ones with json in them
     case_directories = Dir[File.join(settings.results_folder,'*/*.json')].map { |f| File.basename(File.dirname(f)) }.uniq
