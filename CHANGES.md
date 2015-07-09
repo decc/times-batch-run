@@ -1,6 +1,7 @@
 #2015-07-09
 
 * Refactored some of go.rb
+* Added a --skip-existing option to go.rb to allow it to skip optimisation where a gdx already exists
 
 #2015-07-08
 

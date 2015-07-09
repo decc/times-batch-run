@@ -38,6 +38,7 @@ class BatchRun
     settings.gams_save_folder =  "GamsSave"
     settings.vt_gams =  "VT_GAMS.CMD"
     settings.times_2_veda = "times2veda.vdd"
+    settings.do_not_recaclulate_if_gdx_exists = false
     settings.log = Logger.new(STDOUT)
   end
 
@@ -177,8 +178,10 @@ class BatchRun
       Thread.new do
         loop do
           case_name = cases_to_run.pop(true) # True means don't block
-          gdx_file = run_optimsiation.run_case(case_name)
-          run_shell_command_to_extract_results(gdx_file)
+          if should_run?(case_name)
+            gdx_file = run_optimsiation.run_case(case_name)
+            run_shell_command_to_extract_results(gdx_file)
+          end
         end
       end
     end
@@ -186,6 +189,12 @@ class BatchRun
     ThreadsWait.all_waits(*threads) do |t|
       puts "Thread #{t} has finished"
     end
+  end
+
+  def should_run?(case_name)
+    return true unless settings.do_not_recaclulate_if_gdx_exists
+    return false if gdx_ok?(case_name)
+    true
   end
 
   def run_shell_command_to_extract_results(gdx_name)
@@ -254,6 +263,10 @@ if __FILE__ == $0
 
     opts.on("-r", "--results-only", "Skip all the steps except for generating the results file") do
       settings.results_only = true
+    end
+
+    opts.on("-s", "--skip-existing", "Skip optimisation for cases where a gdx file exists") do
+      settings.do_not_recaclulate_if_gdx_exists = true
     end
 
     opts.on("--results-folder [folder]", "The folder in which to write the results (default results)") do |folder|
