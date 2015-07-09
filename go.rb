@@ -187,12 +187,8 @@ class BatchRun
 
     result_writer = Thread.new do
 	    loop do
-		begin
-			gdx_name = cases_to_write_results_for.pop
-			extract_results.write_results([gdx_name])
-		rescue Exception => e
-			puts e
-		end
+        gdx_name = cases_to_write_results_for.pop
+        extract_results.write_results([gdx_name])
 	    end
     end
 
