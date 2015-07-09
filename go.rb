@@ -14,13 +14,19 @@ require_relative 'lib/extract_results'
 class BatchRun
 
   attr_accessor :settings
+  attr_accessor :names_of_all_the_cases
 
   def initialize
+    initialize_variables
     set_defaults
   end
 
-  def set_defaults
+  def initialize_variables
     @settings = OpenStruct.new
+    @names_of_all_the_cases = []
+  end
+
+  def set_defaults
     settings.number_of_cases_to_montecarlo = 2000
     settings.gams_working_folder =  "GAMS_WrkTIMES"
     settings.monte_carlo_file = "possible_scenarios.tsv"
@@ -40,11 +46,14 @@ class BatchRun
     copy_dd_files_to_gams_working_directory
     check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
     create_run_files
+    load_list_of_all_the_cases
+    truncate_list_of_cases
     run_cases
     tell_the_user_how_to_view_results
   end
 
   def run_results_only
+    load_list_of_all_the_cases
     write_results_in_parallel
     tell_the_user_how_to_view_results
   end
@@ -107,7 +116,7 @@ class BatchRun
     create_run_files.run
 
     warn_about_missing_scenarios(create_run_files.missing_scenario_files.keys)
-    #exit if create_run_files.missing_scenario_files.length > 0
+    exit if create_run_files.missing_scenario_files.length > 0
   end
 
   def warn_about_missing_scenarios(missing_scenario_files)
@@ -130,17 +139,15 @@ class BatchRun
     END
   end
 
-  def names_of_all_the_cases
-    return @names_of_all_the_cases if @names_of_all_the_cases
-    @names_of_all_the_cases = []
+  def load_list_of_all_the_cases
     settings.list_of_cases_files.each do |list_of_cases_file|
       load_cases_from(list_of_cases_file)
     end
-    # We can limit ourselves to processing only a few cases like this
-    if settings.only_run_the_first_n_cases
-      @names_of_all_the_cases = @names_of_all_the_cases.first(settings.only_run_the_first_n_cases)
-    end
-    @names_of_all_the_cases
+  end
+
+  def truncate_list_of_cases
+    return unless settings.only_run_the_first_n_cases
+    @names_of_all_the_cases = @names_of_all_the_cases.first(settings.only_run_the_first_n_cases)
   end
 
   def load_cases_from(list_of_cases_file)
