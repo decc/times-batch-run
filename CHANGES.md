@@ -3,6 +3,8 @@
 * Refactored some of go.rb
 * Added a --skip-existing option to go.rb to allow it to skip optimisation where a gdx already exists
 * Fixed the over time charts so they load everything before drawing
+* Fixed the flying brick charts so they load everything before drawing
+
 
 #2015-07-08
 

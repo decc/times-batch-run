@@ -1,3 +1,8 @@
+var code_to_name_lookup_loaded_flag = false;
+var left_case_loaded_flag = false;
+var right_case_loaded_flag = false;
+var code_to_sector_lookup_loaded_flag = false;
+
 function code_to_name_lookup() {
   var codes = d3.map();
 
@@ -5,6 +10,8 @@ function code_to_name_lookup() {
     rows.forEach(function(row) {
       codes.set(row['Code'], row['Short']);
     });
+    code_to_name_lookup_loaded_flag = true;
+    proceed();
   });
 
   function lookup(code) {
@@ -23,6 +30,8 @@ function code_to_sector_lookup() {
     rows.forEach(function(row) {
       regexps.push([new RegExp("^"+row['Process']), row['Sector']]);
     });
+    code_to_sector_lookup_loaded_flag = true;
+    proceed();
   });
 
   function lookup(code) {
@@ -42,6 +51,8 @@ function code_to_sector_lookup() {
 var sector_lookup = code_to_sector_lookup();
 
 var topic = "costs";
+var left_case_name = undefined;
+var right_case_name = undefined;
 
 var a_name = "Scenario A";
 
@@ -162,7 +173,7 @@ var yAxis = d3.svg.axis()
   differencegroup.append("text").attr("id","b_over_a_label").attr("dy","3").attr("text-anchor","end");
   differencegroup.append("text").attr("id","diff_over_a_total_label").attr("dy","3").attr("text-anchor","end");
 
-  var data_loaded = function() { 
+  function set_scales() { 
     var y_domain = [0,0];
     // First we work out the extreme ends in order to set the scale
     if(a_negative_total < b_negative_total) {
@@ -197,8 +208,6 @@ var yAxis = d3.svg.axis()
     // then a 2 for the negative and positive parts of the last bar
     number_of_columns = 2 + 1 + data.diff_positive.length + 1 + data.diff_negative.length + 1 + 2;
     x.domain(d3.range(number_of_columns)); 
-    position_data();
-    draw();
   };
 
 // This function takes an array of data, and for any parameter in that
@@ -572,10 +581,32 @@ var left_period = "npv";
 var right_period = "npv";
 
 function reformat_data() {
-  select_left_data();
-  select_right_data();
-  do_maths_on_each_element();
-  calculate_totals();
+    combined_data = d3.map();
+    a_name = left.name+" "+left_period;
+    b_name = right.name+" "+right_period;
+
+    data = {
+      a_negative: [],
+      a_positive: [],
+      diff_positive: [],
+      diff_negative: [],
+      b_positive: [],
+      b_negative: []
+    } 
+
+    a_positive_total = 0; 
+    b_positive_total = 0; 
+    a_negative_total = 0; 
+    b_negative_total = 0;
+    diff_positive_total = 0;
+    diff_negative_total = 0;
+
+    number_of_columns = 0;
+
+    select_left_data();
+    select_right_data();
+    do_maths_on_each_element();
+    calculate_totals();
 };
 
 var left_column = 1;
@@ -635,51 +666,37 @@ function set_combined_data(data) {
   combined_data.set(data[0], data);
 };
 
-var cases = [];
-var list_of_cases;
-
-function all_cases_loaded() {
-  combined_data = d3.map();
-  left = cases[0];
-  right = cases[1];
-  a_name = left.name+" "+left_period;
-  b_name = right.name+" "+right_period;
-
-  data = {
-    a_negative: [],
-    a_positive: [],
-    diff_positive: [],
-    diff_negative: [],
-    b_positive: [],
-    b_negative: []
-  } 
-
-  a_positive_total = 0; 
-  b_positive_total = 0; 
-  a_negative_total = 0; 
-  b_negative_total = 0;
-  diff_positive_total = 0;
-  diff_negative_total = 0;
-
-  number_of_columns = 0;
-
-  reformat_data();
-  data_loaded();    
+function proceed() {
+  if(all_files_loaded()) {
+    reformat_data();
+    set_scales();
+    position_data();
+    draw();
+  }
 };
+
+function all_files_loaded() {
+  return left_case_loaded_flag && right_case_loaded_flag && code_to_name_lookup_loaded_flag && code_to_sector_lookup_loaded_flag;
+}
 
 function case_loaded(individual_case) {
   cases.push(individual_case);
-  if(cases.length == list_of_cases.length) {
-    all_cases_loaded();
-  }
 }
 
-function list_of_cases_loaded() {
-  list_of_cases.forEach(load_case);
+function load_left_case() {
+  d3.json(url_for_case_data(left_case_name), function(d) {
+    left = d;
+    left_case_loaded_flag = true;
+    proceed();
+  });
 }
 
-function load_case(case_name) {
-  d3.json(url_for_case_data(case_name), case_loaded);
+function load_right_case() {
+  d3.json(url_for_case_data(right_case_name), function(d) {
+    right = d;
+    right_case_loaded_flag = true;
+    proceed();
+  });
 }
 
 function url_for_case_data(case_name) {
@@ -688,27 +705,13 @@ function url_for_case_data(case_name) {
 
 function go() {
   settings = window.location.hash.slice(1).split(',');
-
-  if(settings[0] == "") {
-    d3.text('index.txt', function(index_file) {
-      list_of_cases = index_file.split(/[\r\n]+/).filter(function(case_name) {
-        if(case_name.length == 0) return false;
-        if(case_name[0] == "#") return false;
-        return true;
-      }).slice(0,2);
-      window.location = "#"+list_of_cases.join(",")+","+left_period+","+right_period;
-      list_of_cases_loaded();
-    });	
-  } else {
-    list_of_cases = settings.slice(0,2);
-    if(settings.length == 3) {
-      left_period = right_period = settings[2];
-    } else if(settings.length == 4) {
-      left_period = settings[2];
-      right_period = settings[3];
-    }
-    list_of_cases_loaded();
-  }
+  list_of_cases = settings.slice(0,2);
+  left_case_name = settings[0];
+  right_case_name = settings[0];
+  left_period = settings[2];
+  right_period = settings[3];
+  load_left_case();
+  load_right_case();
 };
 
 function capitalize(string) {
