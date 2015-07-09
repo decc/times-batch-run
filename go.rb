@@ -166,8 +166,8 @@ class BatchRun
   end
 
   def gdx_ok?(case_name)
-    output_gdx_name = File.join(gdx_save_folder, case_name)
-    File.exist?(output_gdx_name+".gdx") && Gdx.new(output_gdx_name+".gdx").valid?
+    output_gdx_name = File.join(gdx_save_folder, case_name)+".gdx"
+    Gdx.new(output_gdx_name+".gdx").valid?
   end
 
   attr_accessor :cases_to_write_results_for
