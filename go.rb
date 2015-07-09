@@ -3,18 +3,13 @@ require 'fileutils'
 require 'ostruct'
 require 'optparse'
 require 'thwait'
-require 'json'
+require 'logger'
 
 require_relative 'lib/monte_carlo_sensitivities'
 require_relative 'lib/create_run_files'
 require_relative 'lib/list_of_cases'
-require_relative 'lib/extract_overall_cost_and_emissions'
-require_relative 'lib/extract_build_rates'
-require_relative 'lib/extract_detailed_costs'
-require_relative 'lib/extract_detailed_emissions'
-require_relative 'lib/extract_electricity_flows'
-require_relative 'lib/extract_transport_flows'
-require_relative 'lib/extract_heating_flows'
+require_relative 'lib/run_optimisation'
+require_relative 'lib/extract_results'
 
 class BatchRun
 
@@ -37,6 +32,7 @@ class BatchRun
     settings.gams_save_folder =  "GamsSave"
     settings.vt_gams =  "VT_GAMS.CMD"
     settings.times_2_veda = "times2veda.vdd"
+    settings.log = Logger.new(STDOUT)
   end
 
   def run
@@ -44,7 +40,6 @@ class BatchRun
     copy_dd_files_to_gams_working_directory
     check_for_lists_of_cases_and_create_by_monte_carlo_if_needed
     create_run_files
-    check_files_needed_to_run_times_are_available
     run_cases
     tell_the_user_how_to_view_results
   end
@@ -118,7 +113,7 @@ class BatchRun
     create_run_files.run
 
     warn_about_missing_scenarios(create_run_files.missing_scenario_files.keys)
-    exit if create_run_files.missing_scenario_files.length > 0
+    #exit if create_run_files.missing_scenario_files.length > 0
   end
 
   def warn_about_missing_scenarios(missing_scenario_files)
@@ -164,49 +159,10 @@ class BatchRun
     @names_of_all_the_cases_that_solved ||= []
   end
 
-  def check_files_needed_to_run_times_are_available
-
-    files_to_check = {
-      TIMES_source_folder: times_source_folder,
-      GAMS_working_folder: path_to_gams_working_folder,
-      GDX_save_folder: gdx_save_folder,
-      VT_GAMS_script: vt_gams,
-      times2veda_script: times_2_veda
-    }
-
-    files_to_check.each do |name, location|
-      next if File.exist?(location)
-      puts "Can't find #{name.to_s.gsub('_',' ')} at #{File.expand_path(location)}"
-      exit
-    end
-  end
 
   def number_of_threads
     # min so that don't have more threads than cases to run
     [settings.number_of_cases_to_optimize_simultaneously,names_of_all_the_cases.length].min
-  end
-
-  def run_case(case_name)
-    puts "Looking for #{case_name}.RUN"
-    unless File.exist?("#{case_name}.RUN")
-      puts "Can't find #{File.expand_path("#{case_name}.RUN")}"
-      puts "Halting"
-      exit
-    end
-    puts "Executing #{case_name}"
-    output_gdx_name = File.join(gdx_save_folder, case_name)
-
-    `#{vt_gams} #{case_name} #{settings.times_source_folder} #{output_gdx_name.gsub('/','\\')}`
-
-    if gdx_ok?(case_name)
-      names_of_all_the_cases_that_solved.push(case_name)
-      puts "Putting #{case_name} into VEDA"
-      `GDX2VEDA #{output_gdx_name.gsub('/','\\')} #{times_2_veda} #{case_name} > #{case_name}`
-
-      cases_to_write_results_for.push("#{output_gdx_name}.gdx")
-    else
-      puts "Case #{case_name} failed to solve - couldn't find valid #{output_gdx_name}.gdx"
-    end
   end
 
   def gdx_ok?(case_name)
@@ -218,6 +174,11 @@ class BatchRun
 
   def run_cases
     cases_to_run = Queue.new
+    run_optimsiation = RunOptimisation.new(settings)
+    run_optimsiation.check_files_needed_to_run_times_are_available!
+
+    extract_results = ExtractResults.new(settings)
+    
     @cases_to_write_results_for = Queue.new
 
     names_of_all_the_cases.each do |case_name|
@@ -228,7 +189,7 @@ class BatchRun
 	    loop do
 		begin
 			gdx_name = cases_to_write_results_for.pop
-			write_results([gdx_name])
+			extract_results.write_results([gdx_name])
 		rescue Exception => e
 			puts e
 		end
@@ -239,9 +200,9 @@ class BatchRun
       Thread.new do
         loop do
           case_name = cases_to_run.pop(true) # True means don't block
-          run_case(case_name)
+          gdx_file = run_optimsiation.run_case(case_name)
+          cases_to_write_results_for.push(gdx_file) if gdx_file
         end
-        Thread::exit
       end
     end
 
@@ -278,96 +239,6 @@ class BatchRun
       puts "Thread #{t} has finished"
     end
     write_index_txt
-  end
-
-
-  def write_results(gdx_files)
-    # Now we are ready to write some results
-    unless File.exist?(settings.results_folder)
-      puts "Creating a results folder: #{File.expand_path(settings.results_folder)}"
-      Pathname.new(settings.results_folder).mkpath
-    end
-
-    puts "Copying accross html"
-    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),"results-template",'*')),settings.results_folder)
-
-    gdx_files.each do |gdx_file_name|
-      puts "Writing results for #{gdx_file_name}"
-
-      gdx = Gdx.new(gdx_file_name)
-      name = File.basename(gdx_file_name, '.*')
-
-      Pathname.new(File.join(settings.results_folder, name)).mkpath
-
-      puts "Creating cost-emissions scatter"
-      extract_and_write_result name, gdx, ExtractOverallCostAndEmissions.new, "costs-and-emissions-overview.json"
-      
-      puts "Creating build rate charts"
-      extract_and_write_result name, gdx, ExtractBuildRates.new, "build-rates.json"
-
-      puts "Creating flying brick cost charts"
-      extract_and_write_result name, gdx, ExtractDetailedCosts.new, "detailed-costs.json"
-
-      puts "Creating detailed emissions charts"
-      extract_and_write_result name, gdx, ExtractDetailedEmissions.new, "detailed-emissions.json"
-
-      puts "Creating electricity charts"
-      extract_and_write_result name, gdx, ExtractElectricityFlows.new, "electricity-flows.json"
-
-      puts "Creating transport charts"
-      extract_and_write_result name, gdx, ExtractTransportFlows.new, "transport-flows.json"
-
-      puts "Creating heating charts"
-      extract_and_write_result name, gdx, ExtractHeatingFlows.new, "heating-flows.json"
-    end
-
-    puts "Creating the index"
-    write_index_txt
-  end
-
-  def extract_and_write_result(name, gdx, extractor, filename)
-    extractor.gdx = gdx
-    extractor.scenario_name = name
-    results = extractor.extract_results
-    write_result name, filename, results.to_json
-  end
-
-  def write_result(case_name, result, data)
-    File.open(File.join(settings.results_folder, case_name, result), 'w') do |f|
-      f.puts data
-    end
-  end
-
-  # This ensures that index.txt in the results folder has ALL the results
-  # not just those produced in this run
-  def write_index_txt
-    # Case directories are the ones with json in them
-    case_directories = Dir[File.join(settings.results_folder,'*/*.json')].map { |f| File.basename(File.dirname(f)) }.uniq
-    File.open(File.join(settings.results_folder, "index.txt"), 'w') { |f| f.puts case_directories.join("\n") }
-  end
-
-  def veda_fe_folder
-    Pathname.getwd.parent
-  end
-
-  def times_source_folder
-    veda_fe_folder + settings.times_source_folder
-  end
-
-  def path_to_gams_working_folder
-    veda_fe_folder + settings.gams_working_folder
-  end
-
-  def gdx_save_folder
-    path_to_gams_working_folder + settings.gams_save_folder
-  end
-
-  def vt_gams
-    times_source_folder + settings.vt_gams
-  end
-
-  def times_2_veda
-    times_source_folder + "times2veda.vdd"
   end
 
   def tell_the_user_how_to_view_results
