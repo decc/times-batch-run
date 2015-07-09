@@ -11,6 +11,10 @@ var aggregated_data;
 var case_name;
 var year_for_data = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
 
+var case_loaded = false;
+var code_lookup_loaded = false;
+var category_for_name_loaded = false;
+
 function go() {
   category_for_name = name_to_category_lookup();
   settings = window.location.hash.slice(1).split(',');
@@ -19,15 +23,26 @@ function go() {
 };
 
 function load_case(case_name) {
-  d3.json(url_for_case_data(case_name), case_loaded);
+  d3.json(url_for_case_data(case_name), process_case);
 }
 
-function case_loaded(individual_case) {
+function process_case(individual_case) {
   data = d3.map(individual_case.processes_by_year);
-  reformat_data();
-  aggregate_data();
-  draw();
-  draw_links();
+  case_loaded = true;
+  proceed();
+}
+
+function proceed() {
+  if(all_loaded()) {
+    reformat_data();
+    aggregate_data();
+    draw();
+    draw_links();
+  };
+}
+
+function all_loaded() {
+  return case_loaded && code_lookup_loaded && category_for_name_loaded;
 }
 
 function reformat_data() {
@@ -86,6 +101,8 @@ function name_to_category_lookup() {
     rows.forEach(function(row) {
       regexps.push([new RegExp("^"+row['Process']), row['Sector']]);
     });
+    category_for_name_loaded = true;
+    proceed();
   });
 
   function lookup(code) {
@@ -135,6 +152,8 @@ function code_to_name_lookup() {
     rows.forEach(function(row) {
       codes.set(row['Code'], row['Short']);
     });
+    code_lookup_loaded = true;
+    proceed();
   });
 
   function lookup(code) {
