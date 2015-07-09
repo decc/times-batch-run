@@ -38,7 +38,7 @@ class BatchRun
     settings.gams_save_folder =  "GamsSave"
     settings.vt_gams =  "VT_GAMS.CMD"
     settings.times_2_veda = "times2veda.vdd"
-    settings.do_not_recaclulate_if_gdx_exists = false
+    settings.do_not_recalculate_if_gdx_exists = false
     settings.log = Logger.new(STDOUT)
   end
 
@@ -160,7 +160,7 @@ class BatchRun
 
   def gdx_ok?(case_name)
     output_gdx_name = File.join(gdx_save_folder, case_name)+".gdx"
-    Gdx.new(output_gdx_name+".gdx").valid?
+    Gdx.new(output_gdx_name).valid?
   end
 
   def run_cases
@@ -192,7 +192,7 @@ class BatchRun
   end
 
   def should_run?(case_name)
-    return true unless settings.do_not_recaclulate_if_gdx_exists
+    return true unless settings.do_not_recalculate_if_gdx_exists
     return false if gdx_ok?(case_name)
     true
   end
@@ -266,7 +266,7 @@ if __FILE__ == $0
     end
 
     opts.on("-s", "--skip-existing", "Skip optimisation for cases where a gdx file exists") do
-      settings.do_not_recaclulate_if_gdx_exists = true
+      settings.do_not_recalculate_if_gdx_exists = true
     end
 
     opts.on("--results-folder [folder]", "The folder in which to write the results (default results)") do |folder|
