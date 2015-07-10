@@ -36,7 +36,6 @@ class BatchRun
     settings.number_of_cases_to_optimize_simultaneously = 3
     settings.times_source_folder =  "GAMS_SRCTIMESV380"
     settings.gams_save_folder =  "GamsSave"
-    settings.vt_gams =  "VT_GAMS.CMD"
     settings.times_2_veda = "times2veda.vdd"
     settings.do_not_recalculate_if_gdx_exists = false
     settings.log = Logger.new(STDOUT)

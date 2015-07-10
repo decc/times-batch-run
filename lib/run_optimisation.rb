@@ -14,7 +14,6 @@ class RunOptimisation
       TIMES_source_folder: times_source_folder,
       GAMS_working_folder: path_to_gams_working_folder,
       GDX_save_folder: gdx_save_folder,
-      VT_GAMS_script: vt_gams,
       times2veda_script: times_2_veda
     }
 
@@ -34,7 +33,9 @@ class RunOptimisation
     log.info "Executing #{case_name}"
     output_gdx_name = File.join(gdx_save_folder, case_name)
 
-    `#{vt_gams} #{case_name} #{settings.times_source_folder} #{output_gdx_name.gsub('/','\\')}`
+    log.info "gams #{case_name}.run IDIR=..\\#{settings.times_source_folder} GDX=#{output_gdx_name.gsub('/','\\')} LO=2"
+    log.info "Results of optimizing #{case_name} can be seen in #{case_name}.log"
+    `gams #{case_name}.run IDIR=..\\#{settings.times_source_folder} GDX=#{output_gdx_name.gsub('/','\\')} LO=2`
 
     if Gdx.new(case_name).valid?
       names_of_all_the_cases_that_solved.push(case_name)
