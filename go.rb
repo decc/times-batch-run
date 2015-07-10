@@ -61,13 +61,13 @@ class BatchRun
   
   def check_we_are_in_the_right_spot
     return if Pathname.getwd.basename.to_s =~ /#{Regexp.escape(settings.gams_working_folder)}/i
-    puts "This script needs to be run from within the GAMS working folder."
-    puts "This is usally C:\VEDA\VEDA_FE\GAMS_WrkTIMES"
+    log.fatal "This script needs to be run from within the GAMS working folder."
+    log.fatal "This is usally C:\VEDA\VEDA_FE\GAMS_WrkTIMES"
     exit
   end
 
   def copy_dd_files_to_gams_working_directory
-    puts "Copying scenario files accross"
+    log.warn "Copying scenario files accross"
     FileUtils.cp(Dir[File.join(File.dirname(__FILE__), "dd-files", "*.dd")], ".", verbose: true)
   end
 
@@ -81,18 +81,18 @@ class BatchRun
 
   def copy_possible_scenarios_file_if_needed
     return if File.exists?(settings.monte_carlo_file)
-    puts "Can't find a list of all the possible scenarios #{settings.monte_carlo_file}"
-    puts "I'm going to copy one here from the git repository"
-    puts FileUtils.copy(File.join(File.dirname(__FILE__),"possible_scenarios.tsv"), settings.monte_carlo_file,  :verbose => true)
+    log.warn "Can't find a list of all the possible scenarios #{settings.monte_carlo_file}"
+    log.warn "I'm going to copy one here from the git repository"
+    log.info FileUtils.copy(File.join(File.dirname(__FILE__),"possible_scenarios.tsv"), settings.monte_carlo_file,  :verbose => true)
     unless File.exists?(settings.monte_carlo_file)
-      puts "Failed"
+      log.fatal "Failed"
       exit
     end
-    puts "Copied"
+    log.info "Copied"
   end
 
   def create_list_of_cases_using_montecarlo(list_of_cases_file)
-    puts "Can't find #{list_of_cases_file} so I'm going to generate it using the monte-carlo-sensitivities routine"
+    log.warn "Can't find #{list_of_cases_file} so I'm going to generate it using the monte-carlo-sensitivities routine"
     monte_carlo = MonteCarloSensitivities.new
     monte_carlo.name_of_list_of_cases = list_of_cases_file
     monte_carlo.number_of_cases_to_generate = settings.number_of_cases_to_montecarlo
@@ -122,7 +122,7 @@ class BatchRun
 
   def warn_about_missing_scenarios(missing_scenario_files)
     return unless missing_scenario_files.length > 0
-    puts <<-END
+    message =<<-END
 
     There are scenario files missing:
 
@@ -138,6 +138,7 @@ class BatchRun
 
     Then re-run this script
     END
+    log.fatal message
   end
 
   def load_list_of_all_the_cases
@@ -187,7 +188,7 @@ class BatchRun
     end
 
     ThreadsWait.all_waits(*threads) do |t|
-      puts "Thread #{t} has finished"
+      log.info "Thread #{t} has finished"
     end
   end
 
@@ -199,7 +200,7 @@ class BatchRun
 
   def run_shell_command_to_extract_results(gdx_name)
     return unless gdx_name
-    puts `ruby #{File.expand_path(File.join(File.dirname(__FILE__), "update-result-from-gdx.rb"))} #{settings.results_folder} #{gdx_name}`
+    log.info `ruby #{File.expand_path(File.join(File.dirname(__FILE__), "update-result-from-gdx.rb"))} #{settings.results_folder} #{gdx_name}`
   end
 
   def write_results_in_parallel
@@ -220,7 +221,7 @@ class BatchRun
     end
 
     ThreadsWait.all_waits(*threads) do |t|
-      puts "Thread #{t} has finished"
+      log.info "Thread #{t} has finished"
     end
   end
   
@@ -229,14 +230,18 @@ class BatchRun
   end
 
   def tell_the_user_how_to_view_results
-    puts "You can now view the results by running:"
-    puts "ruby -run -e httpd #{settings.results_folder} -p 8000"
-    puts "And then opening your web browser at http://localhost:8000/"
+    log.info "You can now view the results by running:"
+    log.info "ruby -run -e httpd #{settings.results_folder} -p 8000"
+    log.info "And then opening your web browser at http://localhost:8000/"
   end
 
   def number_of_threads
     # min so that don't have more threads than cases to run
     [settings.number_of_cases_to_optimize_simultaneously,names_of_all_the_cases.length].min
+  end
+
+  def log
+    settings.log
   end
 end
 
@@ -273,10 +278,16 @@ if __FILE__ == $0
       settings.results_folder = folder
     end
 
+    opts.on("--log-to-file [logfile.log]", "This logs the major events in the processing to a file rather than printing them onscreen") do |logfile|
+      settings.log = Logger.new(logfile)
+    end
+
     opts.on_tail("--version", "Show version") do
       puts IO.readlines(File.join(File.dirname(__FILE__), "CHANGES.md")).join
       exit
     end
+
+
   end.parse!
 
   unless ARGV.empty?
