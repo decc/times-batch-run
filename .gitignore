@@ -3,4 +3,5 @@
 *.md~
 *.swp
 *.html~
+*.erb~
 cases.tsv
