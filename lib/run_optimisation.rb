@@ -37,8 +37,7 @@ class RunOptimisation
     log.info "Results of optimizing #{case_name} can be seen in #{case_name}.log"
     `gams #{case_name}.run IDIR=..\\#{settings.times_source_folder} GDX=#{output_gdx_name.gsub('/','\\')} LO=2`
 
-    if Gdx.new(case_name).valid?
-      names_of_all_the_cases_that_solved.push(case_name)
+    if Gdx.new(output_gdx_name+".gdx").valid?
       log.puts "Putting #{case_name} into VEDA"
       `GDX2VEDA #{output_gdx_name.gsub('/','\\')} #{times_2_veda} #{case_name} > #{case_name}`
       return output_gdx_name+".gdx"

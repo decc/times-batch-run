@@ -179,6 +179,8 @@ class BatchRun
           if should_run?(case_name)
             gdx_file = run_optimsiation.run_case(case_name)
             run_shell_command_to_extract_results(gdx_file)
+	  else
+            log.info "Found existing gdx file for #{case_name}"
           end
         end
       end

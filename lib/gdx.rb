@@ -12,7 +12,7 @@ class Gdx
 
   def valid?
     return false unless File.exist?(gdx_filename)
-    `gdxdump #{gdx_filename} Symb=ObjZ` =~ /free\s+Variable OBJZ/i
+    `gdxdump #{gdx_filename} Symb=ObjZ` =~ /free\s+Variable OBJZ/i ? true : false
   end
 
   def objz
