@@ -107,12 +107,10 @@ class BatchRun
   end
 
   def create_run_files_for_list_of_cases(list_of_cases_file)
-    create_run_files = CreateRunFiles.new
+    create_run_files = CreateRunFiles.new(settings)
 
-    # Set our defaults
     create_run_files.destination_folder_for_run_files  =  '.'
     create_run_files.name_of_file_containing_cases = list_of_cases_file
-    create_run_files.name_of_run_file_template = settings.run_file_template
     create_run_files.run
 
     warn_about_missing_scenarios(create_run_files.missing_scenario_files.keys)
@@ -125,7 +123,7 @@ class BatchRun
 
     There are scenario files missing:
 
-    #{missing_scenario_files}
+    #{missing_scenario_files.join("\n    ")}
 
     If the spelling is right in possible_scenarios.tsv then you probably need to get VEDA to produce them
 
