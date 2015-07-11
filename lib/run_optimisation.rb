@@ -20,7 +20,7 @@ class RunOptimisation
     files_to_check.each do |name, location|
       next if File.exist?(location)
       log.fatal "Can't find #{name.to_s.gsub('_',' ')} at #{File.expand_path(location)}"
-      exit
+      return
     end
   end  
   
@@ -28,17 +28,14 @@ class RunOptimisation
     log.info "Looking for #{case_name}.RUN"
     unless File.exist?("#{case_name}.RUN")
       log.fatal "Can't find #{File.expand_path("#{case_name}.RUN")}"
-      exit
+      return
     end
-    log.info "Executing #{case_name}"
     output_gdx_name = File.join(gdx_save_folder, case_name)
 
-    log.info "gams #{case_name}.run IDIR=..\\#{settings.times_source_folder} GDX=#{output_gdx_name.gsub('/','\\')} LO=2"
-    log.info "Results of optimizing #{case_name} can be seen in #{case_name}.log"
+    log.info "Running #{case_name}. Progress can be seen in #{case_name}.log"
     `gams #{case_name}.run IDIR=..\\#{settings.times_source_folder} GDX=#{output_gdx_name.gsub('/','\\')} LO=2`
 
     if Gdx.new(output_gdx_name+".gdx").valid?
-      log.puts "Putting #{case_name} into VEDA"
       `GDX2VEDA #{output_gdx_name.gsub('/','\\')} #{times_2_veda} #{case_name} > #{case_name}`
       return output_gdx_name+".gdx"
     else
