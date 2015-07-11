@@ -23,7 +23,7 @@ class RunOptimisation
       return
     end
   end  
-  
+
   def run_case(case_name)
     log.info "Looking for #{case_name}.RUN"
     unless File.exist?("#{case_name}.RUN")

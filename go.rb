@@ -57,7 +57,7 @@ class BatchRun
     write_results_in_parallel
     tell_the_user_how_to_view_results
   end
-  
+
   def check_we_are_in_the_right_spot
     return if Pathname.getwd.basename.to_s =~ /#{Regexp.escape(settings.gams_working_folder)}/i
     log.fatal "This script needs to be run from within the GAMS working folder."
@@ -172,11 +172,11 @@ class BatchRun
       log_file = IO.readlines(log_file_name).join
       status = log_file[/Status:(.*)/i,1]
       if status
-      	log.info "Log file for #{case_name} reports status of: #{status}"
-	return status.strip == "Normal completion"
+        log.info "Log file for #{case_name} reports status of: #{status}"
+        return status.strip == "Normal completion"
       else
-	log.warn "No status found in #{log_file_name}"
-	return false
+        log.warn "No status found in #{log_file_name}"
+        return false
       end
     else
       log.warn "Not found log file #{log_file_name}"
@@ -194,7 +194,7 @@ class BatchRun
     run_optimsiation.check_files_needed_to_run_times_are_available!
 
     extract_results = ExtractResults.new(settings)
-    
+
     names_of_all_the_cases.each do |case_name|
       cases_to_run.push(case_name)
     end
@@ -202,28 +202,28 @@ class BatchRun
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
-	  begin
-          case_name = cases_to_run.pop(true) # True means don't block
-          if should_run?(case_name)
-            gdx_file = run_optimsiation.run_case(case_name)
-	    log.info "#{case_name} finished calculating"
-            run_shell_command_to_extract_results(gdx_file)
-	    log.info "#{case_name} finished writing results"
-	    cases_complete += 1
-	  else
-	    cases_skipped += 1
-            log.info "Skipping #{case_name}"
-          end
-    	  
-          log.info "#{cases_complete} cases completed in #{humanise_duration(Time.now-start_time)}, #{cases_skipped} skipped, with #{cases_to_run.size} left to go. #{forecast(cases_complete, Time.now-start_time, cases_to_run.size)}"
+          begin
+            case_name = cases_to_run.pop(true) # True means don't block
+            if should_run?(case_name)
+              gdx_file = run_optimsiation.run_case(case_name)
+              log.info "#{case_name} finished calculating"
+              run_shell_command_to_extract_results(gdx_file)
+              log.info "#{case_name} finished writing results"
+              cases_complete += 1
+            else
+              cases_skipped += 1
+              log.info "Skipping #{case_name}"
+            end
 
-	  rescue Exception => e
+            log.info "#{cases_complete} cases completed in #{humanise_duration(Time.now-start_time)}, #{cases_skipped} skipped, with #{cases_to_run.size} left to go. #{forecast(cases_complete, Time.now-start_time, cases_to_run.size)}"
+
+          rescue Exception => e
             raise e if e.is_a?(ThreadError)
-	    log.error "Exception: "+e.message
-	    e.backtrace.each do |line|
-		    log.error line.to_s
-	    end
-	  end
+            log.error "Exception: "+e.message
+            e.backtrace.each do |line|
+              log.error line.to_s
+            end
+          end
         end
       end
     end
@@ -235,28 +235,28 @@ class BatchRun
 
   def humanise_duration(seconds)
     if seconds < 1
-	    "no time"
+      "no time"
     elsif seconds < 90
-	    "#{seconds.round} seconds"
+      "#{seconds.round} seconds"
     elsif seconds < (60*90)
-	    "#{(seconds/60).round} minutes"
+      "#{(seconds/60).round} minutes"
     elsif seconds < (60*60*48)
-	    "#{(seconds/(60*60)).round} hours"
+      "#{(seconds/(60*60)).round} hours"
     else
-	    "#{(seconds/(60*60*24)).round} days"
+      "#{(seconds/(60*60*24)).round} days"
     end
   end
 
   def forecast(cases_complete, time_taken, cases_to_go)
-	  if cases_complete < number_of_threads
-		  return "Not enough data to forecase completion time"
-	  else
-		  time_per_case = (cases_complete / time_taken)
-		  time_to_go = cases_to_go / time_per_case
-		  return "Completing cases at a rate of one per #{humanise_duration(time_per_case)} with about #{humanise_duration(time_to_go)} left to go."
-	  end
+    if cases_complete < number_of_threads
+      return "Not enough data to forecase completion time"
+    else
+      time_per_case = (time_taken.to_f / cases_complete)
+      time_to_go = cases_to_go / time_per_case
+      return "Completing cases at a rate of one per #{humanise_duration(time_per_case)} with about #{humanise_duration(time_to_go)} left to go."
+    end
   end
-	
+
   def should_run?(case_name)
     return true unless settings.do_not_recalculate_if_gdx_exists
     return false if gdx_ok?(case_name)
@@ -278,22 +278,22 @@ class BatchRun
     threads = Array.new(number_of_threads).map do
       Thread.new do
         loop do
-		begin
-          case_name = cases_to_run.pop(true) # True means don't block
-          gdx_name = File.join(gdx_save_folder, "#{case_name}.gdx")
- 	  if gdx_ok?(case_name) 
-          	run_shell_command_to_extract_results(gdx_name)
-	  else
-            log.info "Couldn't find gdx and report of normal completion for #{case_name}"
-	  end
-	  rescue Exception => e
+          begin
+            case_name = cases_to_run.pop(true) # True means don't block
+            gdx_name = File.join(gdx_save_folder, "#{case_name}.gdx")
+            if gdx_ok?(case_name) 
+              run_shell_command_to_extract_results(gdx_name)
+            else
+              log.info "Couldn't find gdx and report of normal completion for #{case_name}"
+            end
+          rescue Exception => e
             raise e if e.is_a?(ThreadError)
-	    log.error "Exception: "+e.message
-	    e.backtrace.each do |line|
-		    log.error line.to_s
-	    end
-	  end
-       end
+            log.error "Exception: "+e.message
+            e.backtrace.each do |line|
+              log.error line.to_s
+            end
+          end
+        end
       end
     end
 
@@ -301,7 +301,7 @@ class BatchRun
       log.info "Thread #{t} has finished"
     end
   end
-  
+
   def gdx_save_folder
     Pathname.getwd.parent + settings.gams_working_folder + settings.gams_save_folder
   end
