@@ -62,7 +62,7 @@ class ExtractResults
   def copy_across_html_if_no_index_html
     return false if File.exist?(File.join(settings.results_folder, 'index.html'))
     log.info "Copying accross html"
-    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),"results-template",'*')),settings.results_folder)
+    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),"..","results-template",'*')),settings.results_folder)
   end
 
   def extract_and_write_result(name, gdx, extractor, filename)
