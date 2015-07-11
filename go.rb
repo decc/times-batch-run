@@ -162,6 +162,10 @@ class BatchRun
   end
 
   def run_cases
+    start_time = Time.now
+    cases_complete = 0
+    cases_skipped = 0
+
     cases_to_run = Queue.new
     run_optimsiation = RunOptimisation.new(settings)
     run_optimsiation.check_files_needed_to_run_times_are_available!
@@ -175,13 +179,28 @@ class BatchRun
     threads = Array.new(number_of_threads).map.with_index do |_,thread_number|
       Thread.new do
         loop do
+	  begin
           case_name = cases_to_run.pop(true) # True means don't block
           if should_run?(case_name)
             gdx_file = run_optimsiation.run_case(case_name)
+	    log.info "#{case_name} finished calculating"
             run_shell_command_to_extract_results(gdx_file)
+	    log.info "#{case_name} finished writing results"
+	    cases_complete += 1
 	  else
+	    cases_skipped += 1
             log.info "Found existing gdx file for #{case_name}"
           end
+    	  
+          log.info "#{cases_complete} cases completed in #{Time.now-start_time} seconds, #{cases_skipped} skipped, with #{cases_to_run.size} left to go"
+
+	  rescue Exception => e
+            raise e if e.is_a?(ThreadError)
+	    log.error "Exception: "+e.message
+	    e.backtrace.each do |line|
+		    log.error line.to_s
+	    end
+	  end
         end
       end
     end
