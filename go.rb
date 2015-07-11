@@ -157,8 +157,31 @@ class BatchRun
 
 
   def gdx_ok?(case_name)
+    log_says_normal_completion_for(case_name) && gdx_file_exists_and_is_valid(case_name)
+  end
+
+  def gdx_file_exists_and_is_valid(case_name)
     output_gdx_name = File.join(gdx_save_folder, case_name)+".gdx"
     Gdx.new(output_gdx_name).valid?
+  end
+
+  def log_says_normal_completion_for(case_name)
+    log_file_name = "#{case_name}.log"
+    if File.exist?(log_file_name)
+      log.info "Found log file for #{case_name}"
+      log_file = IO.readlines(log_file_name).join
+      status = log_file[/Status:(.*)/i,1]
+      if status
+      	log.info "Log file for #{case_name} reports status of: #{status}"
+	return status.strip == "Normal completion"
+      else
+	log.warn "No status found in #{log_file_name}"
+	return false
+      end
+    else
+      log.warn "Not found log file #{log_file_name}"
+      return false
+    end
   end
 
   def run_cases
@@ -189,10 +212,10 @@ class BatchRun
 	    cases_complete += 1
 	  else
 	    cases_skipped += 1
-            log.info "Found existing gdx file for #{case_name}"
+            log.info "Skipping #{case_name}"
           end
     	  
-          log.info "#{cases_complete} cases completed in #{Time.now-start_time} seconds, #{cases_skipped} skipped, with #{cases_to_run.size} left to go"
+          log.info "#{cases_complete} cases completed in #{humanise_duration(Time.now-start_time)}, #{cases_skipped} skipped, with #{cases_to_run.size} left to go. #{forecast(cases_complete, Time.now-start_time, cases_to_run.size)}"
 
 	  rescue Exception => e
             raise e if e.is_a?(ThreadError)
@@ -210,6 +233,30 @@ class BatchRun
     end
   end
 
+  def humanise_duration(seconds)
+    if seconds < 1
+	    "no time"
+    elsif seconds < 90
+	    "#{seconds.round} seconds"
+    elsif seconds < (60*90)
+	    "#{(seconds/60).round} minutes"
+    elsif seconds < (60*60*48)
+	    "#{(seconds/(60*60)).round} hours"
+    else
+	    "#{(seconds/(60*60*24)).round} days"
+    end
+  end
+
+  def forecast(cases_complete, time_taken, cases_to_go)
+	  if cases_complete < number_of_threads
+		  return "Not enough data to forecase completion time"
+	  else
+		  time_per_case = (cases_complete / time_taken)
+		  time_to_go = cases_to_go / time_per_case
+		  return "Completing cases at a rate of one per #{humanise_duration(time_per_case)} with about #{humanise_duration(time_to_go)} left to go."
+	  end
+  end
+	
   def should_run?(case_name)
     return true unless settings.do_not_recalculate_if_gdx_exists
     return false if gdx_ok?(case_name)
@@ -231,9 +278,21 @@ class BatchRun
     threads = Array.new(number_of_threads).map do
       Thread.new do
         loop do
+		begin
           case_name = cases_to_run.pop(true) # True means don't block
           gdx_name = File.join(gdx_save_folder, "#{case_name}.gdx")
-          run_shell_command_to_extract_results(gdx_name) if Gdx.new(gdx_name).valid? 
+ 	  if gdx_ok?(case_name) 
+          	run_shell_command_to_extract_results(gdx_name)
+	  else
+            log.info "Couldn't find gdx and report of normal completion for #{case_name}"
+	  end
+	  rescue Exception => e
+            raise e if e.is_a?(ThreadError)
+	    log.error "Exception: "+e.message
+	    e.backtrace.each do |line|
+		    log.error line.to_s
+	    end
+	  end
        end
       end
     end
