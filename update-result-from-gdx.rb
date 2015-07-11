@@ -14,6 +14,9 @@ end.parse!
 settings.log = Logger.new(STDOUT)
 settings.results_folder = ARGV[0]
 
+extract_results.create_results_folder_if_doesnt_exist
+extract_results.copy_across_html_if_no_index_html
+
 ARGV[1..-1].each do |gdx_file|
   extract_results.write_results(gdx_file)
 end
