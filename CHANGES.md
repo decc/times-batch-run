@@ -1,6 +1,7 @@
 #2015-07-10
 
 * Changed the way output is logged: Optimisation results now appear in a log file for each case.
+* Now does not overwrite html when creating results
 
 #2015-07-09
 

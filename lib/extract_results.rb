@@ -20,14 +20,6 @@ class ExtractResults
   end
 
   def write_results(gdx_file_name)
-    unless File.exist?(settings.results_folder)
-      log.info "Creating a results folder: #{File.expand_path(settings.results_folder)}"
-      Pathname.new(settings.results_folder).mkpath
-    end
-
-    log.info "Copying accross html"
-    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),"results-template",'*')),settings.results_folder)
-
     log.info "Writing results for #{gdx_file_name}"
 
     gdx = Gdx.new(gdx_file_name)
@@ -58,6 +50,19 @@ class ExtractResults
 
     log.info "Creating the index for #{gdx_file_name}"
     write_index_txt
+  end
+
+  def create_results_folder_if_doesnt_exist
+    return false if File.exist?(settings.results_folder)
+    log.info "Creating a results folder: #{File.expand_path(settings.results_folder)}"
+    Pathname.new(settings.results_folder).mkpath
+    true
+  end
+
+  def copy_across_html_if_no_index_html
+    return false if File.exist?(File.join(settings.results_folder, 'index.html'))
+    log.info "Copying accross html"
+    FileUtils.cp_r(Dir.glob(File.join(File.dirname(__FILE__),"results-template",'*')),settings.results_folder)
   end
 
   def extract_and_write_result(name, gdx, extractor, filename)
