@@ -36,6 +36,7 @@ class RunOptimisation
     `gams #{case_name}.run IDIR=..\\#{settings.times_source_folder} GDX=#{output_gdx_name.gsub('/','\\')} LO=2`
 
     if Gdx.new(output_gdx_name+".gdx").valid?
+      log.info "Putting #{case_name} into VEDA"
       `GDX2VEDA #{output_gdx_name.gsub('/','\\')} #{times_2_veda} #{case_name} > #{case_name}`
       return output_gdx_name+".gdx"
     else
