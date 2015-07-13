@@ -60,6 +60,7 @@ function reformat_data() {
       series.value.push({x:year_for_data, y: value});
     });
     series.total = total;
+    series.absolute_total = Math.abs(total);
     formatted_data.set(series_name, series);
   });
 }
@@ -76,6 +77,7 @@ function aggregate_into(series_name, series) {
   var other = existing_data_for(series_name);
   var i;
   other.total = other.total + series.total;
+  other.absolute_total = other.absolute_total + series.absolute_total;
   for(i=0; i<series.value.length; i++) {
     other.value[i].y = other.value[i].y + series.value[i].y;
   }
@@ -88,7 +90,9 @@ function existing_data_for(series_name) {
     var new_series = {
       key: series_name,
       value: year_for_data.map(function(year) { return { x: year, y: 0 }; }),
-      total: 0
+      total: 0,
+      absolute_total: 0
+      
     };
     aggregated_data.set(series_name, new_series);
     return new_series;
@@ -128,10 +132,15 @@ function draw() {
     .unit(y_label);
 
   d3.select('#chart')
-    .datum(aggregated_data)
+    .datum(sorted_series(aggregated_data.entries()))
     .call(chart);
-
 }
+
+function sorted_series(unsorted_data) {
+  return unsorted_data.sort(function(a,b) { 
+    return d3.descending(a.value.absolute_total, b.value.absolute_total); 
+  });
+};
 
 function draw_links() {
   var link_years = [2010,2020,2030,2040];

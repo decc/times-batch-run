@@ -126,7 +126,10 @@ window.timeSeriesStackedAreaChart = function() {
           negative_series = [];
           total_series = [];
           // Loop through each series in turn
-          data.forEach(function(series_name, series) {
+          data.forEach(function(entry) {
+            series_name = entry.key;
+            series = entry.value;
+              //function(series_name, series) {
 
             // First we check if the label matches the total_label regular
             // expression defined above (default is to test whether the 
