@@ -3,60 +3,147 @@
 <meta charset='utf-8'>
 <script src='javascript/d3.min.js'></script>
 <body>
-<h1>Comparing <span class='a'>A</span> with <span class='b'>B</a></h1>
+<h1>Comparing <span class='case_name_a'>A</span> with <span class='case_name_b'>B</a></h1>
+
+<h2>Charts</h2>
 <ul>
-  <li>Compare <a id='compare_build_rates' >build rates</a></li>
-  <li>Compare <a id='compare_cost_npv' href=''>Net Present Value of costs</a> (in <a id='detailed_compare_cost_npv'>detail</a>)</li>
-  <li>Compare <a id='compare_cost_2025' href=''>costs in 2025</a> (in <a id='detailed_compare_cost_2025'>detail</a>)</li>
-  <li>Compare <a id='compare_cost_2030' href=''>costs in 2030</a> (in <a id='detailed_compare_cost_2030'>detail</a>)</li>
-  <li>Compare <a id='compare_cost_2050' href=''>costs in 2050</a> (in <a id='detailed_compare_cost_2050'>detail</a>)</li>
-  <li>Compare greenhouse gas <a id='compare_emission_2025' href=''>emissions in 2025</a> (in <a id='detailed_compare_emission_2025'>detail</a>)</li>
-  <li>Compare greenhouse gas <a id='compare_emission_2030' href=''>emissions in 2030</a> (in <a id='detailed_compare_emission_2030'>detail</a>)</li>
-  <li>Compare greenhouse gas <a id='compare_emission_2050' href=''>emissions in 2050</a> (in <a id='detailed_compare_emission_2050'>detail</a>)</li>
-  <li>Compare <a id='compare_electricity_2025' href=''>electricity generation in 2025</a></li>
-  <li>Compare <a id='compare_electricity_2030' href=''>electricity generation in 2030</a></li>
-  <li>Compare <a id='compare_electricity_2050' href=''>electricity generation in 2050</a></li>
-  <li>Compare <a id='compare_transport_2025' href=''>transport in 2025</a></li>
-  <li>Compare <a id='compare_transport_2030' href=''>transport in 2030</a></li>
-  <li>Compare <a id='compare_transport_2050' href=''>transport in 2050</a></li>
-  <li>Compare <a id='compare_heating_2025' href=''>heating in 2025</a></li>
-  <li>Compare <a id='compare_heating_2030' href=''>heating in 2030</a></li>
-  <li>Compare <a id='compare_heating_2050' href=''>heating in 2050</a></li>
+  <li><a id='compare_build_rates'>Compare build rates</a></li>
+
+  <li>Compare costs: 
+    <a id='compare_cost_2025' href=''>2025</a> (<a id='detailed_compare_cost_2025'>detailed</a>),
+    <a id='compare_cost_2030' href=''>2030</a> (<a id='detailed_compare_cost_2030'>detailed</a>),
+    <a id='compare_cost_2050' href=''>2050</a> (<a id='detailed_compare_cost_2050'>detailed</a>)
+  </li>
+
+  <li>Compare greenhouse gases: 
+    <a id='compare_emissions_2025' href=''>2025</a> (<a id='detailed_compare_emissions_2025'>detailed</a>),
+    <a id='compare_emissions_2030' href=''>2030</a> (<a id='detailed_compare_emissions_2030'>detailed</a>),
+    <a id='compare_emissions_2050' href=''>2050</a> (<a id='detailed_compare_emissions_2050'>detailed</a>)
+  </li>
+
+  <li>Compare electricity generation:
+    <a id='compare_electricity_2025' href=''>2025</a>,
+    <a id='compare_electricity_2030' href=''>2030</a>,
+    <a id='compare_electricity_2050' href=''>2050</a>
+  </li>
+
+  <li>Compare road transport mileage:
+    <a id='compare_transport_2025' href=''>2025</a>,
+    <a id='compare_transport_2030' href=''>2030</a>,
+    <a id='compare_transport_2050' href=''>2050</a>
+  </li>
+
+  <li>Compare residential and services heating:
+    <a id='compare_heating_2025' href=''>2025</a>,
+    <a id='compare_heating_2030' href=''>2030</a>,
+    <a id='compare_heating_2050' href=''>2050</a>
+  </li>
 </ul>
 
+<h2>What ifs that are used in these scenarios</h2>
+
+<table id='whatifs'>
+</table>
 <script>
-d = window.location.hash.slice(1).split(',');
-d3.selectAll(".a").text(d[0]);
-d3.selectAll(".b").text(d[1]);
+var list_of_case_names = window.location.hash.slice(1).split(',');
+var case_name_a = list_of_case_names[0];
+var case_name_b = list_of_case_names[1];
 
-d3.select("#compare_build_rates").attr("href", "build-rates.html#"+d[0]+","+d[1]);
-d3.select("#compare_cost_npv").attr("href", "sectoral-costs.html#"+d[0]+","+d[1]+",npv,npv");
-d3.select("#compare_cost_2025").attr("href", "sectoral-costs.html#"+d[0]+","+d[1]+",2025,2025");
-d3.select("#compare_cost_2030").attr("href", "sectoral-costs.html#"+d[0]+","+d[1]+",2030,2030");
-d3.select("#compare_cost_2050").attr("href", "sectoral-costs.html#"+d[0]+","+d[1]+",2050,2050");
-d3.select("#detailed_compare_cost_npv").attr("href",  "detailed-costs.html#"+d[0]+","+d[1]+",npv,npv");
-d3.select("#detailed_compare_cost_2025").attr("href", "detailed-costs.html#"+d[0]+","+d[1]+",2025,2025");
-d3.select("#detailed_compare_cost_2030").attr("href", "detailed-costs.html#"+d[0]+","+d[1]+",2030,2030");
-d3.select("#detailed_compare_cost_2050").attr("href", "detailed-costs.html#"+d[0]+","+d[1]+",2050,2050");
-d3.select("#compare_emission_2025").attr("href", "sectoral-emissions.html#"+d[0]+","+d[1]+",2025,2025");
-d3.select("#compare_emission_2030").attr("href", "sectoral-emissions.html#"+d[0]+","+d[1]+",2030,2030");
-d3.select("#compare_emission_2050").attr("href", "sectoral-emissions.html#"+d[0]+","+d[1]+",2050,2050");
-d3.select("#detailed_compare_emission_2025").attr("href", "detailed-emissions.html#"+d[0]+","+d[1]+",2025,2025");
-d3.select("#detailed_compare_emission_2030").attr("href", "detailed-emissions.html#"+d[0]+","+d[1]+",2030,2030");
-d3.select("#detailed_compare_emission_2050").attr("href", "detailed-emissions.html#"+d[0]+","+d[1]+",2050,2050");
+var case_data_a = undefined;
+var case_data_b = undefined;
 
-d3.select("#compare_electricity_2025").attr("href", "detailed-electricity.html#"+d[0]+","+d[1]+",2025,2025");
-d3.select("#compare_electricity_2030").attr("href", "detailed-electricity.html#"+d[0]+","+d[1]+",2030,2030");
-d3.select("#compare_electricity_2050").attr("href", "detailed-electricity.html#"+d[0]+","+d[1]+",2050,2050");
+var names_for_scenarios = d3.map();
+
+write_case_names_onscreen();
+setup_links_to_charts();
+load_cases_and_display_scenarios();
+
+function write_case_names_onscreen() {
+  d3.selectAll(".case_name_a").text(case_name_a);
+  d3.selectAll(".case_name_b").text(case_name_b);
+}
+
+function setup_links_to_charts() {
+  d3.select("#compare_build_rates").attr("href", "build-rates.html#"+case_name_a+","+case_name_b);
+  d3.select("#compare_cost_npv").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",npv,npv");
+  d3.select("#compare_cost_2025").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",2025,2025");
+  d3.select("#compare_cost_2030").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",2030,2030");
+  d3.select("#compare_cost_2050").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",2050,2050");
+  d3.select("#detailed_compare_cost_2025").attr("href", "detailed-costs.html#"+case_name_a+","+case_name_b+",2025,2025");
+  d3.select("#detailed_compare_cost_2030").attr("href", "detailed-costs.html#"+case_name_a+","+case_name_b+",2030,2030");
+  d3.select("#detailed_compare_cost_2050").attr("href", "detailed-costs.html#"+case_name_a+","+case_name_b+",2050,2050");
+  d3.select("#compare_emissions_2025").attr("href", "sectoral-emissions.html#"+case_name_a+","+case_name_b+",2025,2025");
+  d3.select("#compare_emissions_2030").attr("href", "sectoral-emissions.html#"+case_name_a+","+case_name_b+",2030,2030");
+  d3.select("#compare_emissions_2050").attr("href", "sectoral-emissions.html#"+case_name_a+","+case_name_b+",2050,2050");
+  d3.select("#detailed_compare_emissions_2025").attr("href", "detailed-emissions.html#"+case_name_a+","+case_name_b+",2025,2025");
+  d3.select("#detailed_compare_emissions_2030").attr("href", "detailed-emissions.html#"+case_name_a+","+case_name_b+",2030,2030");
+  d3.select("#detailed_compare_emissions_2050").attr("href", "detailed-emissions.html#"+case_name_a+","+case_name_b+",2050,2050");
+  d3.select("#compare_electricity_2025").attr("href", "detailed-electricity.html#"+case_name_a+","+case_name_b+",2025,2025");
+  d3.select("#compare_electricity_2030").attr("href", "detailed-electricity.html#"+case_name_a+","+case_name_b+",2030,2030");
+  d3.select("#compare_electricity_2050").attr("href", "detailed-electricity.html#"+case_name_a+","+case_name_b+",2050,2050");
+  d3.select("#compare_transport_2025").attr("href", "detailed-transport.html#"+case_name_a+","+case_name_b+",2025,2025");
+  d3.select("#compare_transport_2030").attr("href", "detailed-transport.html#"+case_name_a+","+case_name_b+",2030,2030");
+  d3.select("#compare_transport_2050").attr("href", "detailed-transport.html#"+case_name_a+","+case_name_b+",2050,2050");
+  d3.select("#compare_heating_2025").attr("href", "detailed-heating.html#"+case_name_a+","+case_name_b+",2025,2025");
+  d3.select("#compare_heating_2030").attr("href", "detailed-heating.html#"+case_name_a+","+case_name_b+",2030,2030");
+  d3.select("#compare_heating_2050").attr("href", "detailed-heating.html#"+case_name_a+","+case_name_b+",2050,2050");
+}
+
+function load_cases_and_display_scenarios() {
+  load_names_for_scenarios();
+}
+
+function load_case(case_name, case_loaded_function) {
+  d3.json(""+case_name+"/costs-and-emissions-overview.json", case_loaded_function);
+}
 
 
-d3.select("#compare_transport_2025").attr("href", "detailed-transport.html#"+d[0]+","+d[1]+",2025,2025");
-d3.select("#compare_transport_2030").attr("href", "detailed-transport.html#"+d[0]+","+d[1]+",2030,2030");
-d3.select("#compare_transport_2050").attr("href", "detailed-transport.html#"+d[0]+","+d[1]+",2050,2050");
+function case_a_loaded(data) {
+  case_data_a = data;
+  show_scenarios();
+}
 
-d3.select("#compare_heating_2025").attr("href", "detailed-heating.html#"+d[0]+","+d[1]+",2025,2025");
-d3.select("#compare_heating_2030").attr("href", "detailed-heating.html#"+d[0]+","+d[1]+",2030,2030");
-d3.select("#compare_heating_2050").attr("href", "detailed-heating.html#"+d[0]+","+d[1]+",2050,2050");
+function case_b_loaded(data) {
+  case_data_b = data;
+  show_scenarios();
+}
+
+function show_scenarios() {
+  if(case_data_a != undefined && case_data_b != undefined) {
+
+    var scenarios = case_data_a.scenarios.map(function(scenario_a, i) {
+        return [scenario_a, case_data_b.scenarios[i]];
+        });
+
+    var rows = d3.select("#whatifs").selectAll("tr").data(scenarios);
+
+    rows.enter().append("tr");
+
+    rows.exit().remove("tr");
+
+    var cells = rows.selectAll("td").data(Object);
+
+    cells.enter().append("td");
+
+    cells.exit().remove("td");
+
+    cells.text(function(d) { return name_for_scenario(d); });
+  };
+}
+
+function load_names_for_scenarios() {
+  d3.tsv("scenario_names.tsv").get(function(error, rows) {
+      rows.forEach(function(row) {
+        names_for_scenarios.set(row['Code'], row['Name']);
+        });
+      load_case(case_name_a, case_a_loaded);
+      load_case(case_name_b, case_b_loaded);
+      });
+}
+
+function name_for_scenario(code) {
+  return names_for_scenarios.get(code) || code;
+};
 
 </script>
 </body>

@@ -1,3 +1,7 @@
+#2015-07-13
+
+* case.html and comparison.html now show the scenarios used in a case
+
 #2015-07-10
 
 * Changed the way output is logged: Optimisation results now appear in a log file for each case.
