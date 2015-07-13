@@ -29,11 +29,10 @@ table.filter_table {
 }
 
 table.filter_on td {
-  opacity: 0.1;
 }
 
 table.filter_table td {
-  opacity: 0.1;
+  color: grey;
 }
 
 tr.scenario {
