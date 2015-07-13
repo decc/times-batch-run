@@ -42,6 +42,59 @@ class Gdx
     GDXCache[gdx_filename][symbol] = result
   end
 
+  def marginals(symbol)
+    direct(symbol).select { |r| r[:type] =~ /m/i }
+  end
+
+  def raw(symbol)
+    `gdxdump #{gdx_filename} Symb=#{symbol}`
+  end
+
+  def direct(symbol)
+    raw_version = raw(symbol)
+    return [] if raw_version =~ /^Symbol not found/i
+    headers = extract_headers(raw_version)
+    extract_rows(raw_version).map do |row|
+      h = {}
+      row[0..-2].each.with_index do |set, i|
+        h[headers[i]] = set
+      end
+      h[:val] = row.last
+      h
+    end
+  end
+
+  def extract_headers(raw_gams)
+    list_of_sets = raw_gams[/\((.*?)\)/,1]
+    sets = list_of_sets.split(',').map(&:downcase).map(&:to_sym).push(:type)
+  end
+
+  def extract_rows(raw_gams)
+    row_text = raw_gams[/\/(.*?)\//m,1]
+    raw_rows = row_text.split(",").map(&:strip)
+    rows = raw_rows.map do |row|
+      sets, value = *row.split(" ")
+      sets = *sets.split(".")
+      type = sets.last =~ /^(lo|up|l|m)$/i ? sets.pop : "l"
+      sets = sets.map { |s| s[/'(.*?)'/,1]}
+      sets = sets.map { |s| try_to_convert_to_number(s) }
+      value = 0 if value =~ /eps/i
+      value = value.to_f
+      sets.push(type).push(value)
+    end
+  end
+
+  def try_to_convert_to_number(text)
+    case text
+    when /^\d+$/
+      text.to_i
+    when /^\d+\.\d+/
+      text.to_f
+    else
+      text
+    end
+  end
+
   def scenarios
     symbol(:Scenarios).map { |hash| hash[:dim1] }
   end

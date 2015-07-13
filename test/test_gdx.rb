@@ -46,6 +46,21 @@ class TestGdx < MiniTest::Test
     assert_equal [], @gdx.symbol(:SYMBOL_THAT_DOES_NOT_EXIST)
   end
 
+  def test_direct_parsing_approach
+    expected = {:r=>"UK", :t=>2010, :c=>"GHGTOT", :ts=>"ANNUAL", :type => 'l', :val=>661221.388870854}
+    
+    assert_equal expected, @gdx.direct(:AGG_OUT).first
+  end
+
+  def test_marginals
+    expected = {:r=>"UK", :allyear=>2010, :c=>"BOG-LF", :s=>"ANNUAL", :type=>"M", :val=>0.00131}
+    assert_equal expected, @gdx.marginals(:EQE_Combal).first
+  end
+
+  def test_direct_parsing_approach_missing_symbol
+    assert_equal [], @gdx.direct(:SYMBOL_THAT_DOES_NOT_EXIST)
+  end
+
   def test_new_capacity_quantity
     expected =  {
       :r=>"UK", # Region (always UK)
