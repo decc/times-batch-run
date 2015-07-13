@@ -2,6 +2,7 @@ var category_file_name = "electricity_to_low_or_high_carbon.tsv";
 var data_file_name = "electricity-flows.json";
 var details_file_name = "detailed-electricity.html";
 var y_max = 1000;
+var y_min = 0;
 var y_label = "TWh/yr";
 var category_for_name;
 var code_lookup = code_to_name_lookup();
@@ -59,6 +60,7 @@ function reformat_data() {
       series.value.push({x:year_for_data, y: value});
     });
     series.total = total;
+    series.absolute_total = Math.abs(total);
     formatted_data.set(series_name, series);
   });
 }
@@ -69,16 +71,36 @@ function aggregate_data() {
     var category = category_for_name(series_name);
     aggregate_into(category, series);
   });
+  add_total_line();
+  aggregated_data.forEach(update_totals);
 };
 
 function aggregate_into(series_name, series) {
   var other = existing_data_for(series_name);
   var i;
-  other.total = other.total + series.total;
   for(i=0; i<series.value.length; i++) {
     other.value[i].y = other.value[i].y + series.value[i].y;
   }
 }
+
+function update_totals(series_name, series) {
+  var i;
+  var total = 0;
+  var absolute_total = 0;
+
+  for(i=0; i<series.value.length; i++) {
+    total += series.value[i].y;
+    absolute_total += Math.abs(series.value[i].y);
+  }
+  series.total = total;
+  series.absolute_total = absolute_total;
+};
+
+function add_total_line() {
+  aggregated_data.forEach(function(series_name, series) {
+    aggregate_into("Total", series);
+  });
+};
 
 function existing_data_for(series_name) {
   if(aggregated_data.has(series_name)) {
@@ -87,7 +109,8 @@ function existing_data_for(series_name) {
     var new_series = {
       key: series_name,
       value: year_for_data.map(function(year) { return { x: year, y: 0 }; }),
-      total: 0
+      total: 0,
+      absolute_total: 0
     };
     aggregated_data.set(series_name, new_series);
     return new_series;
@@ -123,13 +146,19 @@ function name_to_category_lookup() {
 function draw() {
   var chart = timeSeriesStackedAreaChart()
     .max_value(y_max)
+    .min_value(y_min)
     .unit(y_label);
 
   d3.select('#chart')
-    .datum(aggregated_data)
+    .datum(sorted_series(aggregated_data.entries()))
     .call(chart);
-
 }
+
+function sorted_series(unsorted_data) {
+  return unsorted_data.sort(function(a,b) { 
+    return d3.descending(a.value.absolute_total, b.value.absolute_total); 
+  });
+};
 
 function draw_links() {
   var link_years = [2010,2020,2030,2040];

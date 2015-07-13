@@ -95,6 +95,32 @@ window.timeSeriesStackedAreaChart = function() {
     return name.replace(name_as_css_regexp, '');
   }
 
+  function positive_part_of(series) {
+    series = shallow_copy(series);
+    series.value = series.value.map(function(value) {
+      return { x: value.x, y: (value.y > 0 ? value.y : 0) }
+    });
+    series.id = series.id + "positive";
+    return series;
+  };
+
+  function negative_part_of(series) {
+    series = shallow_copy(series);
+    series.value = series.value.map(function(value) {
+      return { x: value.x, y: (value.y < 0 ? value.y : 0) }
+    });
+    series.id = series.id + "negative";
+    return series;
+  };
+
+  function shallow_copy(series) {
+    var new_series = {};
+    d3.map(series).forEach(function(key, value) {
+      new_series[key] = value;
+    });
+    return new_series;
+  };
+
   // This is the main function of timeSeriesStackedAreaChart()
   chart = function(selection) {
 
@@ -126,26 +152,35 @@ window.timeSeriesStackedAreaChart = function() {
           negative_series = [];
           total_series = [];
           // Loop through each series in turn
-          data.forEach(function(series_name, series) {
+          data.forEach(function(entry) {
+            series = entry.value;
+
+            series.id = series.key;
+            series.name_as_css = name_as_css(series.key);
+            series.original_value = series.value;
 
             // First we check if the label matches the total_label regular
             // expression defined above (default is to test whether the 
             // label starts with 'total'
             if (total_label.test(series.key)) {
               series.path = line;
-              series.name_as_css = name_as_css(series.key);
               series.css = seriesClass(series, function() { return "total" });
               total_series.push(series);
             // If not a total, then put it into either the positive_series
             // or negative_series arrays
             } else {
               series.path = area;
-              series.name_as_css = name_as_css(series.key);
               series.css = seriesClass(series, automaticallyAsignCSS);
-              if (total >= 0) {
-                positive_series.push(series);
+              if(series.absolute_total != Math.abs(series.total)) {
+                // This means the series changes sign half way
+                positive_series.push(positive_part_of(series));
+                negative_series.push(negative_part_of(series));
               } else {
-                negative_series.push(series);
+                if (series.total >= 0) {
+                  positive_series.push(series);
+                } else {
+                  negative_series.push(series);
+                }
               }
             }
           }); // Finish looping through the series
@@ -204,7 +239,7 @@ window.timeSeriesStackedAreaChart = function() {
             .attr("width", width).attr("height", height); // Just in case the width or height is changed when the browser resizes
 
           areas = g.select('g.series').selectAll("path")
-            .data(Object, function(d) { return d.key; }); // Select all the existing series that have been drawn, matching on the series name in case the order changes
+            .data(Object, function(d) { return d.id; }); // Select all the existing series that have been drawn, matching on the series name in case the order changes
 
           areas.enter() // When we have new series, add a new path
             .append("path")
@@ -399,7 +434,7 @@ window.timeSeriesStackedAreaChart = function() {
           dataTable = function(series) {
             var seriesclass = series.css;
             var grid;
-            labels = series.value; // These are the values to show
+            labels = series.original_value; // These are the values to show
             grid = g.selectAll(".seriesValue") // Select any that we have already drawn
               .data(labels);
 

@@ -71,17 +71,36 @@ function aggregate_data() {
     var category = category_for_name(series_name);
     aggregate_into(category, series);
   });
+  add_total_line();
+  aggregated_data.forEach(update_totals);
 };
 
 function aggregate_into(series_name, series) {
   var other = existing_data_for(series_name);
   var i;
-  other.total = other.total + series.total;
-  other.absolute_total = other.absolute_total + series.absolute_total;
   for(i=0; i<series.value.length; i++) {
     other.value[i].y = other.value[i].y + series.value[i].y;
   }
 }
+
+function update_totals(series_name, series) {
+  var i;
+  var total = 0;
+  var absolute_total = 0;
+
+  for(i=0; i<series.value.length; i++) {
+    total += series.value[i].y;
+    absolute_total += Math.abs(series.value[i].y);
+  }
+  series.total = total;
+  series.absolute_total = absolute_total;
+};
+
+function add_total_line() {
+  aggregated_data.forEach(function(series_name, series) {
+    aggregate_into("Total", series);
+  });
+};
 
 function existing_data_for(series_name) {
   if(aggregated_data.has(series_name)) {
@@ -92,7 +111,6 @@ function existing_data_for(series_name) {
       value: year_for_data.map(function(year) { return { x: year, y: 0 }; }),
       total: 0,
       absolute_total: 0
-      
     };
     aggregated_data.set(series_name, new_series);
     return new_series;
