@@ -249,7 +249,7 @@ class BatchRun
 
   def forecast(cases_complete, time_taken, cases_to_go)
     if cases_complete < number_of_threads
-      return "Not enough data to forecase completion time"
+      return "Not enough data to forecast completion time"
     else
       time_per_case = (time_taken.to_f / cases_complete)
       time_to_go = cases_to_go / time_per_case
