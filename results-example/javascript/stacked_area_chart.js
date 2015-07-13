@@ -142,7 +142,7 @@ window.timeSeriesStackedAreaChart = function() {
               series.path = area;
               series.name_as_css = name_as_css(series.key);
               series.css = seriesClass(series, automaticallyAsignCSS);
-              if (total >= 0) {
+              if (series.total >= 0) {
                 positive_series.push(series);
               } else {
                 negative_series.push(series);
