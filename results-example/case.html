@@ -43,6 +43,10 @@
     <a id='compare_heating_2030' href=''>2015-2030</a>,
     <a id='compare_heating_2050' href=''>2015-2050</a>
   </li>
+
+  <li>Carbon prices
+    <a id='carbon_over_time' href=''>over time</a>. 
+  </li>
 </ul>
 
 <h2>What ifs that are used in this scenario</h2>
@@ -93,6 +97,7 @@ function setup_links_to_charts() {
   d3.select("#electricity_over_time").attr("href", "electricity-over-time.html#"+case_name);
   d3.select("#transport_over_time").attr("href", "transport-over-time.html#"+case_name);
   d3.select("#heating_over_time").attr("href", "heating-over-time.html#"+case_name);
+  d3.select("#carbon_over_time").attr("href", "carbon-prices.html#"+case_name);
 }
 
 function load_case_and_display_scenarios() {

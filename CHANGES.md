@@ -1,6 +1,7 @@
 #2015-07-13
 
 * case.html and comparison.html now show the scenarios used in a case
+* Added a very first attempt at extracting carbon prices (doesn't work very well)
 
 #2015-07-10
 
