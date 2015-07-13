@@ -76,11 +76,24 @@ div#controls {
   font-size: larger;
 }
 
+td.price {
+  text-align: right;
+  width: 5em;
+}
+
 </style>
 <body>
 <h1>Carbon prices in scenario <span class='case_name'>A</a></h1>
 <div id='chart'>
 </div>
+<h1>Carbon prices in £/tCO2e</h1>
+<table>
+  <thead>
+    <tr><td>Commodity</td><td class='price'>2010</td><td class='price'>2015</td><td class='price'>2020</td><td class='price'>2025</td><td class='price'>2030</td><td class='price'>2035</td><td class='price'>2040</td><td class='price'>2045</td><td class='price'>2050</td></tr>
+  </thead>
+  <tbody id='prices'>
+  </tbody>
+</table>
 <script>
 
 
@@ -277,7 +290,7 @@ var case_name = undefined;
 
 var data = [];
 
-function draw() {
+function drawChart() {
   d3.selectAll(".case_name").text(case_name);
   
   d3.select("#chart")
@@ -285,9 +298,37 @@ function draw() {
     .call(chart);
 };
 
+var price_format = d3.format(",.0f");
+
+function drawTable() {
+
+  var rows = d3.select("tbody#prices").selectAll("tr").data(data);
+
+  rows.enter().append("tr");
+
+  rows.exit().remove();
+
+  var names = rows.selectAll("td.name").data(function(d) { return [d.name]; });
+
+  names.enter().append("td").attr("class", "name");
+
+  names.exit().remove();
+
+  names.text(Object);
+
+  var prices = rows.selectAll("td.price").data(function(d) { return d.prices; });
+
+  prices.enter().append("td").attr("class", "price");
+
+  prices.exit().remove();
+
+  prices.text(function(d) { return price_format(d.value) });
+}
+
 function case_loaded(case_data) {
   data = reformat(case_data)
-  draw();
+  drawChart();
+  drawTable();
 }
 
 var years = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
