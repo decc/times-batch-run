@@ -81,3 +81,16 @@ ul#links {
   clear:both;
 }
 
+path.lowcarbon {
+  fill: black;
+}
+
+path.hybrid {
+  fill: #0d0081;
+}
+
+path.lowcarbon {
+  fill: blue;
+}
+
+

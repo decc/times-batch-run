@@ -11,6 +11,7 @@ var formatted_data;
 var aggregated_data;
 var case_name;
 var year_for_data = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
+var css_for_label = { "High carbon": "highcarbon", "Low carbon": "lowcarbon", "Hybrid": "hybrid" };
 
 var case_loaded = false;
 var code_lookup_loaded = false;
@@ -145,6 +146,7 @@ function name_to_category_lookup() {
 
 function draw() {
   var chart = timeSeriesStackedAreaChart()
+    .css_for_label(css_for_label)
     .max_value(y_max)
     .min_value(y_min)
     .unit(y_label);

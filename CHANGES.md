@@ -3,6 +3,7 @@
 * case.html and comparison.html now show the scenarios used in a case
 * Added a very first attempt at extracting carbon prices (doesn't work very well)
 * Over time charts have totals and correctly deal with positive and negative data
+* Standardised the colours for low/high carbon in the over time charts
 
 #2015-07-10
 
