@@ -2,6 +2,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
 <meta charset='utf-8'>
 <script src='javascript/d3.min.js'></script>
+<style>
+tr#different td {
+  font-weight: bold;
+}
+</style>
 <body>
 <h1>Comparing <span class='case_name_a'>A</span> with <span class='case_name_b'>B</a></h1>
 
@@ -42,7 +47,12 @@
 
 <h2>What ifs that are used in these scenarios</h2>
 
-<table id='whatifs'>
+<table>
+  <thead>
+    <tr><th><span class='case_name_a'>A</span></th><th><span class='case_name_b'>B</span></th></tr>
+  </thead>
+  <tbody id='whatifs'>
+  </tbody>
 </table>
 <script>
 var list_of_case_names = window.location.hash.slice(1).split(',');
@@ -120,6 +130,14 @@ function show_scenarios() {
     rows.enter().append("tr");
 
     rows.exit().remove("tr");
+
+    rows.attr("class", function(d) {
+        if(d[0] == d[1]) {
+          return "same";
+        } else {
+          return "different";
+        }
+    });
 
     var cells = rows.selectAll("td").data(Object);
 
