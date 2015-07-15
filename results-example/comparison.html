@@ -19,32 +19,37 @@ tr#different td {
     <a id='compare_cost_npv' href=''>NPV</a> (<a id='detailed_compare_cost_npv'>detailed</a>),
     <a id='compare_cost_2025' href=''>2025</a> (<a id='detailed_compare_cost_2025'>detailed</a>),
     <a id='compare_cost_2030' href=''>2030</a> (<a id='detailed_compare_cost_2030'>detailed</a>),
-    <a id='compare_cost_2050' href=''>2050</a> (<a id='detailed_compare_cost_2050'>detailed</a>)
+    <a id='compare_cost_2050' href=''>2050</a> (<a id='detailed_compare_cost_2050'>detailed</a>).
   </li>
 
   <li>Compare greenhouse gases: 
     <a id='compare_emissions_2025' href=''>2025</a> (<a id='detailed_compare_emissions_2025'>detailed</a>),
     <a id='compare_emissions_2030' href=''>2030</a> (<a id='detailed_compare_emissions_2030'>detailed</a>),
-    <a id='compare_emissions_2050' href=''>2050</a> (<a id='detailed_compare_emissions_2050'>detailed</a>)
+    <a id='compare_emissions_2050' href=''>2050</a> (<a id='detailed_compare_emissions_2050'>detailed</a>).
   </li>
 
   <li>Compare electricity generation:
     <a id='compare_electricity_2025' href=''>2025</a>,
     <a id='compare_electricity_2030' href=''>2030</a>,
-    <a id='compare_electricity_2050' href=''>2050</a>
+    <a id='compare_electricity_2050' href=''>2050</a>.
   </li>
 
   <li>Compare road transport mileage:
     <a id='compare_transport_2025' href=''>2025</a>,
     <a id='compare_transport_2030' href=''>2030</a>,
-    <a id='compare_transport_2050' href=''>2050</a>
+    <a id='compare_transport_2050' href=''>2050</a>.
   </li>
 
   <li>Compare residential and services heating:
     <a id='compare_heating_2025' href=''>2025</a>,
     <a id='compare_heating_2030' href=''>2030</a>,
-    <a id='compare_heating_2050' href=''>2050</a>
+    <a id='compare_heating_2050' href=''>2050</a>.
   </li>
+
+  <li>Compare carbon prices:
+    <a id='compare_carbonprices' href=''>over time</a>.
+  </li>
+
 </ul>
 
 <h2>What ifs that are used in these scenarios</h2>
@@ -81,6 +86,7 @@ function setup_links_to_charts() {
   d3.select("#compare_cost_2025").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",2025,2025");
   d3.select("#compare_cost_2030").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",2030,2030");
   d3.select("#compare_cost_2050").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",2050,2050");
+  d3.select("#detailed_compare_cost_npv").attr("href", "detailed-costs.html#"+case_name_a+","+case_name_b+",npv,npv");
   d3.select("#detailed_compare_cost_2025").attr("href", "detailed-costs.html#"+case_name_a+","+case_name_b+",2025,2025");
   d3.select("#detailed_compare_cost_2030").attr("href", "detailed-costs.html#"+case_name_a+","+case_name_b+",2030,2030");
   d3.select("#detailed_compare_cost_2050").attr("href", "detailed-costs.html#"+case_name_a+","+case_name_b+",2050,2050");
@@ -98,7 +104,7 @@ function setup_links_to_charts() {
   d3.select("#compare_transport_2050").attr("href", "detailed-transport.html#"+case_name_a+","+case_name_b+",2050,2050");
   d3.select("#compare_heating_2025").attr("href", "detailed-heating.html#"+case_name_a+","+case_name_b+",2025,2025");
   d3.select("#compare_heating_2030").attr("href", "detailed-heating.html#"+case_name_a+","+case_name_b+",2030,2030");
-  d3.select("#compare_heating_2050").attr("href", "detailed-heating.html#"+case_name_a+","+case_name_b+",2050,2050");
+  d3.select("#compare_carbonprices").attr("href", "carbon-prices-compared.html#"+case_name_a+","+case_name_b);
 }
 
 function load_cases_and_display_scenarios() {

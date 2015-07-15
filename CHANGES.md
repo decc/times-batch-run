@@ -2,6 +2,7 @@
 
 * Fixed a bug in the table in the cost-emissions scatter where it wasn't correctly removing rows
 * Can now display a message of the day
+* Can now compare carbon prices over time
 
 #2015-07-13
 
