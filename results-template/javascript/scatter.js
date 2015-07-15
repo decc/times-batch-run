@@ -463,7 +463,7 @@ function draw_case_table() {
 
   case_rows.exit().remove();
 
-  var new_case_row = case_rows.enter().append("tr");
+  var new_case_row = case_rows.enter().append("tr").attr("class", "case");
 
   new_case_row.append("td").attr("class", "name").append("a").attr("class", "name");
   new_case_row.append("td").append("a").attr("class", "cost");

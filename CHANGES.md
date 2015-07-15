@@ -1,3 +1,7 @@
+#2015-07-15
+
+* Fixed a bug in the table in the cost-emissions scatter where it wasn't correctly removing rows
+
 #2015-07-13
 
 * case.html and comparison.html now show the scenarios used in a case
