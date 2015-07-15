@@ -707,7 +707,7 @@ function go() {
   settings = window.location.hash.slice(1).split(',');
   list_of_cases = settings.slice(0,2);
   left_case_name = settings[0];
-  right_case_name = settings[0];
+  right_case_name = settings[1];
   left_period = settings[2];
   right_period = settings[3];
   load_left_case();
