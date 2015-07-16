@@ -1,3 +1,7 @@
+#2015-07-16
+
+* Sankey diagrams are here!
+
 #2015-07-15
 
 * Fixed a bug in the table in the cost-emissions scatter where it wasn't correctly removing rows
