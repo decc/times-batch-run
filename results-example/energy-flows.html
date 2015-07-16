@@ -2,8 +2,10 @@
 <html>
 <meta charset="utf-8">
 <style>
+#chart {
+  margin: 10px;
+}
 .node rect {
-  cursor: move;
   fill-opacity: .9;
   shape-rendering: crispEdges;
 }
@@ -29,17 +31,23 @@
   color: blue;
   cursor: pointer;
 }
+
+.selected {
+  color: black;
+  text-decoration: none;
+}
+
 </style>
 <body>
 <h1>Energy flows for <span class='case_name'></span> in <span class='year'></span></h1>
 <div id='controls'>Choose year: </div>
-<p id="chart">
+<div id="chart"></div>
 
 <script src="javascript/d3.min.js"></script>
 <script src="javascript/sankey.js"></script>
 <script>
 
-var margin = {top: 1, right: 1, bottom: 6, left: 1},
+var margin = {top: 5, right: 1, bottom: 6, left: 1},
     width = 2400 - margin.left - margin.right,
     height = (2400/Math.sqrt(2)) - margin.top - margin.bottom;
 
@@ -75,13 +83,15 @@ var data_index = 0;
 var data = undefined;
 var data_loaded_flag = false;
 
+var size_threshold_for_label = 10;
+
 var settings = window.location.hash.slice(1).split(",");
 case_name = settings[0];
-year = settings[1] || 2010;
+year = +settings[1] || 2010;
 
 d3.json(case_name+"/energy-flows.json", function(energy) { 
     data = energy; 
-    year_index = data.map(function(d) { return d.year; }).indexOf(year);
+    data_index = data.map(function(d) { return +d.year; }).indexOf(year);
     data_loaded_flag = true;
     setupControls(); 
     go(); 
@@ -104,8 +114,14 @@ function setupControls() {
 
   controls.text(Object);
 
+  controls.classed("selected", function(d) { return d == year; });
+
   controls.on("click", function(d,i) {
       data_index = i;
+      year = data[data_index].year;
+      d3.selectAll("a.selected").classed("selected",false);
+      d3.select(this).classed("selected",true);
+      window.location.hash = "#"+case_name+","+data[data_index].year;
       draw();
       });
 
@@ -113,13 +129,10 @@ function setupControls() {
 
 function draw() {
 
-  var year = data[data_index].year;
-
   var chosen_year_data = data[data_index].flows;
 
   d3.selectAll(".year").text(year);
   d3.selectAll(".case_name").text(case_name);
-
 
   sankey
       .nodes(chosen_year_data.nodes)
@@ -135,7 +148,9 @@ function draw() {
 
   links.transition()
       .attr("d", path)
-      .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+      .style("stroke-width", function(d) { return Math.max(1, d.dy); });
+
+  links
       .sort(function(a, b) { return b.dy - a.dy; });
 
   links.select("title")
@@ -154,6 +169,7 @@ function draw() {
   new_nodes.append("text")
       .attr("x", -6)
       .attr("transform", null)
+      .attr("text-anchor", "end")
       .attr("dy", ".35em");
 
   nodes.transition()
@@ -170,10 +186,13 @@ function draw() {
 
   nodes.select("text").transition()
       .attr("y", function(d) { return d.dy / 2; })
-      .text(function(d) { return code_lookup(d.name); })
     .filter(function(d) { return d.x < width / 2; })
       .attr("x", 6 + sankey.nodeWidth())
       .attr("text-anchor", "start");
+
+  nodes.select("text")
+    .filter(function(d) { return d.dy > size_threshold_for_label })
+      .text(function(d) { return code_lookup(d.name); })
 };
 
 function code_to_name_lookup() {
