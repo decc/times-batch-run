@@ -53,9 +53,10 @@ var svg = d3.select("#chart").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var node_group = svg.append("g").attr("id", "nodes");
 
 var link_group = svg.append("g").attr("id", "links");
+var node_group = svg.append("g").attr("id", "nodes");
+
 
 var sankey = d3.sankey()
     .nodeWidth(15)
@@ -63,10 +64,16 @@ var sankey = d3.sankey()
     .size([width, height]);
 
 var path = sankey.link();
-var data = undefined;
-var data_index = 0;
+
+var code_lookup = code_to_name_lookup();
+var code_to_name_lookup_loaded_flag = false;
+
 var case_name = undefined;
 var year = undefined;
+var data_index = 0;
+
+var data = undefined;
+var data_loaded_flag = false;
 
 var settings = window.location.hash.slice(1).split(",");
 case_name = settings[0];
@@ -75,9 +82,16 @@ year = settings[1] || 2010;
 d3.json(case_name+"/energy-flows.json", function(energy) { 
     data = energy; 
     year_index = data.map(function(d) { return d.year; }).indexOf(year);
+    data_loaded_flag = true;
     setupControls(); 
-    draw(); 
+    go(); 
 });
+
+function go() {
+  if(code_to_name_lookup_loaded_flag && data_loaded_flag) {
+    draw();
+  }
+}
 
 function setupControls() {
   var years = data.map(function(d) { return d.year; });
@@ -125,7 +139,7 @@ function draw() {
       .sort(function(a, b) { return b.dy - a.dy; });
 
   links.select("title")
-    .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + format(d.value); });
+    .text(function(d) { return code_lookup(d.source.name) + " → " + code_lookup(d.target.name) + "\n" + format(d.value); });
 
   var nodes = node_group.selectAll(".node")
     .data(chosen_year_data.nodes, function(d) { return d.name; });
@@ -152,21 +166,35 @@ function draw() {
       .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
 
   nodes.select("title")
-      .text(function(d) { return d.name + "\n" + format(d.value); });
+      .text(function(d) { return code_lookup(d.name) + "\n" + format(d.value); });
 
   nodes.select("text").transition()
       .attr("y", function(d) { return d.dy / 2; })
-      .text(function(d) { return d.name; })
+      .text(function(d) { return code_lookup(d.name); })
     .filter(function(d) { return d.x < width / 2; })
       .attr("x", 6 + sankey.nodeWidth())
       .attr("text-anchor", "start");
 };
 
-function animate() {
-  data_index += 1;
-  if(data_index >= data.length) { data_index = 0; }
-  draw();
+function code_to_name_lookup() {
+  var codes = d3.map();
+
+  d3.tsv("codes.tsv").get(function(error, rows) {
+    rows.forEach(function(row) {
+      codes.set(row['Code'], row['Short']);
+    });
+    code_to_name_lookup_loaded_flag = true;
+    go();
+  });
+
+  function lookup(code) {
+    var official_form = code.replace(/^(P|C)-/i, '');
+    return codes.get(official_form) || official_form;
+  };
+
+  return lookup;
 }
+
 
 
 </script>
