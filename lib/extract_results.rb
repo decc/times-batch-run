@@ -11,6 +11,7 @@ require_relative 'extract_electricity_flows'
 require_relative 'extract_transport_flows'
 require_relative 'extract_heating_flows'
 require_relative 'extract_carbon_prices'
+require_relative 'extract_energy_flows'
 
 class ExtractResults
 
@@ -51,6 +52,9 @@ class ExtractResults
 
     log.info "Creating carbon prices for #{gdx_file_name}"
     extract_and_write_result name, gdx, ExtractCarbonPrices.new, "carbon-prices.json"
+
+    log.info "Creating energy flows for #{gdx_file_name}"
+    extract_and_write_result name, gdx, ExtractEnergyFlows.new, "energy-flows.json"
 
     log.info "Creating the index for #{gdx_file_name}"
     write_index_txt

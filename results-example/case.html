@@ -48,6 +48,13 @@
   <li>Carbon prices
     <a id='carbon_over_time' href=''>over time</a>. 
   </li>
+
+  <li>Energy flows
+    <a id='energ_flows_2015' href=''>2015</a>,
+    <a id='energ_flows_2025' href=''>2025</a>,
+    <a id='energ_flows_2030' href=''>2030</a>,
+    <a id='energ_flows_2050' href=''>2050</a>. 
+  </li>
 </ul>
 
 <h2>What ifs that are used in this scenario</h2>
@@ -99,6 +106,10 @@ function setup_links_to_charts() {
   d3.select("#transport_over_time").attr("href", "transport-over-time.html#"+case_name);
   d3.select("#heating_over_time").attr("href", "heating-over-time.html#"+case_name);
   d3.select("#carbon_over_time").attr("href", "carbon-prices.html#"+case_name);
+  d3.select("#energ_flows_2015").attr("href", "energy-flows.html#"+case_name+",2015");
+  d3.select("#energ_flows_2025").attr("href", "energy-flows.html#"+case_name+",2025");
+  d3.select("#energ_flows_2030").attr("href", "energy-flows.html#"+case_name+",2030");
+  d3.select("#energ_flows_2050").attr("href", "energy-flows.html#"+case_name+",2050");
 }
 
 function load_case_and_display_scenarios() {

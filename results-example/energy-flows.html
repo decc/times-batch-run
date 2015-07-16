@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+.node rect {
+  cursor: move;
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+.node text {
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.link {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .2;
+}
+
+.link:hover {
+  stroke-opacity: .5;
+}
+
+.yearcontrol {
+  margin-right: 10px;
+  text-decoration: underline;
+  color: blue;
+  cursor: pointer;
+}
+</style>
+<body>
+<h1>Energy flows for <span class='case_name'></span> in <span class='year'></span></h1>
+<div id='controls'>Choose year: </div>
+<p id="chart">
+
+<script src="javascript/d3.min.js"></script>
+<script src="javascript/sankey.js"></script>
+<script>
+
+var margin = {top: 1, right: 1, bottom: 6, left: 1},
+    width = 2400 - margin.left - margin.right,
+    height = (2400/Math.sqrt(2)) - margin.top - margin.bottom;
+
+var formatNumber = d3.format(",.0f"),
+    format = function(d) { return formatNumber(d) + " TWh"; },
+    color = d3.scale.category20();
+
+var svg = d3.select("#chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var node_group = svg.append("g").attr("id", "nodes");
+
+var link_group = svg.append("g").attr("id", "links");
+
+var sankey = d3.sankey()
+    .nodeWidth(15)
+    .nodePadding(10)
+    .size([width, height]);
+
+var path = sankey.link();
+var data = undefined;
+var data_index = 0;
+var case_name = undefined;
+var year = undefined;
+
+var settings = window.location.hash.slice(1).split(",");
+case_name = settings[0];
+year = settings[1] || 2010;
+
+d3.json(case_name+"/energy-flows.json", function(energy) { 
+    data = energy; 
+    year_index = data.map(function(d) { return d.year; }).indexOf(year);
+    setupControls(); 
+    draw(); 
+});
+
+function setupControls() {
+  var years = data.map(function(d) { return d.year; });
+
+  var controls = d3.select("#controls").selectAll("a.yearcontrol").data(years);
+
+  controls.enter().append("a").attr("class", "yearcontrol");
+
+  controls.exit().remove();
+
+  controls.text(Object);
+
+  controls.on("click", function(d,i) {
+      data_index = i;
+      draw();
+      });
+
+}
+
+function draw() {
+
+  var year = data[data_index].year;
+
+  var chosen_year_data = data[data_index].flows;
+
+  d3.selectAll(".year").text(year);
+  d3.selectAll(".case_name").text(case_name);
+
+
+  sankey
+      .nodes(chosen_year_data.nodes)
+      .links(chosen_year_data.links)
+      .layout(40);
+
+  var links = link_group.selectAll(".link")
+    .data(chosen_year_data.links, function(d) { return d.source.name + "-" + d.target.name });
+
+  links.exit().remove();
+
+  links.enter().append("path").attr("class", "link").append("title");
+
+  links.transition()
+      .attr("d", path)
+      .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+      .sort(function(a, b) { return b.dy - a.dy; });
+
+  links.select("title")
+    .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + format(d.value); });
+
+  var nodes = node_group.selectAll(".node")
+    .data(chosen_year_data.nodes, function(d) { return d.name; });
+
+  nodes.exit().remove();
+
+  var new_nodes = nodes.enter().append("g")
+      .attr("class", "node");
+
+  new_nodes.append("rect").append("title");
+
+  new_nodes.append("text")
+      .attr("x", -6)
+      .attr("transform", null)
+      .attr("dy", ".35em");
+
+  nodes.transition()
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+
+  nodes.select("rect").transition()
+      .attr("height", function(d) { return d.dy; })
+      .attr("width", sankey.nodeWidth())
+      .style("fill", function(d) { return d.color = color(d.name.replace(/ .*/, "")); })
+      .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
+
+  nodes.select("title")
+      .text(function(d) { return d.name + "\n" + format(d.value); });
+
+  nodes.select("text").transition()
+      .attr("y", function(d) { return d.dy / 2; })
+      .text(function(d) { return d.name; })
+    .filter(function(d) { return d.x < width / 2; })
+      .attr("x", 6 + sankey.nodeWidth())
+      .attr("text-anchor", "start");
+};
+
+function animate() {
+  data_index += 1;
+  if(data_index >= data.length) { data_index = 0; }
+  draw();
+}
+
+
+</script>
+</body>
+</html>
