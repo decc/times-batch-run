@@ -55,6 +55,10 @@
     <a id='energ_flows_2030' href=''>2030</a>,
     <a id='energ_flows_2050' href=''>2050</a>. 
   </li>
+
+  <li>Flows of particular commodities:
+    <a id='gas_flow' href=''>natural gas</a>
+  </li>
 </ul>
 
 <h2>What ifs that are used in this scenario</h2>
@@ -110,6 +114,7 @@ function setup_links_to_charts() {
   d3.select("#energ_flows_2025").attr("href", "energy-flows.html#"+case_name+",2025");
   d3.select("#energ_flows_2030").attr("href", "energy-flows.html#"+case_name+",2030");
   d3.select("#energ_flows_2050").attr("href", "energy-flows.html#"+case_name+",2050");
+  d3.select("#gas_flow").attr("href", "flow-over-time.html#"+case_name+";C-NGAPTR");
 }
 
 function load_case_and_display_scenarios() {

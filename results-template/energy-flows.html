@@ -187,7 +187,8 @@ function draw() {
       .attr("dy", ".35em");
 
   new_nodes.on("mouseenter", highlight_node_and_connected_flows);
-  new_nodes.on("mouseleave", stop_highlighting);
+  new_nodes.on("mouseenter", highlight_node_and_connected_flows);
+  new_nodes.on("click", function(d) { window.location = "flow-over-time.html#"+case_name+";"+d.name; });
 
   nodes.transition()
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })

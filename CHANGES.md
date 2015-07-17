@@ -1,3 +1,7 @@
+#2015-07-17
+
+* Can now plot any single flow over time, added gas as an example
+
 #2015-07-16
 
 * Sankey diagrams are here!
