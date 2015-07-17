@@ -15,6 +15,10 @@
 <div id='cases'>
   <p id='overflow_message' class='hidden'>There are more than 50 cases in the chart. The table below shows the top and bottom 25.</p>
 </div>
+<ul id='link_list'>
+  <li onclick='window.location="carbon-prices-compared.html#"+case_list_for_url()'>Compare carbon prices</li>
+  <li onclick='window.location="flow-over-time.html#"+case_list_for_url()+";C-NGAPTR"'>Compare natural gas consumption</li>
+</ul>
 <script src='javascript/scatter.js'></script>
 <script>
 go();

@@ -504,3 +504,9 @@ function scenario_code_to_name_lookup() {
 function carbon_budget_number(year) {
   return Math.floor((year-2008)/5)+1;
 }
+
+
+function case_list_for_url() {
+  return data.map(function(d) { return d.name }).join(",");
+}
+

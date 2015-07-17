@@ -1,6 +1,7 @@
 #2015-07-17
 
 * Can now plot any single flow over time, added gas as an example
+* Added links at the bottom of the scatter table to compare all pathways in table
 
 #2015-07-16
 
