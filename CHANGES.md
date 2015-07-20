@@ -1,3 +1,7 @@
+#2015-07-20
+
+* Refactored the data table in the carbon prices chart
+
 #2015-07-17
 
 * Can now plot any single flow over time, added gas as an example

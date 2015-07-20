@@ -1,0 +1,77 @@
+body {
+  font: 10px sans-serif;
+}
+
+div {
+  margin: 0;
+  paddign: 0;
+}
+
+.process_name {
+  float: left;
+  width: 10%;
+}
+
+.title {
+  font-weight: bold;
+  display: inline-block;
+  text-align: center;
+  width: 29%;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+path.commodity {
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.no_highlight path {
+  stroke: grey;
+  stroke-opacity: 0.1;
+}
+
+.no_highlight circle {
+  fill: grey;
+  fill-opacity: 0.1;
+}
+
+.highlight path {
+  stroke: black;
+}
+
+.highlight circle {
+  fill: black;
+}
+
+text.highlight {
+  fill: black;
+}
+
+text.no_highlight {
+  fill: grey;
+  fill-opacity: 0.1;
+}
+
+div.instcap, div.lumpinv, div.costperunit {
+  float:left;
+}
+
+div.process {
+  clear: both;
+}
+
+div#controls {
+  clear: both;
+  font-size: larger;
+}
+
+td.value, td.price {
+  text-align: right;
+  width: 5em;
+}
+
