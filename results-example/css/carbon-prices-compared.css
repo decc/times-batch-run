@@ -1,22 +1,5 @@
 body {
-  font: 10px sans-serif;
-}
-
-div {
-  margin: 0;
-  paddign: 0;
-}
-
-.process_name {
-  float: left;
-  width: 10%;
-}
-
-.title {
-  font-weight: bold;
-  display: inline-block;
-  text-align: center;
-  width: 29%;
+  font: sans-serif;
 }
 
 .axis path, .axis line {
@@ -25,9 +8,23 @@ div {
   shape-rendering: crispEdges;
 }
 
-path.commodity {
+.series path {
   fill: none;
-  stroke-width: 1.5px;
+  stroke: grey;
+  stroke-opacity: 0.5;
+  stroke-width: 3px;
+}
+
+.series circle {
+  fill: grey;
+  stroke: none;
+  fill-opacity: 0.5;
+}
+
+.series text {
+  fill: grey;
+  stroke: none;
+  fill-opacity: 0.5;
 }
 
 .no_highlight path {
@@ -40,12 +37,24 @@ path.commodity {
   fill-opacity: 0.1;
 }
 
+.no_highlight text {
+  fill: grey;
+  fill-opacity: 0.1;
+}
+
 .highlight path {
   stroke: black;
+  stroke-opacity: 1.0;
 }
 
 .highlight circle {
   fill: black;
+  fill-opacity: 1.0;
+}
+
+.highlight text {
+  fill: black;
+  fill-opacity: 1.0;
 }
 
 text.highlight {
@@ -57,21 +66,12 @@ text.no_highlight {
   fill-opacity: 0.1;
 }
 
-div.instcap, div.lumpinv, div.costperunit {
-  float:left;
-}
-
-div.process {
-  clear: both;
-}
-
-div#controls {
-  clear: both;
-  font-size: larger;
-}
-
 td.value, td.price {
   text-align: right;
   width: 5em;
+}
+
+tr.highlight td {
+  background-color: yellow;
 }
 

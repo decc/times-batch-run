@@ -4,6 +4,9 @@ var price_format = d3.format(",.0f");
 var case_name = undefined;
 var data = [];
 var cases = d3.map();
+var max_y = 0;
+
+window.addEventListener("hashchange",function() { window.location.reload() });
 
 var case_names = window.location.hash.slice(1).split(',');
 case_names.forEach(load_case);
@@ -42,7 +45,9 @@ function reformat(case_data) {
         return 0;
       }
     });
-    new_values.push({year: year, value: d3.max(possible_prices)});
+    var biggest_value = d3.max(possible_prices);
+    max_y = max_y < biggest_value ? biggest_value : max_y;
+    new_values.push({year: year, value: biggest_value});
   });
   return { name: case_data.name, prices: new_values };
 }
@@ -52,57 +57,201 @@ function displayCaseName() {
 }
 
 function drawChart() {
-  var chart_width = 500;
-  var chart_height = Math.ceil(chart_width * 0.5);
-  var chart = linechart(chart_width, chart_height);
+  var chart_width = window.innerWidth;
+  var chart_height = window.innerHeight - d3.select("#chart").node().offsetTop;
+  var chart = linechart()
+                .y_range([0, max_y])
+                .width(chart_width)
+                .height(chart_height);
 
   d3.select("#chart")
     .datum(data)
-    .call(chart);
+    .call(chart)
+    .call(chart.markers)
+    .call(chart.labels);
 };
 
-function linechart(width, height) {
+function drawTable() {
+  var table = annualDataTable()
+              .columns(function(d) { return d.prices })
+              .cell(function(d) { return price_format(d.value); });
 
-  var margin = {top: 30, right: 75, bottom: 30, left: 50};
+  d3.select("tbody#prices")
+    .datum(data)
+    .call(table);
+};
 
-  var unit = "£/tCO2e";
+function linechart() {
 
-  var x = d3.scale.linear()
-    .domain([2010, 2050])
-    .range([0, width - margin.left - margin.right]);
+  var margin = {top: 30, right: 75, bottom: 30, left: 60};
+  var width = 500;
+  var height = 250;
+  var markerRadius = 4;
 
-  var y = d3.scale.linear()
-    .domain([0,5000])
-    .range([height - margin.top - margin.bottom, 0]);
+  var y_axis_label_position = -(margin.top/2);
+  var y_axis_label = "£/tCO2e";
+
+  var x_range = [2010, 2050];
+  var y_range = [0, 5000];
+
+  var x = function(d) { return d.year };
+  var y = function(d) { return d.value };
+
+  var xScale = d3.scale.linear();
+  var yScale = d3.scale.linear();
+
+  var scaled_x = function(d) { return xScale(x(d)); };
+  var scaled_y = function(d) { return yScale(y(d)); };
 
   var xAxis = d3.svg.axis()
     .tickFormat(d3.format("0f"))
-    .scale(x)
+    .scale(xScale)
     .orient("bottom");
 
   var yAxis = d3.svg.axis()
-    .scale(y)
+    .scale(yScale)
     .orient("left");
 
-  var scenario_colors = d3.scale.category10();
+  var series_colours = d3.scale.category10();
 
   var line = d3.svg.line()
-    .x(function(d) { return x(d.year); })
-    .y(function(d) { return y(d.value); });
+    .x(scaled_x)
+    .y(scaled_y);
 
-  // Don't let scenario labels get any closer than this (in pixels)
-  var minimum_space_between_labels = 18;
+  var series_name = function(d) { return d.name; }
+  var series_css = function(d) { return d.name; }
+  var points = function(d) { return d.prices; }
 
+  var minimum_space_between_labels = 18; // Pixels
+
+  function chart(selection) {
+      // Create a new SVG if required
+      var svg = selection.selectAll("svg").data(function(d) { return [d]; });
+
+      // Create any new chart areas
+      var new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
+
+      new_svg.append("g").attr("class", "data");
+      new_svg.append("g").attr("class", "x axis");
+      new_svg.append("g").attr("class", "y axis");
+
+      // y-axis label
+      new_svg.append("text")
+        .attr('text-anchor', "end")
+        .attr('y', y_axis_label_position) 
+        .attr("class", "y_axis_label");
+
+      // Update the outer dimensions.
+      svg.attr("width", width)
+        .attr("height", height);
+
+      // Update the y-axis
+      yScale.domain(y_range)
+        .range([height - margin.top - margin.bottom, 0])
+        .nice();
+
+      svg.select(".y.axis")
+        .call(yAxis);
+
+      svg.select(".y_axis_label").text(y_axis_label);
+
+      // Update the x-axis 
+      xScale.domain(x_range)
+        .range([0, width - margin.left - margin.right]);
+
+      svg.select(".x.axis")
+        .attr("transform", "translate(0," + yScale.range()[0] + ")")
+        .call(xAxis);
+
+      // Update the inner dimensions.
+      var g = svg.select("g.canvas")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Update the series
+      var series = g.select(".data").selectAll("g.series")
+        .data(Object, series_name);
+
+      series.exit().remove()
+
+      var new_series = series.enter()
+        .append("g")
+          .attr("class", function(d) { return "series "+series_css(d) })
+          .on("mouseover",hover_start)
+          .on("mouseout", hover_end) 
+          .on("click", click);
+
+      new_series
+        .append("path");
+
+      // Update the series line
+      series.select("path")
+        .attr("d", function(d) { return line(points(d)); });
+
+  };
+
+  chart.markers = function(selection) {
+    var markers = selection.selectAll(".series").selectAll("circle")
+      .data(points);
+
+    markers.enter().append("circle")
+      .attr("r", markerRadius);
+
+    markers.exit().remove();
+
+    markers
+      .attr("cx", scaled_x)
+      .attr("cy", scaled_y);
+  }
+
+  chart.labels = function(selection) {
+    position_labels(selection.data()[0]);
+
+    var label = selection.selectAll("g.series").selectAll("text")
+      .data(function(d) { return [d]; }, series_name);
+
+    label.exit().remove();
+
+    label.enter().append("text")
+      .text(series_name)
+      .attr("dy", 2)
+      .attr("dx", 5);
+
+    label
+      .attr("x", xScale.range()[1])
+      .attr("y", function(d) { return d.label_y; });
+  }
+
+  function hover_start(d) {
+    d3.selectAll(".series")
+      .classed("highlight", false)
+      .classed("no_highlight", true);
+
+    d3.selectAll("."+d.name)
+      .classed("highlight", true)
+      .classed("no_highlight", false); 
+  }
+
+  function hover_end(d) {
+    d3.selectAll(".highlight").classed("highlight", false)
+    d3.selectAll(".no_highlight").classed("no_highlight", false)
+  }
+
+  function click(d) {
+    window.location = "case.html#"+series_name(d);
+  }
+  
   // This makes sure that labels don't overlap by
   // checking that they are at least minimum_space_between_labels
   // apart and, if not, shuffling them up and down.
-  function ensure_labels_are_far_enough_apart(labels) {
+  function position_labels(labels) {
     var i, label_position_changed, lower_label, label, y_difference;
-    // CHECK: Does resorting ruin the data binding in d3?
+
+    labels.forEach(add_initial_label_position);
+
     labels.sort(function(a,b) { return a.label_y - b.label_y; }); // Need to be in ascending order
     do {
       label_position_changed = false;
-      labels.each(function(label, i) {
+      labels.forEach(function(label, i) {
         if(i == 0) {
           lower_label = label;
         } else {
@@ -117,153 +266,53 @@ function linechart(width, height) {
         }
       });
     } while(label_position_changed);
-
   }
 
-  function chart(selection) {
-    selection.each(function(data) {
-      if(data == undefined) { return; }
 
-      var svg = d3.select(this).selectAll("svg").data([data]);
-
-      // Create any new chart areas
-      var new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
-      new_svg.append("g").attr("class", "commodities");
-      new_svg.append("g").attr("class", "x axis");
-      new_svg.append("g").attr("class", "y axis");
-      new_svg.append("text")
-      .attr('text-anchor', "end")
-      .attr('y', -7)
-      .attr("class", "y_axis_label");
-
-    // Update the outer dimensions.
-    svg.attr("width", width)
-      .attr("height", height);
-
-    // Update the x-axis 
-    svg.select(".x.axis")
-      .attr("transform", "translate(0," + y.range()[0] + ")")
-      .call(xAxis);
-
-    svg.select(".y.axis")
-      .call(yAxis);
-
-    svg.select(".y_axis_label").text(unit);
-
-    // Update the inner dimensions.
-    var g = svg.select("g.canvas")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // Update the scenarios
-    var commodities = g.select(".commodities").selectAll("g.commodity")
-      .data(Object, function(d) { return d.name; });
-
-    commodities.enter()
-      .append("g")
-      .attr("class", function(d) { return "commodity "+d.name })
-      .append("path")
-      .attr("class", function(d) { return "commodity "+d.name })
-      .attr("stroke", function(d) { return scenario_colors(d.name); });
-
-    commodities.exit().remove()
-
-      commodities.select("path")
-      .attr("d", function(d) { return line(d.prices); });
-
-    // Update the line markers
-    var markers = commodities.selectAll("circle")
-      .data(function(d) { return d.prices; });
-
-    markers.enter().append("circle")
-      .attr("r", 2)
-      .attr("fill", function(d) { return scenario_colors(d.name); }); // FIXME: This picks up the wrong colour!
-
-    markers.exit().remove();
-
-    markers
-      .attr("cx", function(d) { return x(d.year); })
-      .attr("cy", function(d) { return y(d.value); });
-
-    // Update the scenario labels
-    labels = g.select(".commodities").selectAll("text.commodity")
-      .data(function(commodities) { 
-        commodities.forEach(function(d) {
-          if(d.prices.length > 0) {
-            d.label_y = y(d.prices[d.prices.length-1].value) // The y-position of the final data point in the scenario data (assumes this is the final year)
-          }
-        });
-        return commodities;
-      }, 
-      function(d) { return d.name } // Make sure we always match by name
-      );
-
-    labels.enter().append("text")
-      .text(function(d) { return d.name })
-      .attr("dy", 2)
-      .attr("dx", 1)
-      .attr("class", function(d) { return "scenario "+d.name })
-      .attr("fill", function(d) { return scenario_colors(d.name); })
-      .on("mouseover", function(d) { // This does the fancy higlighting as the mouse moves over the labels
-        commodities
-        .classed("highlight", false)
-        .classed("no_highlight", true);
-
-      labels
-        .classed("highlight", false)
-        .classed("no_highlight", true);
-
-      g.selectAll("."+d.name)
-        .classed("highlight", true)
-        .classed("no_highlight", false); 
-
-      }).on("mouseout", function(d) {
-        labels
-        .classed("highlight", false)
-        .classed("no_highlight", false);
-
-      commodities
-        .classed("highlight", false)
-        .classed("no_highlight", false); 
-      }).on("click", function(d) {  
-        window.location = "case.html#"+d.name;
-      });
-
-
-    labels.call(ensure_labels_are_far_enough_apart);
-
-    labels
-      .attr("x", x.range()[1])
-      .attr("y", function(d) { return d.label_y; });
-
-    labels.exit().remove();
-    });
-  };
+  function add_initial_label_position(d) {
+    var series = points(d);
+    var last_point = series[series.length-1];
+    d.label_y = scaled_y(last_point);
+  }
 
   chart.autoscale = function(_) {
     if (!arguments.length) return autoscale;
     autoscale = _;
     return chart;
   }
-  
-  chart.unit = function(_) {
-    if (!arguments.length) return unit;
-    unit = _;
+
+  chart.y_axis_label = function(_) {
+    if (!arguments.length) return y_axis_label;
+    y_axis_label = _;
+    return chart;
+  }
+  chart.x_range = function(_) {
+    if (!arguments.length) return x_range;
+    x_range = _;
+    return chart;
+  }
+
+  chart.y_range = function(_) {
+    if (!arguments.length) return y_range;
+    y_range = _;
+    return chart;
+  }
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  }
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
     return chart;
   }
 
 
   return chart; 
 }
-
-function drawTable() {
-  var table = annualDataTable()
-              .columns(function(d) { return d.prices })
-              .cell(function(d) { return price_format(d.value); });
-
-  d3.select("tbody#prices")
-    .datum(data)
-    .call(table);
-};
 
 
 function annualDataTable() {
@@ -277,7 +326,9 @@ function annualDataTable() {
 
     var rows = selection.selectAll("tr").data(Object);
 
-    rows.enter().append("tr");
+    rows.enter().append("tr")
+      .on("mouseover",hover_start)
+      .on("mouseout", hover_end);
 
     rows.exit().remove();
 
@@ -300,6 +351,22 @@ function annualDataTable() {
     value_cells.exit().remove();
 
     value_cells.text(cell);
+
+  } 
+  
+  function hover_start(d) {
+    d3.selectAll(".series")
+      .classed("highlight", false)
+      .classed("no_highlight", true);
+
+    d3.selectAll("."+d.name)
+      .classed("highlight", true)
+      .classed("no_highlight", false); 
+  }
+
+  function hover_end(d) {
+    d3.selectAll(".highlight").classed("highlight", false)
+    d3.selectAll(".no_highlight").classed("no_highlight", false)
   }
 
   table.name = function(_) {
