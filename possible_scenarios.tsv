@@ -24,7 +24,7 @@ Always	uc_ser
 Always	uc_tra																					
 Always	accounting																					
 																						
-Demand	decc_central	decc_high	decc_low																			
+Demand	refscenario_deccv1.1-central	refscenario_deccv1.1-high	refscenario_deccv1.1-low																			
 																						
 # This is a temporary fix to give international aviation an abatement option. Otherwise the model often fails to solve																						
 Always	scen_rsr_impbiojet-ft_act																					
