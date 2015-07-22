@@ -1,3 +1,7 @@
+#2015-07-22
+
+* Removed non-working links from example index.html
+
 #2015-07-21
 
 * possible_scenarios demand variants changed to reflect the new names given in uktm_model_v1.2.0_decc_v0.0.6 (BF)
