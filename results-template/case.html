@@ -12,6 +12,7 @@
 
   <li>Costs: 
     <a id='costs_over_time' href=''>over time</a>, 
+    <a id='compare_cost_npv' href=''>2015-2025</a> (<a id='detailed_compare_cost_npv'>detailed</a>),
     <a id='compare_cost_2025' href=''>2015-2025</a> (<a id='detailed_compare_cost_2025'>detailed</a>),
     <a id='compare_cost_2030' href=''>2015-2030</a> (<a id='detailed_compare_cost_2030'>detailed</a>),
     <a id='compare_cost_2050' href=''>2015-2050</a> (<a id='detailed_compare_cost_2050'>detailed</a>)
@@ -86,6 +87,7 @@ function setup_links_to_charts() {
   d3.select("#compare_cost_2025").attr("href", "sectoral-costs.html#"+case_name+","+case_name+",2015,2025");
   d3.select("#compare_cost_2030").attr("href", "sectoral-costs.html#"+case_name+","+case_name+",2015,2030");
   d3.select("#compare_cost_2050").attr("href", "sectoral-costs.html#"+case_name+","+case_name+",2015,2050");
+  d3.select("#detailed_compare_cost_npv").attr("href", "detailed-costs.html#"+case_name+","+case_name+",npv,npv");
   d3.select("#detailed_compare_cost_2025").attr("href", "detailed-costs.html#"+case_name+","+case_name+",2015,2025");
   d3.select("#detailed_compare_cost_2030").attr("href", "detailed-costs.html#"+case_name+","+case_name+",2015,2030");
   d3.select("#detailed_compare_cost_2050").attr("href", "detailed-costs.html#"+case_name+","+case_name+",2015,2050");
