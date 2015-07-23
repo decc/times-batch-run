@@ -1,6 +1,7 @@
 #2015-07-23
 
 * Refactoring the cost-emissions scatter
+* Added a carbon price in 2030 against emissions scatter
 
 #2015-07-22
 

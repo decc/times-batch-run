@@ -1,0 +1,59 @@
+<html>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta charset='utf-8'>
+<script src='javascript/d3.min.js'></script>
+<script src='javascript/message-of-the-day.js'></script>
+<link rel='stylesheet' href='css/scatter.css'>
+<body>
+<h1 id='title'></h1>
+<div id='filter'>
+  <h2>What if?</h2>
+</div>
+<div id='chart'>
+</div>
+<div id='cases'>
+  <p id='overflow_message' class='hidden'>There are more than 50 cases in the chart. The table below shows the top and bottom 25.</p>
+</div>
+<script src='javascript/scatter.js'></script>
+<script>
+y_label = "Carbon price in "+year_to_display+" £/tCO2e"
+var carbon_prices = d3.map();
+var prices_that_we_care_about = ["GHG-NO-IAS-YES-LULUCF-NET", "GHG-YES-IAS-YES-LULUCF-NET", "GHGTOT", "CO2TOT"];
+var years = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
+
+function load_case(case_name) {
+  d3.json(case_name+data_file_name, case_loaded);
+  d3.json(case_name+"/carbon-prices.json", carbon_prices_loaded);
+}
+
+function carbon_prices_loaded(individual_case) {
+  carbon_prices.set(individual_case.name, reformat_carbon_prices(individual_case));
+  if(all_cases_have_been_loaded()) { all_cases_loaded() };
+};
+
+function reformat_carbon_prices(case_data) {
+  var new_values = d3.map();
+  years.forEach(function(year) {
+    var possible_prices = prices_that_we_care_about.map(function(commodity) {
+      if(case_data.prices[commodity]) {
+        return case_data.prices[commodity][year] || 0;
+      } else {
+        return 0;
+      }
+    });
+    var biggest_value = d3.max(possible_prices);
+    new_values.set(year, biggest_value);
+  });
+  return { name: case_data.name, prices: new_values };
+}
+
+function all_cases_have_been_loaded() {
+  return all_cases.size() == list_of_case_names.length && carbon_prices.size() == list_of_case_names.length;
+};
+
+y = function(d) { return carbon_prices.get(d.name).prices.get(year_to_display); }
+
+go();
+</script>
+</body>
+</html>
