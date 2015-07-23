@@ -5,13 +5,16 @@ var scenarios = [];
 var year_to_display = '2030'
 var chart_width = d3.select("#chart").node().clientWidth;
 var chart_height = Math.ceil(chart_width * 0.75);
-var chart = scatterchart(chart_width, chart_height);
 var selected_scenarios = d3.set();
 var cost_format = d3.format(",.1f");
 var emissions_format = d3.format(",.0f");
 var cost_label = "Total Cost £trn (2010-2050, discounted)"
-var x_extent = [0,5000];
-var y_extent = [0,20];
+var x_extent;
+var y_extent;
+var chart;
+
+var x = function(d) { return d.ghg[year_to_display]; }
+var y = function(d) { return d.cost; }
 
 function go() {
   load_all_cases(all_cases_loaded);
@@ -21,12 +24,14 @@ function all_cases_loaded() {
   read_user_choices_from_hash();
   extract_scenarios_from_data();
   calculate_chart_dimensions();
+  setup_chart();
   redraw();
 }
 
 function redraw() {
   update_hash();
   filter_cases_to_display();
+  update_title();
   draw_chart();
   draw_scenario_table();
   draw_case_table();
@@ -102,13 +107,14 @@ function extract_scenarios_from_data() {
     }
   });
   scenarios.sort(function(a,b) { return d3.ascending(scenario_names(a),scenario_names(b)) });
-
 }
 
 function calculate_chart_dimensions() {
-  y_extent = [0, d3.max(all_cases.values(), function(d) { return d.cost; })]
-  x_extent = d3.extent(all_cases.values(), function(d) { return d.budget[year_to_display]; })
+  y_extent = d3.extent(all_cases.values(), y)
+  y_extent[0] = 0;
   y_extent[1] = y_extent[1] * 1.1;
+
+  x_extent = d3.extent(all_cases.values(), x)
   var space = (x_extent[0] + x_extent[1]) * 0.05;
   x_extent[0] = x_extent[0] - space;
   x_extent[1] = x_extent[1] + space;
@@ -145,6 +151,10 @@ function hash_code_for_selected_scenarios() {
   if(selected_scenarios.empty()) { return ""; };
   return selected_scenarios.values().join(",");
 };
+
+function update_title() {
+  d3.select("h1#title").text("Level of Carbon Budget "+carbon_budget_number(year_to_display)+" against cost");
+}
 
 function draw_scenario_table() {
   var split_scenarios = divide_array_in_two(scenarios); 
@@ -220,37 +230,47 @@ function divide_array_in_two(array) {
   return [array.slice(0,break_point), array.slice(break_point)];
 };
 
-function draw_chart() {
-  chart.max_y_to_show = 
+function setup_chart() {
+  chart = scatterchart()
+            .width(chart_width)
+            .height(chart_height)
+            .x_extent(x_extent)
+            .y_extent(y_extent)
+            .x(x)
+            .y(y);
+}
 
-  // Now add the chart to the screen
-  instcap = d3.select("body").selectAll('#chart')
+function draw_chart() {
+  d3.select("body").selectAll('#chart')
     .datum(data)
     .call(chart);
 };
 
-function scatterchart(width, height) {
+function scatterchart() {
 
-  function emissions_to_plot(d) {
-	  return d.budget[year_to_display];
-  }
+  var margin = {top: 50, right: 50, bottom: 100, left: 50};
+  var cross_hair_label_format = d3.format(".1f");
 
-  var margin = {top: 20, right: 50, bottom: 50, left: 50};
-  var x = d3.scale.linear();
-  var y = d3.scale.linear();
+  var x = function(d) { return d.x; }
+  var y = function(d) { return d.y; }
+
+  var xScale = d3.scale.linear();
+  var yScale = d3.scale.linear();
+
+  var x_extent = [0, 100];
+  var y_extent = [0, 100];
+
+  var scaledX = function(d) { return xScale(x(d)); }
+  var scaledY = function(d) { return yScale(y(d)); }
 
   var xAxis = d3.svg.axis()
     .tickFormat(d3.format("0f"))
-    .scale(x)
+    .scale(xScale)
     .orient("bottom");
 
   var yAxis = d3.svg.axis()
-    .scale(y)
+    .scale(yScale)
     .orient("left");
-
-  var cross_hair_label_format = d3.format(".1f");
-
-  // Returns the Carbon Budget that a particular year is in
 
   function chart(selection) {
     selection.each(function(data) {
@@ -264,8 +284,8 @@ function scatterchart(width, height) {
         new_svg.append("g").attr("class", "x axis");
         new_svg.append("g").attr("class", "y axis");
         new_svg.append("text")
-          .attr('y', -7)
-          .attr('x', -20)
+          .attr('y', -(margin.top/2))
+          .attr('x', -(margin.left/2))
           .attr("class", "y_axis_label")
           .text(cost_label)
         new_svg.append("text")
@@ -286,39 +306,28 @@ function scatterchart(width, height) {
         var g = svg.select("g.canvas")
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        // Update the y-axis
-        //  y
-        //    .domain()
-         //   .range([height - margin.top - margin.bottom, 0])
-         //   .nice();
-        //} else {
-          y
-            .domain(y_extent)
-            .range([height - margin.top - margin.bottom, 0])
-            .nice();
+        yScale
+          .domain(y_extent)
+          .range([height - margin.top - margin.bottom, 0])
+          .nice();
 
         svg.select(".y.axis")
           .call(yAxis);
 
         // Update the x-axis
-        x
+        xScale
           .domain(x_extent)
-          //.domain(d3.extent(data, function(d) { return emissions_to_plot(d)}))
           .range([0, width - margin.left - margin.right])
           .nice();
 
         svg.select(".x.axis")
-          .attr("transform", "translate(0," + y.range()[0] + ")")
+          .attr("transform", "translate(0," + yScale.range()[0] + ")")
           .call(xAxis);
 
         svg.select(".x_axis_label")
-          .attr("transform", "translate(0," + (y.range()[0]+30) + ")")
-          .attr("x", d3.mean(x.range()))
+          .attr("transform", "translate(0," + (yScale.range()[0]+(margin.bottom/2)) + ")")
+          .attr("x", d3.mean(xScale.range()))
           .text(emissions_label());
-
-        // Update the title
-        // FIXME: Shouldn't really be done in this routine
-        d3.select("h1#title").text("Level of Carbon Budget "+carbon_budget_number(year_to_display)+" against cost");
 
         // Update the cases
         var cases = g.select(".cases").selectAll("g.case")
@@ -336,8 +345,8 @@ function scatterchart(width, height) {
             .attr("class", function(d) { return "case "+d.scenarios.map(function(s) { return "s"+s; }).join(" ") }); // Prepend s, becausee some scenarios start with a number, which isn't valid as a css class name
 
         cases.selectAll("circle")
-          .attr("cx", function(d) { return x(emissions_to_plot(d)); })
-          .attr("cy", function(d) { return y(d.cost); });
+          .attr("cx", scaledX)
+          .attr("cy", scaledY);
 
         // Add the interactivity
 
@@ -364,9 +373,27 @@ function scatterchart(width, height) {
     });
   };
 
-  chart.year_to_display = function(_) {
-    if (!arguments.length) return year_to_display;
-    year_to_display = _;
+  chart.x = function(_) { 
+    if (!arguments.length) return x;
+    x = _;
+    return chart;
+  }
+
+  chart.y = function(_) { 
+    if (!arguments.length) return y;
+    y = _;
+    return chart;
+  }
+
+  chart.x_extent = function(_) { 
+    if (!arguments.length) return x_extent;
+    x_extent = _;
+    return chart;
+  }
+
+  chart.y_extent = function(_) { 
+    if (!arguments.length) return y_extent;
+    y_extent = _;
     return chart;
   }
 
@@ -382,44 +409,38 @@ function scatterchart(width, height) {
     return chart;
   }
 
-  chart.max_y_to_show = function(_) {
-    if (!arguments.length) return max_y_to_show;
-    max_y_to_show = _;
-    return chart;
-  }
-
   function update_crosshairs(target) {
     // Draw the lines to each axis
     d3.select("#line_to_y_axis")
       .classed("show_crosshairs", true)
-      .attr("x1", x.range()[0])
-      .attr("y1", y(target.cost))
-      .attr("x2", x(emissions_to_plot(target))-3)
-      .attr("y2", y(target.cost));
+      .attr("x1", xScale.range()[0])
+      .attr("y1", scaledY(target))
+      .attr("x2", scaledX(target)-3)
+      .attr("y2", scaledY(target));
 
     d3.select("#line_to_x_axis")
       .classed("show_crosshairs", true)
-      .attr("x1", x(emissions_to_plot(target)))
-      .attr("y1", y(target.cost)+3)
-      .attr("x2", x(emissions_to_plot(target)))
-      .attr("y2", y.range()[0]);
+      .attr("x1", scaledX(target))
+      .attr("y1", scaledY(target)+3)
+      .attr("x2", scaledX(target))
+      .attr("y2", yScale.range()[0]);
 
     d3.select("#x_value_of_case")
       .classed("show_crosshairs", true)
-      .attr("x", x(emissions_to_plot(target)))
-      .attr("y", y.range()[0]-2)
-      .text(cross_hair_label_format(emissions_to_plot(target)));
+      .attr("x", scaledX(target))
+      .attr("y", yScale.range()[0]-2)
+      .text(cross_hair_label_format(x(target)));
 
     d3.select("#y_value_of_case")
       .classed("show_crosshairs", true)
-      .attr("x", x.range()[0]+2)
-      .attr("y", y(target.cost)-2)
+      .attr("x", xScale.range()[0]+2)
+      .attr("y", scaledY(target)-2)
       .text(cross_hair_label_format(target.cost));
 
     d3.select("#name_of_case")
       .classed("show_crosshairs", true)
-      .attr("x", x(emissions_to_plot(target))+5)
-      .attr("y", y(target.cost)-5)
+      .attr("x", scaledX(target)+5)
+      .attr("y", scaledY(target)-5)
       .text(target.name);
 
     return chart;
@@ -474,11 +495,11 @@ function draw_case_table() {
     .attr("href", function(d) { return "case.html#"+d.name; });
 
   case_rows.select("a.cost")
-    .text(function(d) { return cost_format(d.cost); })
+    .text(function(d) { return cost_format(y(d)); })
     .attr("href", function(d) { return "sectoral-costs.html#"+d.name+","+d.name+",2015,2050"; });
 
   case_rows.select("a.budget_emissions")
-    .text(function(d) { return emissions_format(d.budget[year_to_display]); })
+    .text(function(d) { return emissions_format(x(d)); })
     .attr("href", function(d) { return "sectoral-emissions.html#"+d.name+","+d.name+",2015,"+year_to_display; });
 
 };
@@ -504,7 +525,6 @@ function scenario_code_to_name_lookup() {
 function carbon_budget_number(year) {
   return Math.floor((year-2008)/5)+1;
 }
-
 
 function case_list_for_url() {
   return data.map(function(d) { return d.name }).join(",");

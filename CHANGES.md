@@ -1,3 +1,7 @@
+#2015-07-23
+
+* Refactoring the cost-emissions scatter
+
 #2015-07-22
 
 * Removed non-working links from example index.html
