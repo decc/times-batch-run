@@ -76,9 +76,9 @@ budget_2030_3000	CB5 3000
 budget_2030_3100	CB5 3100
 total_cap_2050_160	2050 Target hit
 total_cap_2050_999	2050 Target abandoned
-TradedPriceLow	Carbon price low (£39/tCO2e in 2030)
-TradedPriceCentral	Carbon price central (£78/tCO2e in 2030)
-TradedPriceHigh	Carbon price high (£116/tCO2e in 2030)
+TradedPriceLow	EU ETS price low (39 GBP/tCO2e in 2030)
+TradedPriceCentral	EU ETS price central (78 GBP/tCO2e in 2030)
+TradedPriceHigh	EU ETS price high (116 GBP/tCO2e in 2030)
 ets_cap_2015_216	Traded sector cap 2015 EEP 2014
 ets_cap_2015_183	Traded sector cap 2015 revised
 ets_cap_2020_197	Traded sector cap 2020 EEP 2014
@@ -104,3 +104,37 @@ scen_rsr_ff-price-high	Fuel prices - High
 scen_rsr_ff-price-low	Fuel prices - Low
 default_Onshore	Onshore wind available
 uc_noonshorewind	Onshore wind NOT available
+scen_elc_wstheat-1000	District heating from power stations (test)
+default_Distict	District heating from power stations disabled
+default_District	District heating from power stations disabled
+refscenario_deccv1_1-low	Low demand
+refscenario_deccv1_1-central	Central demand
+refscenario_deccv1_1-high	High demand
+default_No	Low carbon electricity built in 2020s
+delayed_low_carbon_electricity	Low carbon electricity not built in 2020s
+base	Standard set of existing technologies
+newagr	Standard set of new agricultural technologies
+newelc	Standard set of new electricity technologies
+newind	Standard set of new industrial technologies
+newprc	Standard set of new process technologies
+newres	Standard set of new residential technologies
+newrsr	Standard set of new resource technologies
+newser	Standard set of new service technologies
+newtra	Standard set of new transport technologies
+syssettings	Standard time horizon
+uc_base	Standard constraints
+uc_ind	Standard industrial constraints
+uc_prc	Standard process constraints
+uc_res	Standard residential constraints
+uc_rsr	Standard resource constraints
+uc_ser	Standard service constraints
+uc_tra	Standard transport constraints
+accounting	Standard emissions accounting assumptions
+ets_cap_2015_212	UK share of EU ETS in 2015 - 212 MtCO2e/yr
+ets_cap_2020_145	UK share of EU ETS in 2020 - 145 MtCO2e/yr
+ets_cap_2025_109	UK share of EU ETS in 2025 - 109 MtCO2e/yr
+ets_cap_2030_90	UK share of EU ETS in 2030 - 90 MtCO2e/yr
+ets_cap_2050_45	UK share of EU ETS in 2050 - 45 MtCO2e/yr
+after_2050_same_as_2050	2060 emissions cap the same as 2050
+solved	For information - solved ok
+did_no_solve	For information - did not solve
