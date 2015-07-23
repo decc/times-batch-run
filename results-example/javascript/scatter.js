@@ -1,23 +1,34 @@
+var year_to_display = '2030'
+var x_label = "Level of Carbon Budget 5 (MtCO2e)"
+var y_label = "Total Cost £trn (2010-2050, discounted)"
+
+var chart_width = d3.select("#chart").node().clientWidth;
+var chart_height = Math.ceil(chart_width * 0.75);
+
+var x_format = d3.format(",.0f");
+var y_format = d3.format(",.1f");
+
 var scenario_names = scenario_code_to_name_lookup();
+
 var all_cases = d3.map();
 var data = [];
 var scenarios = [];
-var year_to_display = '2030'
-var chart_width = d3.select("#chart").node().clientWidth;
-var chart_height = Math.ceil(chart_width * 0.75);
 var selected_scenarios = d3.set();
-var cost_format = d3.format(",.1f");
-var emissions_format = d3.format(",.0f");
-var cost_label = "Total Cost £trn (2010-2050, discounted)"
+
 var x_extent;
 var y_extent;
 var chart;
 
-var x = function(d) { return d.ghg[year_to_display]; }
+var x = function(d) { return d.budget[year_to_display]; }
 var y = function(d) { return d.cost; }
 
+var list_of_case_names;
+var index_file = 'index.txt';
+var line_endings = /[\r\n]+/;
+var data_file_name = "/costs-and-emissions-overview.json"; 
+
 function go() {
-  load_all_cases(all_cases_loaded);
+  load_list_of_cases();
 };
 
 function all_cases_loaded() {
@@ -37,55 +48,42 @@ function redraw() {
   draw_case_table();
 };
 
-function load_all_cases(next_function) {
-  var list_of_case_names;
-  var index_file = 'index.txt';
-  var data_file_name = "/costs-and-emissions-overview.json"; 
-  var line_endings = /[\r\n]+/;
-  
-  load_list_of_cases();
+function load_list_of_cases() {
+  d3.text(index_file, list_of_cases_loaded);
+};
 
-  function load_list_of_cases() {
-    d3.text(index_file, list_of_cases_loaded);
-  };
+function list_of_cases_loaded(list_of_cases) {
+  list_of_case_names = clean_list(list_of_cases);
+  list_of_case_names.forEach(load_case);
+};
 
-  function list_of_cases_loaded(list_of_cases) {
-    list_of_case_names = clean_list(list_of_cases);
-    list_of_case_names.forEach(load_case);
-  };
+function clean_list(list) {
+  return list
+    .split(line_endings)
+    .filter(line_not_empty)
+    .filter(line_not_comment);
+};
 
-  function clean_list(list) {
-    return list
-      .split(line_endings)
-      .filter(line_not_empty)
-      .filter(line_not_comment);
-  };
-  
-  function line_not_empty(line) { return line.trim().length != 0 };
+function line_not_empty(line) { return line.trim().length != 0 };
 
-  function line_not_comment(line) { return line.trim()[0] != "#" };
+function line_not_comment(line) { return line.trim()[0] != "#" };
 
-  function load_case(case_name) {
-    d3.json(case_name+data_file_name, case_loaded);
-  };
+function load_case(case_name) {
+  d3.json(case_name+data_file_name, case_loaded);
+};
 
-  function case_loaded(individual_case) {
-    store_case(individual_case);
-    if(all_cases_have_been_loaded()) { finished() };
-  };
+function case_loaded(individual_case) {
+  store_case(individual_case);
+  if(all_cases_have_been_loaded()) { all_cases_loaded() };
+};
 
-  function store_case(individual_case) {
-    all_cases.set(individual_case.name, individual_case);
-  };
+function store_case(individual_case) {
+  all_cases.set(individual_case.name, individual_case);
+};
 
-  // FIXME: How do we deal with failiures to load cases?
-  function all_cases_have_been_loaded() {
-    return all_cases.size() == list_of_case_names.length;
-  };
-
-  function finished() {
-    next_function();
-  };
+// FIXME: How do we deal with failiures to load cases?
+function all_cases_have_been_loaded() {
+  return all_cases.size() == list_of_case_names.length;
 };
 
 function extract_scenarios_from_data() {
@@ -153,7 +151,7 @@ function hash_code_for_selected_scenarios() {
 };
 
 function update_title() {
-  d3.select("h1#title").text("Level of Carbon Budget "+carbon_budget_number(year_to_display)+" against cost");
+  d3.select("h1#title").text(x_label+" against "+y_label);
 }
 
 function draw_scenario_table() {
@@ -236,6 +234,8 @@ function setup_chart() {
             .height(chart_height)
             .x_extent(x_extent)
             .y_extent(y_extent)
+            .x_format(x_format)
+            .y_format(y_format)
             .x(x)
             .y(y);
 }
@@ -249,7 +249,8 @@ function draw_chart() {
 function scatterchart() {
 
   var margin = {top: 50, right: 50, bottom: 100, left: 50};
-  var cross_hair_label_format = d3.format(".1f");
+  var x_format = d3.format("0f");
+  var y_format = d3.format(".1f");
 
   var x = function(d) { return d.x; }
   var y = function(d) { return d.y; }
@@ -264,7 +265,6 @@ function scatterchart() {
   var scaledY = function(d) { return yScale(y(d)); }
 
   var xAxis = d3.svg.axis()
-    .tickFormat(d3.format("0f"))
     .scale(xScale)
     .orient("bottom");
 
@@ -273,103 +273,103 @@ function scatterchart() {
     .orient("left");
 
   function chart(selection) {
-    selection.each(function(data) {
-        if(data == undefined) { return; }
+    var svg = selection.selectAll("svg").data(function(d) { return [d]; });
 
-        var svg = d3.select(this).selectAll("svg").data([data]);
+    var new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
 
-        var new_svg = svg.enter().append("svg").append("g").attr("class", "canvas");
+    new_svg.append("g").attr("class", "cases");
+    new_svg.append("g").attr("class", "x axis");
+    new_svg.append("g").attr("class", "y axis");
+    new_svg.append("text")
+      .attr('y', -(margin.top/2))
+      .attr('x', -(margin.left/2))
+      .attr("class", "y_axis_label")
+      .text(y_label)
+      new_svg.append("text")
+      .attr("text-anchor", "middle")
+      .attr("class", "x_axis_label")
+      .text(x_label);
 
-        new_svg.append("g").attr("class", "cases");
-        new_svg.append("g").attr("class", "x axis");
-        new_svg.append("g").attr("class", "y axis");
-        new_svg.append("text")
-          .attr('y', -(margin.top/2))
-          .attr('x', -(margin.left/2))
-          .attr("class", "y_axis_label")
-          .text(cost_label)
-        new_svg.append("text")
-          .attr("text-anchor", "middle")
-          .attr("class", "x_axis_label");
+    new_svg.append("line").attr("id","line_to_y_axis");
+    new_svg.append("line").attr("id","line_to_x_axis");
+    new_svg.append("text").attr("id","x_value_of_case");
+    new_svg.append("text").attr("id","y_value_of_case");
+    new_svg.append("text").attr("id","name_of_case");
 
-        new_svg.append("line").attr("id","line_to_y_axis");
-        new_svg.append("line").attr("id","line_to_x_axis");
-        new_svg.append("text").attr("id","x_value_of_case");
-        new_svg.append("text").attr("id","y_value_of_case");
-        new_svg.append("text").attr("id","name_of_case");
+    // Update the outer dimensions.
+    svg.attr("width", width)
+      .attr("height", height);
 
-        // Update the outer dimensions.
-        svg.attr("width", width)
-          .attr("height", height);
+    // Update the inner dimensions.
+    var g = svg.select("g.canvas")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        // Update the inner dimensions.
-        var g = svg.select("g.canvas")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    yScale
+      .domain(y_extent)
+      .range([height - margin.top - margin.bottom, 0])
+      .nice();
 
-        yScale
-          .domain(y_extent)
-          .range([height - margin.top - margin.bottom, 0])
-          .nice();
+    yAxis.tickFormat(y_format);
 
-        svg.select(".y.axis")
-          .call(yAxis);
+    svg.select(".y.axis")
+      .call(yAxis);
 
-        // Update the x-axis
-        xScale
-          .domain(x_extent)
-          .range([0, width - margin.left - margin.right])
-          .nice();
+    // Update the x-axis
+    xScale
+      .domain(x_extent)
+      .range([0, width - margin.left - margin.right])
+      .nice();
 
-        svg.select(".x.axis")
-          .attr("transform", "translate(0," + yScale.range()[0] + ")")
-          .call(xAxis);
+    xAxis.tickFormat(x_format);
 
-        svg.select(".x_axis_label")
-          .attr("transform", "translate(0," + (yScale.range()[0]+(margin.bottom/2)) + ")")
-          .attr("x", d3.mean(xScale.range()))
-          .text(emissions_label());
+    svg.select(".x.axis")
+      .attr("transform", "translate(0," + yScale.range()[0] + ")")
+      .call(xAxis);
 
-        // Update the cases
-        var cases = g.select(".cases").selectAll("g.case")
-          .data(Object, function(d) { return d.name; });
+    svg.select(".x_axis_label")
+      .attr("transform", "translate(0," + (yScale.range()[0]+(margin.bottom/2)) + ")")
+      .attr("x", d3.mean(xScale.range()));
 
-        var new_cases = cases.enter()
-          .append("g")
-          .attr("class", "case");
+    // Update the cases
+    var cases = g.select(".cases").selectAll("g.case")
+      .data(Object, function(d) { return d.name; });
 
-        cases.exit().remove();
+    var new_cases = cases.enter()
+      .append("g")
+      .attr("class", "case");
 
-        new_cases.append("circle")
-            .attr("r", 5)
-            .attr("id", function(d) { return d.name })
-            .attr("class", function(d) { return "case "+d.scenarios.map(function(s) { return "s"+s; }).join(" ") }); // Prepend s, becausee some scenarios start with a number, which isn't valid as a css class name
+    cases.exit().remove();
 
-        cases.selectAll("circle")
-          .attr("cx", scaledX)
-          .attr("cy", scaledY);
+    new_cases.append("circle")
+      .attr("r", 5)
+      .attr("id", function(d) { return d.name })
+      .attr("class", function(d) { return "case "+d.scenarios.map(function(s) { return "s"+s; }).join(" ") }); // Prepend s, becausee some scenarios start with a number, which isn't valid as a css class name
 
-        // Add the interactivity
+    cases.selectAll("circle")
+      .attr("cx", scaledX)
+      .attr("cy", scaledY);
 
-        d3.selectAll("g.case")
-          .on("mouseover", function(selected_case) {
-            d3.select(this).classed("selected", true);
+    // Add the interactivity
 
-            var table = d3.selectAll('table.filter_table');
-            table.classed("filter_on",true);
+    d3.selectAll("g.case")
+      .on("mouseover", function(selected_case) {
+        d3.select(this).classed("selected", true);
 
-            selected_case.scenarios.forEach(function(s) {
-              table.selectAll("tr.s"+s).classed("selected", true);
-            });
+        var table = d3.selectAll('table.filter_table');
+        table.classed("filter_on",true);
 
-            update_crosshairs(selected_case);
-          })
-        .on("click", function(selected_case) {
-          window.location = "case.html#"+selected_case.name;
-        }).on("mouseout", function() {
-          d3.selectAll(".selected").classed("selected", false);
-          d3.selectAll(".filter_on").classed("filter_on", false);
-          hide_crosshairs();
+        selected_case.scenarios.forEach(function(s) {
+          table.selectAll("tr.s"+s).classed("selected", true);
         });
+
+        update_crosshairs(selected_case);
+      })
+    .on("click", function(selected_case) {
+      window.location = "case.html#"+selected_case.name;
+    }).on("mouseout", function() {
+      d3.selectAll(".selected").classed("selected", false);
+      d3.selectAll(".filter_on").classed("filter_on", false);
+      hide_crosshairs();
     });
   };
 
@@ -394,6 +394,18 @@ function scatterchart() {
   chart.y_extent = function(_) { 
     if (!arguments.length) return y_extent;
     y_extent = _;
+    return chart;
+  }
+
+  chart.x_format = function(_) { 
+    if (!arguments.length) return x_format;
+    x_format = _;
+    return chart;
+  }
+
+  chart.y_format = function(_) { 
+    if (!arguments.length) return y_format;
+    y_format = _;
     return chart;
   }
 
@@ -429,13 +441,13 @@ function scatterchart() {
       .classed("show_crosshairs", true)
       .attr("x", scaledX(target))
       .attr("y", yScale.range()[0]-2)
-      .text(cross_hair_label_format(x(target)));
+      .text(x_format(x(target)));
 
     d3.select("#y_value_of_case")
       .classed("show_crosshairs", true)
       .attr("x", xScale.range()[0]+2)
       .attr("y", scaledY(target)-2)
-      .text(cross_hair_label_format(target.cost));
+      .text(y_format(target.cost));
 
     d3.select("#name_of_case")
       .classed("show_crosshairs", true)
@@ -454,14 +466,9 @@ function scatterchart() {
   return chart;
 }
 
-function emissions_label() {
- return "Level of Carbon Budget "+carbon_budget_number(year_to_display)+" (MtCO2e in "+year_to_display+"x5)";
-}
-
 function draw_case_table() {
-
   var table_data = data;
-  table_data.sort(function(a,b) { return d3.descending(a.cost, b.cost) });
+  table_data.sort(function(a,b) { return d3.descending(y(a), y(b)) });
 
   if(table_data.length > 50) {
     table_data = table_data.slice(0,25).concat(table_data.slice(table_data.length-25));
@@ -477,8 +484,8 @@ function draw_case_table() {
     .attr("class",'case_table').append("tr");
 
   new_case_table_header.append("th").attr("class", "name").html("Scenario");
-  new_case_table_header.append("th").html(cost_label);
-  new_case_table_header.append("th").html(emissions_label());
+  new_case_table_header.append("th").html(x_label);
+  new_case_table_header.append("th").html(y_label);
 
   var case_rows = case_tables.selectAll("tr.case").data(Object);
 
@@ -487,20 +494,21 @@ function draw_case_table() {
   var new_case_row = case_rows.enter().append("tr").attr("class", "case");
 
   new_case_row.append("td").attr("class", "name").append("a").attr("class", "name");
-  new_case_row.append("td").append("a").attr("class", "cost");
   new_case_row.append("td").append("a").attr("class", "budget_emissions");
+  new_case_row.append("td").append("a").attr("class", "cost");
 
   case_rows.select("a.name")
     .text(function(d) { return d.name; })
     .attr("href", function(d) { return "case.html#"+d.name; });
 
+  case_rows.select("a.budget_emissions")
+    .text(function(d) { return x_format(x(d)); })
+    .attr("href", function(d) { return "sectoral-emissions.html#"+d.name+","+d.name+",2015,"+year_to_display; });
+
   case_rows.select("a.cost")
-    .text(function(d) { return cost_format(y(d)); })
+    .text(function(d) { return y_format(y(d)); })
     .attr("href", function(d) { return "sectoral-costs.html#"+d.name+","+d.name+",2015,2050"; });
 
-  case_rows.select("a.budget_emissions")
-    .text(function(d) { return emissions_format(x(d)); })
-    .attr("href", function(d) { return "sectoral-emissions.html#"+d.name+","+d.name+",2015,"+year_to_display; });
 
 };
 
@@ -520,10 +528,6 @@ function scenario_code_to_name_lookup() {
   };
 
   return lookup;
-}
-
-function carbon_budget_number(year) {
-  return Math.floor((year-2008)/5)+1;
 }
 
 function case_list_for_url() {
