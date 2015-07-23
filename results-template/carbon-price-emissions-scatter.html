@@ -16,6 +16,7 @@
 </div>
 <script src='javascript/scatter.js'></script>
 <script>
+y_format = d3.format(",.0f");
 y_label = "Carbon price in "+year_to_display+" £/tCO2e"
 var carbon_prices = d3.map();
 var prices_that_we_care_about = ["GHG-NO-IAS-YES-LULUCF-NET", "GHG-YES-IAS-YES-LULUCF-NET", "GHGTOT", "CO2TOT"];

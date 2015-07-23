@@ -5,8 +5,10 @@ var y_label = "Total Cost £trn (2010-2050, discounted)"
 var chart_width = d3.select("#chart").node().clientWidth;
 var chart_height = Math.ceil(chart_width * 0.75);
 
-var x_format = d3.format(",.0f");
+var x_format = d3.format(",0f");
 var y_format = d3.format(",.1f");
+
+var maximum_rows_in_table = 5000;
 
 var scenario_names = scenario_code_to_name_lookup();
 
@@ -17,7 +19,7 @@ var selected_scenarios = d3.set();
 
 var x_extent;
 var y_extent;
-var chart;
+var chart = scatterchart();
 
 var x = function(d) { return d.budget[year_to_display]; }
 var y = function(d) { return d.cost; }
@@ -34,7 +36,6 @@ function go() {
 function all_cases_loaded() {
   read_user_choices_from_hash();
   extract_scenarios_from_data();
-  calculate_chart_dimensions();
   setup_chart();
   redraw();
 }
@@ -42,6 +43,7 @@ function all_cases_loaded() {
 function redraw() {
   update_hash();
   filter_cases_to_display();
+  calculate_chart_dimensions();
   update_title();
   draw_chart();
   draw_scenario_table();
@@ -108,11 +110,11 @@ function extract_scenarios_from_data() {
 }
 
 function calculate_chart_dimensions() {
-  y_extent = d3.extent(all_cases.values(), y)
+  y_extent = d3.extent(data, y)
   y_extent[0] = 0;
   y_extent[1] = y_extent[1] * 1.1;
 
-  x_extent = d3.extent(all_cases.values(), x)
+  x_extent = d3.extent(data, x)
   var space = (x_extent[0] + x_extent[1]) * 0.05;
   x_extent[0] = x_extent[0] - space;
   x_extent[1] = x_extent[1] + space;
@@ -229,18 +231,19 @@ function divide_array_in_two(array) {
 };
 
 function setup_chart() {
-  chart = scatterchart()
-            .width(chart_width)
-            .height(chart_height)
-            .x_extent(x_extent)
-            .y_extent(y_extent)
-            .x_format(x_format)
-            .y_format(y_format)
-            .x(x)
-            .y(y);
 }
 
 function draw_chart() {
+  chart
+	.width(chart_width)
+	.height(chart_height)
+	.x_extent(x_extent)
+	.y_extent(y_extent)
+	.x_format(x_format)
+	.y_format(y_format)
+	.x(x)
+	.y(y);
+
   d3.select("body").selectAll('#chart')
     .datum(data)
     .call(chart);
@@ -248,7 +251,7 @@ function draw_chart() {
 
 function scatterchart() {
 
-  var margin = {top: 50, right: 50, bottom: 100, left: 50};
+  var margin = {top: 50, right: 50, bottom: 100, left: 70};
   var x_format = d3.format("0f");
   var y_format = d3.format(".1f");
 
@@ -282,7 +285,7 @@ function scatterchart() {
     new_svg.append("g").attr("class", "y axis");
     new_svg.append("text")
       .attr('y', -(margin.top/2))
-      .attr('x', -(margin.left/2))
+      .attr('x', (5-margin.left))
       .attr("class", "y_axis_label")
       .text(y_label)
       new_svg.append("text")
@@ -447,7 +450,7 @@ function scatterchart() {
       .classed("show_crosshairs", true)
       .attr("x", xScale.range()[0]+2)
       .attr("y", scaledY(target)-2)
-      .text(y_format(target.cost));
+      .text(y_format(y(target)));
 
     d3.select("#name_of_case")
       .classed("show_crosshairs", true)
@@ -470,8 +473,9 @@ function draw_case_table() {
   var table_data = data;
   table_data.sort(function(a,b) { return d3.descending(y(a), y(b)) });
 
-  if(table_data.length > 50) {
-    table_data = table_data.slice(0,25).concat(table_data.slice(table_data.length-25));
+  if(table_data.length > maximum_rows_in_table ) {
+    var split_size = Math.floor(maximum_rows_in_table/2.0);
+    table_data = table_data.slice(0,split_size).concat(table_data.slice(table_data.length-split_size));
     d3.select("#overflow_message").classed("hidden",false);
   } else {
     d3.select("#overflow_message").classed("hidden",true);
