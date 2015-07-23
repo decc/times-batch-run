@@ -2,6 +2,7 @@
 
 * Refactoring the cost-emissions scatter
 * Added a carbon price in 2030 against emissions scatter
+* First attempt at adding a note to say whether a case solved without dummy imports
 
 #2015-07-22
 

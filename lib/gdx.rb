@@ -96,7 +96,14 @@ class Gdx
   end
 
   def scenarios
-    symbol(:Scenarios).map { |hash| hash[:dim1] }
+    scenario_list = symbol(:Scenarios).map { |hash| hash[:dim1] }
+    scenario_list.push(used_dummy_values? ? "did_not_solve" : "solved")
+    scenario_list
+  end
+
+  def used_dummy_values?
+    var_act_text = raw(:VAR_ACT)
+    var_act_text =~ /IMP(DEM|MAT)Z'\.'ANNUAL'\.L/im ? true : false
   end
 
   # This takes flat data and reshapes it into nested data
