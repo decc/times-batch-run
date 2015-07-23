@@ -1,9 +1,10 @@
 function showMessageOfTheDay() {
-  d3.html("message-of-the-day.html", messageOfTheDayLoaded);
+  d3.text("message-of-the-day.html", messageOfTheDayLoaded);
 
-  function messageOfTheDayLoaded(message) {
-    var body = d3.select("body").node();
-    body.insertBefore(message, body.firstChild);
+  function messageOfTheDayLoaded(error, message) {
+    if(message) {
+	    d3.select("body").insert("div",":first-child").html(message);
+    }
   }
 }
 
