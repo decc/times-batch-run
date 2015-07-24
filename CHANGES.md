@@ -1,6 +1,7 @@
 #2015-07-24
 
 * Updated the scenario names
+* Fixed the forecast run completion time
 
 #2015-07-23
 

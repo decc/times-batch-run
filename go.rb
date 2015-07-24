@@ -252,7 +252,7 @@ class BatchRun
       return "Not enough data to forecast completion time"
     else
       time_per_case = (time_taken.to_f / cases_complete)
-      time_to_go = cases_to_go / time_per_case
+      time_to_go = cases_to_go * time_per_case
       return "Completing cases at a rate of one per #{humanise_duration(time_per_case)} with about #{humanise_duration(time_to_go)} left to go."
     end
   end
