@@ -16,6 +16,9 @@ scalar territorial_emissions_from_year /%1/;
 COM_BNDNET('UK',ALLYEAR,'GHG-ETS-NO-IAS-NET','ANNUAL','FX')
   $(YEARVAL(ALLYEAR) >= territorial_emissions_from_year) = 0; # Delete constraints on the ETS on and after the year
 
+COM_BNDNET('UK',ALLYEAR,'GHG-ETS-YES-IAS-NET','ANNUAL','FX')
+  $(YEARVAL(ALLYEAR) >= territorial_emissions_from_year) = 0; # Delete constraints on the ETS on and after the year
+
 COM_BNDNET('UK',modlyear,'Traded-Emission-ETS','ANNUAL','FX')
   $(YEARVAL(modlyear) >= territorial_emissions_from_year) = EPS; # Don't allow any trading from that year
 
