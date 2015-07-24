@@ -3,6 +3,7 @@
 * Updated the scenario names
 * Fixed the forecast run completion time
 * Corrected the attributes used to calculate carbon prices
+* Fixed the interanational aviation and shipping constraint
 
 #2015-07-23
 
