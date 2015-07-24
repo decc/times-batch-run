@@ -13,11 +13,15 @@
 <div id='chart'>
 </div>
 <div id='cases'>
-  <p id='overflow_message' class='hidden'>There are more than 50 cases in the chart. The table below shows the top and bottom 25.</p>
 </div>
+<h3>Other comparisons of these cases</h3>
+<p>Note that these links won't work if you have too many cases in the table. How many is too many depends on the browser you are using.</p>
 <ul id='link_list'>
   <li onclick='window.location="carbon-prices-compared.html#"+case_list_for_url()'>Compare carbon prices</li>
   <li onclick='window.location="flow-over-time.html#"+case_list_for_url()+";C-NGAPTR"'>Compare natural gas consumption</li>
+  <li onclick='window.location="flow-over-time.html#"+case_list_for_url()+";C-ELCGEN"'>Compare electricity generation.</li>
+  <li onclick='window.location="build-rate-over-time.html#"+case_list_for_url()+";^E(?!TNM).*"'>Compare electricity build_rates.</li>
+  <li onclick='window.location="investment-cost-over-time.html#"+case_list_for_url()+";^E.*"'>Compare annual investment in electricity generation.</li>
 </ul>
 <script src='javascript/scatter.js'></script>
 <script>

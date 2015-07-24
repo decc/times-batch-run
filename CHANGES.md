@@ -10,6 +10,7 @@
 * When checking a GDX file for dummy imports, now match anything like IMP...Z
 * Now have a couple of large investment cost and build rate over time charts
 * Investment cost and build rate charts can now use regular expressions in their names
+* Provide some examples of the new charts
 
 #2015-07-23
 
