@@ -2,6 +2,7 @@
 
 * Updated the scenario names
 * Fixed the forecast run completion time
+* Corrected the attributes used to calculate carbon prices
 
 #2015-07-23
 
