@@ -5,6 +5,7 @@
 * Corrected the attributes used to calculate carbon prices
 * Fixed the interanational aviation and shipping constraint
 * Improved the carbon price and carbon price comparison charts
+* Refactored the flow over time chart to reuse code from the carbon price charts
 
 #2015-07-23
 

@@ -1,4 +1,5 @@
 var prices_that_we_care_about = ["GHG-NO-IAS-YES-LULUCF-NET", "GHG-YES-IAS-YES-LULUCF-NET", "GHGTOT", "CO2TOT"];
+var y_axis_label = "£/tCO2e";
 var years = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
 var price_format = d3.format(",.0f");
 var case_names;
@@ -59,6 +60,7 @@ function drawChart() {
   var chart_width = window.innerWidth;
   var chart_height = window.innerHeight - d3.select("#chart").node().offsetTop;
   var chart = linechart()
+                .y_axis_label(y_axis_label)
                 .y_range([min_y, max_y])
                 .width(chart_width)
                 .height(chart_height);

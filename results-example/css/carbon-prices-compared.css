@@ -68,10 +68,14 @@ text.no_highlight {
 
 td.value, td.price {
   text-align: right;
-  width: 5em;
 }
 
 tr.highlight td {
   background-color: yellow;
+}
+
+table {
+  margin: 10 100 10 50;
+  width: 70%;
 }
 
