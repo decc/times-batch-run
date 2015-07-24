@@ -107,12 +107,12 @@ uc_noonshorewind	Onshore wind NOT available
 scen_elc_wstheat-1000	District heating from power stations (test)
 default_Distict	District heating from power stations disabled
 default_District	District heating from power stations disabled
-refscenario_deccv1_1-low	Low demand
-refscenario_deccv1_1-central	Central demand
-refscenario_deccv1_1-high	High demand
+refscenario_deccv1_1-low	Demand - Low
+refscenario_deccv1_1-central	Demand - Central
+refscenario_deccv1_1-high	Demand - High
 default_No	Low carbon electricity built in 2020s
 delayed_low_carbon_electricity	Low carbon electricity not built in 2020s
-base	Standard set of existing technologies
+base	Low carbon electricity not built in 2020s
 newagr	Standard set of new agricultural technologies
 newelc	Standard set of new electricity technologies
 newind	Standard set of new industrial technologies
@@ -137,4 +137,4 @@ ets_cap_2030_90	UK share of EU ETS in 2030 - 90 MtCO2e/yr
 ets_cap_2050_45	UK share of EU ETS in 2050 - 45 MtCO2e/yr
 after_2050_same_as_2050	2060 emissions cap the same as 2050
 solved	For information - solved ok
-did_no_solve	For information - did not solve
+did_not_solve	For information - did not solve

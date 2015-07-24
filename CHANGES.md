@@ -1,3 +1,7 @@
+#2015-07-24
+
+* Updated the scenario names
+
 #2015-07-23
 
 * Refactoring the cost-emissions scatter
