@@ -4,17 +4,19 @@ var code_lookup;
 var code_to_name_lookup_loaded_flag = false;
 var settings;
 var flows_that_we_care_about;
+var flows_that_we_have_matched = d3.set();
 var regexp_for_flows_that_we_care_about;
 var attribute_we_want_to_plot = 'INSTCAP'
 
 function go() {
+  settings = window.location.hash.slice(1).split(';');
+  case_names = settings[0].split(",");
+  flows_that_we_care_about = settings[1].split(",");
   code_lookup = code_to_name_lookup();
 }
 
 function start() {
-  settings = window.location.hash.slice(1).split(';');
-  case_names = settings[0].split(",");
-  flows_that_we_care_about = settings[1].split(",");
+  d3.select(".codes").text(flows_that_we_care_about.join(", "));
   regexp_for_flows_that_we_care_about = flows_that_we_care_about.map(function(s) { return RegExp(s); });
   case_names.forEach(load_case);
 }
@@ -32,19 +34,23 @@ function reformatCases() {
   data = cases.values().map(function(case_data) {
       return reformat(case_data);
   });
-  flows_that_we_care_about = d3.set(flows_that_we_care_about).values();
   drawListOfFlows();
 }
 
 function drawListOfFlows() {
   var list = d3.select("#list_of_flows").selectAll("li")
-    .data(flows_that_we_care_about);
+    .data(flows_that_we_have_matched.values());
 
   list.exit().remove();
 
-  list.enter().append("li");
+  list.enter().append("li").append("a");
 
-  list.text(function(d) { return code_lookup(d)+" ("+d+")"; });
+  list.select("a")
+    .attr("href", function(d) { return "#"+case_names.join(",")+";"+d })
+    .text(function(d) { return code_lookup(d)+" ("+d+")"; });
+
+  list
+    .sort(function(a,b) { return d3.ascending(code_lookup(a), code_lookup(b)) });
 }
 
 function name_from_case_data(case_data) {
@@ -57,7 +63,7 @@ function reformat(case_data) {
     var process_name = d['p'];
     for(var i=0; i<regexp_for_flows_that_we_care_about.length; i++) {
       if(regexp_for_flows_that_we_care_about[i].test(process_name)) { 
-        flows_that_we_care_about.push(process_name);
+        flows_that_we_have_matched.add(process_name);
         return true; 
       }
     }
