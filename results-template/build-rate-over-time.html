@@ -1,0 +1,117 @@
+<html>
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta charset='utf-8'>
+<script src='javascript/d3.min.js'></script>
+<script src='javascript/message-of-the-day.js'></script>
+<link href='css/carbon-prices-compared.css' rel='stylesheet'>
+<body>
+<p>The total deployment each year of:</p>
+<ul id='list_of_flows'>
+</ul>
+<div id='chart'>
+</div>
+<table>
+  <thead>
+    <tr><td>Scenario</td><td class='price'>2010</td><td class='price'>2015</td><td class='price'>2020</td><td class='price'>2025</td><td class='price'>2030</td><td class='price'>2035</td><td class='price'>2040</td><td class='price'>2045</td><td class='price'>2050</td></tr>
+  </thead>
+  <tbody id='prices'>
+  </tbody>
+</table>
+<script src='javascript/carbon-prices-compared.js'></script>
+<script>
+y_axis_label = undefined;
+
+var code_lookup = code_to_name_lookup();
+var code_to_name_lookup_loaded_flag = false;
+var settings;
+var flows_that_we_care_about;
+
+function go() {
+  settings = window.location.hash.slice(1).split(';');
+  case_names = settings[0].split(",");
+  flows_that_we_care_about = settings[1].split(",");
+  case_names.forEach(load_case);
+}
+
+function load_case(case_name) {
+  d3.json(''+case_name+"/build-rates.json", case_loaded);
+}
+
+function case_loaded(case_data) {
+  cases.set(name_from_case_data(case_data), case_data);
+  if(all_cases_loaded()) { draw(); }
+}
+
+function reformatCases() {
+  drawListOfFlows();
+  data = cases.values().map(function(case_data) {
+      return reformat(case_data);
+  });
+}
+
+function drawListOfFlows() {
+  var list = d3.select("#list_of_flows").selectAll("li")
+    .data(flows_that_we_care_about);
+
+  list.exit().remove();
+
+  list.enter().append("li");
+
+  list.text(function(d) { return code_lookup(d); });
+}
+
+function name_from_case_data(case_data) {
+  return case_data[0]['INSTCAP'][0]["name"];
+}
+
+function reformat(case_data) {
+  var new_values = [];
+  var relevant_processes = case_data.filter(function(d) { 
+    return flows_that_we_care_about.indexOf(d['p']) != -1;
+  });
+
+  if(y_axis_label == undefined) {
+    y_axis_label = "" + relevant_processes[0]['INSTCAP'][0].unit + "/yr";
+  };
+
+  var relevant_attribute = relevant_processes.map(function(d) { 
+    return d['INSTCAP'][0].data 
+  });
+
+  years.forEach(function(year) {
+    var total_for_year = 0;
+    relevant_attribute.forEach(function(process) {
+      var values_for_process_in_year = process.filter(function(d) { return d['allyear'] == year });
+      values_for_process_in_year.forEach(function(d) {
+        total_for_year = total_for_year + d['val'];
+        });
+      });
+
+    max_y = max_y < total_for_year ? total_for_year : max_y;
+    min_y = min_y > total_for_year ? total_for_year : min_y;
+    new_values.push({year: year, value: total_for_year});
+  });
+  return { name: name_from_case_data(case_data), prices: new_values };
+}
+
+function code_to_name_lookup() {
+  var codes = d3.map();
+
+  d3.tsv("codes.tsv").get(function(error, rows) {
+    rows.forEach(function(row) {
+      codes.set(row['Code'], row['Short']);
+    });
+    code_to_name_lookup_loaded_flag = true;
+    go();
+  });
+
+  function lookup(code) {
+    var official_form = code.replace(/^(P|C)-/i, '');
+    return codes.get(official_form) || official_form;
+  };
+
+  return lookup;
+}
+</script>
+</body>
+</html>

@@ -8,6 +8,7 @@
 * Refactored the flow over time chart to reuse code from the carbon price charts
 * When aggregating to sectors, now leaves IMPDEMZ, IMPMATZ and IMPNRGZ as separate category from imports
 * When checking a GDX file for dummy imports, now match anything like IMP...Z
+* Now have a couple of large investment cost and build rate over time charts
 
 #2015-07-23
 
