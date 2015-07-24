@@ -7,6 +7,7 @@
 * Improved the carbon price and carbon price comparison charts
 * Refactored the flow over time chart to reuse code from the carbon price charts
 * When aggregating to sectors, now leaves IMPDEMZ, IMPMATZ and IMPNRGZ as separate category from imports
+* When checking a GDX file for dummy imports, now match anything like IMP...Z
 
 #2015-07-23
 

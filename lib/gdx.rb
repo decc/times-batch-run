@@ -103,7 +103,7 @@ class Gdx
 
   def used_dummy_values?
     var_act_text = raw(:VAR_ACT)
-    var_act_text =~ /IMP(DEM|MAT)Z'\.'ANNUAL'\.L/im ? true : false
+    var_act_text =~ /IMP...Z'\.'ANNUAL'\.L/im ? true : false
   end
 
   # This takes flat data and reshapes it into nested data
