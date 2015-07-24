@@ -1,1 +1,23 @@
-Process	SectorIMP-Emission.*	Emissions TradingEXP-Emission.*	Emissions TradingMIN.*	Domestic fuel productionIMP.*	Net fuel imports (exports)EXP.*	Net fuel imports (exports)UPS.*	UpstreamRSR.*	ResourcesHYG.*	HydrogenPHY.*	HydrogenTHY.*	HydrogenCCS.*	ElectricityPOIL.*	TransportI.*	IndustryP.*	Fuel refining and processingE.*	ElectricityR.*	ResidentialS.*	ServicesA.*	AgricultureT.*	Transport
+Process	Sector
+IMPDEMZ	Backstop because model failed to solve
+IMPMATZ	Backstop because model failed to solve
+IMPNRGZ	Backstop because model failed to solve
+IMP-Emission.*	Emissions Trading
+EXP-Emission.*	Emissions Trading
+MIN.*	Domestic fuel production
+IMP.*	Net fuel imports (exports)
+EXP.*	Net fuel imports (exports)
+UPS.*	Upstream
+RSR.*	Resources
+HYG.*	Hydrogen
+PHY.*	Hydrogen
+THY.*	Hydrogen
+CCS.*	Electricity
+POIL.*	Transport
+I.*	Industry
+P.*	Fuel refining and processing
+E.*	Electricity
+R.*	Residential
+S.*	Services
+A.*	Agriculture
+T.*	Transport
