@@ -58,7 +58,7 @@ function reformat(case_data) {
 
 function drawChart() {
   var chart_width = window.innerWidth;
-  var chart_height = window.innerHeight - d3.select("#chart").node().offsetTop;
+  var chart_height = window.innerHeight - 100;
   var chart = linechart()
                 .y_axis_label(y_axis_label)
                 .y_range([min_y, max_y])

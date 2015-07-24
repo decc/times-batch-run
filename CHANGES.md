@@ -9,6 +9,7 @@
 * When aggregating to sectors, now leaves IMPDEMZ, IMPMATZ and IMPNRGZ as separate category from imports
 * When checking a GDX file for dummy imports, now match anything like IMP...Z
 * Now have a couple of large investment cost and build rate over time charts
+* Investment cost and build rate charts can now use regular expressions in their names
 
 #2015-07-23
 

@@ -25,11 +25,14 @@ var code_lookup = code_to_name_lookup();
 var code_to_name_lookup_loaded_flag = false;
 var settings;
 var flows_that_we_care_about;
+var regexp_for_flows_that_we_care_about;
+var attribute_we_want_to_plot = 'INSTCAP'
 
 function go() {
   settings = window.location.hash.slice(1).split(';');
   case_names = settings[0].split(",");
   flows_that_we_care_about = settings[1].split(",");
+  regexp_for_flows_that_we_care_about = flows_that_we_care_about.map(function(s) { return RegExp(s); });
   case_names.forEach(load_case);
 }
 
@@ -43,10 +46,11 @@ function case_loaded(case_data) {
 }
 
 function reformatCases() {
-  drawListOfFlows();
   data = cases.values().map(function(case_data) {
       return reformat(case_data);
   });
+  flows_that_we_care_about = d3.set(flows_that_we_care_about).values();
+  drawListOfFlows();
 }
 
 function drawListOfFlows() {
@@ -57,25 +61,32 @@ function drawListOfFlows() {
 
   list.enter().append("li");
 
-  list.text(function(d) { return code_lookup(d); });
+  list.text(function(d) { return code_lookup(d)+" ("+d+")"; });
 }
 
 function name_from_case_data(case_data) {
-  return case_data[0]['INSTCAP'][0]["name"];
+  return case_data[0][attribute_we_want_to_plot][0]["name"];
 }
 
 function reformat(case_data) {
   var new_values = [];
   var relevant_processes = case_data.filter(function(d) { 
-    return flows_that_we_care_about.indexOf(d['p']) != -1;
+    var process_name = d['p'];
+    for(var i=0; i<regexp_for_flows_that_we_care_about.length; i++) {
+      if(regexp_for_flows_that_we_care_about[i].test(process_name)) { 
+        flows_that_we_care_about.push(process_name);
+        return true; 
+      }
+    }
+    return false;
   });
 
-  if(y_axis_label == undefined) {
-    y_axis_label = "" + relevant_processes[0]['INSTCAP'][0].unit + "/yr";
+  if(y_axis_label == undefined && relevant_processes.length > 0) {
+    y_axis_label = "" + relevant_processes[0][attribute_we_want_to_plot][0].unit + "/yr";
   };
 
   var relevant_attribute = relevant_processes.map(function(d) { 
-    return d['INSTCAP'][0].data 
+    return d[attribute_we_want_to_plot][0].data 
   });
 
   years.forEach(function(year) {
