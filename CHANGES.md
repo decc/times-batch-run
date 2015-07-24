@@ -4,6 +4,7 @@
 * Fixed the forecast run completion time
 * Corrected the attributes used to calculate carbon prices
 * Fixed the interanational aviation and shipping constraint
+* Improved the carbon price and carbon price comparison charts
 
 #2015-07-23
 

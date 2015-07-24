@@ -1,15 +1,18 @@
 var prices_that_we_care_about = ["GHG-NO-IAS-YES-LULUCF-NET", "GHG-YES-IAS-YES-LULUCF-NET", "GHGTOT", "CO2TOT"];
 var years = [2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050];
 var price_format = d3.format(",.0f");
-var case_name = undefined;
+var case_names;
 var data = [];
 var cases = d3.map();
 var max_y = 0;
+var min_y = 0;
 
 window.addEventListener("hashchange",function() { window.location.reload() });
 
-var case_names = window.location.hash.slice(1).split(',');
-case_names.forEach(load_case);
+function go() {
+  case_names = window.location.hash.slice(1).split(',');
+  case_names.forEach(load_case);
+}
 
 function load_case(case_name) {
   d3.json(''+case_name+"/carbon-prices.json", case_loaded);
@@ -26,7 +29,6 @@ function all_cases_loaded() {
 
 function draw() {
   reformatCases();
-  displayCaseName();
   drawChart();
   drawTable();
 }
@@ -47,20 +49,17 @@ function reformat(case_data) {
     });
     var biggest_value = d3.max(possible_prices);
     max_y = max_y < biggest_value ? biggest_value : max_y;
+    min_y = min_y > biggest_value ? biggest_value : min_y;
     new_values.push({year: year, value: biggest_value});
   });
   return { name: case_data.name, prices: new_values };
-}
-
-function displayCaseName() {
-  d3.selectAll(".case_name").text(case_name);
 }
 
 function drawChart() {
   var chart_width = window.innerWidth;
   var chart_height = window.innerHeight - d3.select("#chart").node().offsetTop;
   var chart = linechart()
-                .y_range([0, max_y])
+                .y_range([min_y, max_y])
                 .width(chart_width)
                 .height(chart_height);
 
@@ -122,7 +121,7 @@ function linechart() {
   var series_css = function(d) { return d.name; }
   var points = function(d) { return d.prices; }
 
-  var minimum_space_between_labels = 18; // Pixels
+  var minimum_space_between_labels = 20; // Pixels
 
   function chart(selection) {
       // Create a new SVG if required
@@ -244,28 +243,65 @@ function linechart() {
   // checking that they are at least minimum_space_between_labels
   // apart and, if not, shuffling them up and down.
   function position_labels(labels) {
-    var i, label_position_changed, lower_label, label, y_difference;
-
     labels.forEach(add_initial_label_position);
-
     labels.sort(function(a,b) { return a.label_y - b.label_y; }); // Need to be in ascending order
+    var i = 0;
+    var length = labels.length;
+    var label_position_changed = false;
+    var step = 1;
+    var y_difference = 0;
+    var gap_below = 0;
+    var gap_above = 0;
+    var iterations = 100;
+    var a_name, a_label_y;
+
     do {
       label_position_changed = false;
-      labels.forEach(function(label, i) {
+
+      // Shuffle cells down
+      for(i = 0; i < length; i++) {
+        a_name = labels[i].name;
+        a_label_y = labels[i].label_y;
         if(i == 0) {
-          lower_label = label;
+          gap_below = 1e6;
         } else {
-          y_difference = label.label_y - lower_label.label_y;
-          // If labels are overlaping, nudge them apart by 2 pixels then loop again
-          if(y_difference >= 0 && y_difference < minimum_space_between_labels) {
-            lower_label.label_y = lower_label.label_y - 1;
-            label.label_y = label.label_y + 1;
+          gap_below = labels[i].label_y - labels[i-1].label_y;
+        }
+
+        if(i == (length-1)) {
+          gap_above = 1e6;
+        } else {
+          gap_above = labels[i+1].label_y - labels[i].label_y;
+        }
+
+        if(gap_below == 0 && gap_above == 0) { 
+          // Do nothing, stuck
+        } else if( gap_above > minimum_space_between_labels && gap_below > minimum_space_between_labels) {
+          // Do nothing, all ok.
+        } else if(gap_below == 0) {
+          labels[i].label_y = labels[i].label_y + Math.min(gap_above, minimum_space_between_labels - gap_below);
+          label_position_changed = true;
+        } else if(gap_above == 0) {
+            labels[i].label_y = labels[i].label_y - Math.min(gap_below, minimum_space_between_labels-gap_above);
+            label_position_changed = true;
+        } else if(gap_above >= gap_below) {
+          if(gap_below < minimum_space_between_labels) {
+            labels[i].label_y = labels[i].label_y + Math.min(gap_above, minimum_space_between_labels - gap_below);
             label_position_changed = true;
           }
-          lower_label = label;
+        } else if(gap_below > gap_above) {
+          if(gap_above < minimum_space_between_labels) {
+            labels[i].label_y = labels[i].label_y - Math.min(gap_below, minimum_space_between_labels - gap_above);
+            label_position_changed = true;
+          }
         }
-      });
-    } while(label_position_changed);
+
+        if(labels[i].label_y < 0) { labels[i].label_y = 0; }
+      }
+      //label_position_changed = false;
+
+      iterations--;
+    } while(iterations > 0 && label_position_changed);
   }
 
 
