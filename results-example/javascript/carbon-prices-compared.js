@@ -82,7 +82,7 @@ function drawTable() {
 
 function linechart() {
 
-  var margin = {top: 30, right: 75, bottom: 30, left: 60};
+  var margin = {top: 30, right: 200, bottom: 30, left: 60};
   var width = 500;
   var height = 250;
   var markerRadius = 4;
