@@ -5,9 +5,9 @@ m = MonteCarloSensitivities.new
 m.number_of_cases_to_generate = 2000
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{__FILE__} -n [number of cases to generate per sensitivity] <possible_scenarios.tsv> <cases.tsv>"
+  opts.banner = "Usage: #{__FILE__} -n [minimum number of cases to generate ] <possible_scenarios.tsv> <cases.tsv>"
 
-  opts.on("-n", "--number-of-cases N", Integer, "Number of cases to generate from the possible_scenarios.tsv for each sensitivity") do |n|
+  opts.on("-n", "--number-of-cases N", Integer, "minimum number of cases to generate from the possible_scenarios.tsv") do |n|
     m.number_of_cases_to_generate = n
   end
 end.parse!
