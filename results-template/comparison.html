@@ -13,7 +13,10 @@ tr#different td {
 
 <h2>Charts</h2>
 <ul>
-  <li><a id='compare_build_rates'>Compare build rates</a></li>
+  <li>Compare build rates and investment costs:
+    <a id='compare_build_rates' >All processes</a>
+    <a id='electricity_build_rates'>Electricity generation total</a>
+  </li>
 
   <li>Compare costs: 
     <a id='compare_cost_npv' href=''>NPV</a> (<a id='detailed_compare_cost_npv'>detailed</a>),
@@ -85,6 +88,7 @@ function write_case_names_onscreen() {
 
 function setup_links_to_charts() {
   d3.select("#compare_build_rates").attr("href", "build-rates.html#"+case_name_a+","+case_name_b);
+  d3.select("#electricity_build_rates").attr("href", "build-rate-over-time.html#"+case_name_a+","+case_name_b+";^E.*");
   d3.select("#compare_cost_npv").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",npv,npv");
   d3.select("#compare_cost_2025").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",2025,2025");
   d3.select("#compare_cost_2030").attr("href", "sectoral-costs.html#"+case_name_a+","+case_name_b+",2030,2030");

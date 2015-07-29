@@ -8,7 +8,10 @@
 
 <h2>Charts</h2>
 <ul>
-  <li><a id='compare_build_rates' >Build rates</a></li>
+  <li>Build rates and investment costs:
+    <a id='compare_build_rates' >All processes</a>
+    <a id='electricity_build_rates'>Electricity generation total</a>
+  </li>
 
   <li>Costs: 
     <a id='costs_over_time' href=''>over time</a>, 
@@ -83,6 +86,7 @@ function write_case_name_onscreen() {
 
 function setup_links_to_charts() {
   d3.select("#compare_build_rates").attr("href", "build-rates.html#"+case_name);
+  d3.select("#electricity_build_rates").attr("href", "build-rate-over-time.html#"+case_name+";^E.*");
   d3.select("#compare_cost_npv").attr("href", "sectoral-costs.html#"+case_name+","+case_name+",npv,npv");
   d3.select("#compare_cost_2025").attr("href", "sectoral-costs.html#"+case_name+","+case_name+",2015,2025");
   d3.select("#compare_cost_2030").attr("href", "sectoral-costs.html#"+case_name+","+case_name+",2015,2030");
