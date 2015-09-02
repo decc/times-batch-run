@@ -101,9 +101,10 @@ class Gdx
     scenario_list
   end
 
+  # This returns true if the activity of any dummy import commodity is greater than 1e-5
   def used_dummy_values?
     var_act_text = raw(:VAR_ACT)
-    var_act_text =~ /IMP...Z'\.'ANNUAL'\.L/im ? true : false
+    var_act_text.scan(/IMP...Z'\.'ANNUAL'\.L (.*?),/).any? { |match| match[0].to_f.abs > 1e-5 }
   end
 
   # This takes flat data and reshapes it into nested data
