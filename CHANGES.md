@@ -1,3 +1,8 @@
+#2015-09-02
+* Added two new dd files to "\dd-files\" to be called during the batch running process
+* Cumulative_GHG_Cap_NoIAS - apply cumulative GHG targets of a series of periods
+* Minimum_Emissions_NoIAS - apply minimum GHG targtes to force emissions in a particular year to be greater than a certain level
+
 #2015-07-24
 
 * Updated the scenario names

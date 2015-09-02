@@ -1,0 +1,21 @@
+$ontext
+This dd file is used to constrain minimum total emissions excluding international aviation and shipping but including LULUCF
+
+It expects to be called in the form:
+
+$batinclude Minimum_Emissions_NoIAS YEAR CAP
+
+The cap is an annual figure in MtCO2e.
+
+There is no interpolation or extrapolation of this constraint
+
+$offtext
+
+$eolcom #
+$ONEMPTY
+$ONEPS # This means if you specify 0 it doesn't remove the value, it just sets it to a very small value
+$ONWARNING
+$ONMULTI # This allows us to overwrite previously set items
+
+COM_BNDNET('UK','0','GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','LO') = -1; # No interpolation or extrapolation between data points
+COM_BNDNET('UK','%1','GHG-NO-IAS-YES-LULUCF-NET','ANNUAL','LO') = (%2 * 1000); # We multiply by 1000 because UK TIMES measures in ktCO2e

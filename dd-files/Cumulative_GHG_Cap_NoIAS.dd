@@ -1,0 +1,19 @@
+$ontext
+This dd file is used to constrain total cumulative emissions excluding international aviation and shipping but including LULUCF
+
+It expects to be called in the form:
+
+$batinclude Cumulative_GHG_Cap_NoIAS YEARstart YEARend CAP
+
+The cap is cumulative GHG emissions over the period defined in MtCO2e.
+
+$offtext
+
+$eolcom #
+$ONEMPTY
+$ONEPS # This means if you specify 0 it doesn't remove the value, it just sets it to a very small value
+$ONWARNING
+$ONMULTI # This allows us to overwrite previously set items
+
+COM_CUMNET('UK','%1','%2','GHG-NO-IAS-YES-LULUCF-NET','UP') = (%3 * 1000); # We multiply by 1000 because UK TIMES measures in ktCO2e
+
