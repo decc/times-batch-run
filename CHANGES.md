@@ -1,3 +1,6 @@
+#2015-10-08
+* Xtest_ETS_NonTraded file added to "\dd-files\" as a test file set up to combine a territorial and ETS caps
+
 #2015-09-02
 * edited \lib\gdx.rb so the test "used_dummy_values?" only returns true if the activity of any dummy import commodity is greater than 1e-5
 * stops the batch run template reporting did_not_solve when infinitesimal amounts of Dummy imports are used.
