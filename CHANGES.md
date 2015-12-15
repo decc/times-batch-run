@@ -1,3 +1,7 @@
+#2015-12-15
+* no_GHG_trade_from file added to "\dd-files\"
+Allows emissions trading to be removed withought changing the emissions targets applied.
+
 #2015-10-08
 * Xtest_ETS_NonTraded file added to "\dd-files\" as a test file set up to combine a territorial and ETS caps
 

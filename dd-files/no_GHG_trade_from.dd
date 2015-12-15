@@ -1,0 +1,23 @@
+$ontext
+This dd file is used to stop emissions trading (import or exports) from a particular year.
+Applies to both ETS and non-ETS credits.
+No emissions targets are removed by this scenario.
+
+It expects to be called in the form:
+
+$batincldue no_GHG_trade_from YEAR
+
+$offtext
+
+$eolcom #
+$OFFEPS # If we something to zero we mean to delete it
+$ONMULTI # This allows us to overwrite previously set items
+
+scalar no_GHG_trade_from_year /%1/;
+
+COM_BNDNET('UK',modlyear,'Traded-Emission-ETS','ANNUAL','FX')
+  $(YEARVAL(modlyear) >= no_GHG_trade_from_year) = EPS; # Don't allow any trading from that year
+
+COM_BNDNET('UK',modlyear,'Traded-Emission-Non-ETS','ANNUAL','FX')
+  $(YEARVAL(modlyear) >= no_GHG_trade_from_year) = EPS; # Don't allow any trading from that year
+
