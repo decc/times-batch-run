@@ -6,7 +6,7 @@ rem "Start command prompt with ruby". It basically pre-pends the ruby path to th
 rem path environment variable. I'm not sure why this is necessary (but see REM note)...
 rem this (current) BAT can be in any place on your computer. E.g. it doesn't have to be in WrkTIMES
 rem *
-REM Determine where is RUBY_BIN (where this script is)
+REM Determine where is RUBY_BIN (location where Ruby is installed - NB you may need to edit "Ruby22-x64" to reflect pathway for your Ruby version)
 SET RUBY_BIN="C:\Ruby22-x64\bin"
 POPD
 REM Add RUBY_BIN to the PATH
