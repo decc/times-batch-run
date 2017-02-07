@@ -1,3 +1,7 @@
+$ontext
+Turns off dummy imports - Antti says they're not good for barrier algorithm due to high marginal costs
+$offtext
+
 $ONEMPTY
 $ONEPS
 $ONWARNING
