@@ -96,6 +96,12 @@ SET scenarios
 SET MILESTONYR /2010,2011,2012,2015,2020,2025,2030,2035,2040,2045,2050,2055,2060/;
 $SET RUN_NAME 'UKTM_BASE'
 
+* JonTecwyn Feb 2017 - SHORT TERM Fixes to numerical problems based on suggestions by Antti Lehtila - need longer term solution
+NCAP_AF(R,LL,P,S,BD)$((NCAP_AF(R,LL,P,S,BD)<1E-7)$NCAP_AF(R,LL,P,S,BD))=eps;
+VDA_EMCB(R,LL,C,COM)$((ABS(VDA_EMCB(R,LL,C,COM))<1E-8)$VDA_EMCB(R,LL,C,COM))=eps;
+COM_BNDNET(R,LL,C,S,'LO')$((COM_BNDNET(R,LL,C,S,'LO')<-1E6)$COM_BNDNET(R,LL,C,S,'LO'))=-INF;
+FLO_EMIS(R,LL,P,COM,C,S)$((NOT SUM(TOP(R,P,COM,IO),1))$TOP(R,P,'ELC-E-EU','OUT')$COM_TMAP(R,'ENV',COM)) = 0;
+
 
 $ SET VEDAVDD 'YES'
 
