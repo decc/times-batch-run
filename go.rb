@@ -34,7 +34,7 @@ class BatchRun
     settings.list_of_cases_files = ["cases.tsv"]
     settings.run_file_template =  File.join(File.dirname(__FILE__),'run-file-template.erb')
     settings.number_of_cases_to_optimize_simultaneously = 3
-    settings.times_source_folder =  "GAMS_SRCTIMESV380"
+    settings.times_source_folder =  "GAMS_SRCTIMESV383"
     settings.gams_save_folder =  "GamsSave"
     settings.times_2_veda = "times2veda.vdd"
     settings.do_not_recalculate_if_gdx_exists = false
