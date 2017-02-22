@@ -1,0 +1,20 @@
+$ontext
+This dd file is used to constrain total emisions excluding all aviation and shipping (both domestic and international) but including LULUCF
+
+It expects to be called in the form:
+
+$batinclude total_cap YEAR CAP 
+This is called in the "budget_noAS.dd"
+The cap is an annual figure in MtCO2e.
+
+$offtext
+
+$eolcom #
+$ONEMPTY
+$ONEPS # This means if you specify 0 it doesn't remove the value, it just sets it to a very small value
+$ONWARNING
+$ONMULTI # This allows us to overwrite previously set items
+
+COM_BNDNET('UK','0','	','ANNUAL','UP') = 1; # This forces interpolation between data points but no extrapolation
+COM_BNDNET('UK','%1','GHG-NO-AS-YES-LULUCF-NET','ANNUAL','UP') = (%2 * 1000); # We multiply by 1000 because UK TIMES measures in ktCO2e
+;
